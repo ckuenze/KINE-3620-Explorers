@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gait Cycle Phase Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5;
+    --card:#FFFFFF;
+    --ink:#1B2420;
+    --ink-soft:#586158;
+    --stance:#2F6F63;
+    --stance-soft:#E4EEEA;
+    --swing:#B8622A;
+    --swing-soft:#F5E7DC;
+    --amber:#E8B23D;
+    --line:#D8DED7;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:860px;margin:0 auto;}
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(24px,4vw,32px);
+    font-weight:700;
+    margin:0 0 4px;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 28px;max-width:520px;line-height:1.5;}
+
+  /* Timeline */
+  .timeline-card{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:22px 20px 26px;
+    box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);
+    margin-bottom:20px;
+  }
+  .phase-heading{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .phase-name{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:22px;
+    font-weight:700;
+  }
+  .phase-name.stance{color:var(--stance);}
+  .phase-name.swing{color:var(--swing);}
+  .pct-readout{
+    font-size:14px;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+  .track-outer{position:relative;padding-top:26px;}
+  .segbar{
+    position:relative;
+    height:46px;
+    border-radius:8px;
+    overflow:hidden;
+    display:flex;
+    border:1px solid var(--line);
+  }
+  .seg{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    font-weight:600;
+    color:white;
+    text-align:center;
+    line-height:1.15;
+    padding:2px 4px;
+    overflow:hidden;
+  }
+  .seg.stance{background:var(--stance);}
+  .seg.swing{background:var(--swing);}
+  .seg + .seg{border-left:1px solid rgba(255,255,255,0.35);}
+  .seg-label{opacity:0.96;}
+  .phase-divider{
+    position:absolute;
+    top:-8px;
+    bottom:-8px;
+    width:2px;
+    background:var(--ink);
+    left:60%;
+  }
+  .phase-divider::after{
+    content:'stance ends';
+    position:absolute;
+    top:-20px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:10px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    font-weight:600;
+  }
+  .scrubber-marker{
+    position:absolute;
+    top:-10px;
+    width:2px;
+    height:66px;
+    background:var(--amber);
+    pointer-events:none;
+    transition:left 0.05s linear;
+  }
+  .scrubber-marker::before{
+    content:'';
+    position:absolute;
+    top:-7px;
+    left:-6px;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 0 3px white, 0 1px 4px rgba(0,0,0,0.25);
+  }
+  input[type=range]{
+    width:100%;
+    margin-top:18px;
+    -webkit-appearance:none;
+    height:4px;
+    background:var(--line);
+    border-radius:4px;
+    outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:20px;height:20px;border-radius:50%;
+    background:var(--amber);
+    border:3px solid white;
+    box-shadow:0 1px 4px rgba(0,0,0,0.3);
+    cursor:pointer;
+    margin-top:-8px;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;
+    background:var(--amber);
+    border:3px solid white;
+    box-shadow:0 1px 4px rgba(0,0,0,0.3);
+    cursor:pointer;
+  }
+  .controls{
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+    align-items:center;
+  }
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    border:none;
+    border-radius:9px;
+    padding:9px 16px;
+    cursor:pointer;
+    transition:transform 0.08s ease, opacity 0.15s ease;
+  }
+  button:active{transform:scale(0.96);}
+  #playBtn{background:var(--ink);color:white;}
+  .step-btn{background:var(--card);color:var(--ink);border:1px solid var(--line);}
+  .step-btn:hover{background:var(--stance-soft);}
+  .legend{
+    display:flex;
+    gap:18px;
+    margin-top:16px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:9px;height:9px;border-radius:50%;}
+  .dot.stance{background:var(--stance);}
+  .dot.swing{background:var(--swing);}
+
+  /* Detail + illustration row */
+  .row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  @media (max-width:620px){ .row{grid-template-columns:1fr;} }
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:20px;
+    box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);
+  }
+  .card h3{
+    margin:0 0 10px;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:14px;
+    text-transform:none;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+  .sub-phase-name{
+    font-size:19px;
+    font-weight:700;
+    margin-bottom:8px;
+  }
+  .sub-phase-desc{
+    font-size:14.5px;
+    line-height:1.55;
+    color:#33392f;
+  }
+  .foot-stage{
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    height:250px;
+  }
+  #footSvg{transition:transform 0.05s linear;}
+  .com-label{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;fill:var(--ink-soft);}
+
+  /* Glossary */
+  .glossary-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:15px;
+    font-weight:600;
+    margin:28px 0 12px;
+    color:var(--ink-soft);
+  }
+  .gloss-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+  }
+  @media (max-width:620px){ .gloss-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:480px){
+    .seg{font-size:9.5px;padding:2px 2px;}
+    .segbar{height:52px;}
+  }
+  .gloss-card{
+    background:var(--card);
+    border-radius:12px;
+    padding:14px;
+    box-shadow:0 1px 2px rgba(27,36,32,0.05);
+  }
+  .gloss-term{font-weight:700;font-size:13.5px;margin-bottom:4px;}
+  .gloss-def{font-size:12px;color:var(--ink-soft);line-height:1.4;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Gait Cycle Phase Explorer</h1>
+  <p class="subtitle">Scrub through one full walking gait cycle of a single limb. Check that you can name the phase, sub-phase, and roughly where it falls before class.</p>
+
+  <div class="timeline-card">
+    <div class="phase-heading">
+      <div class="phase-name" id="phaseName">Stance Phase</div>
+      <div class="pct-readout" id="pctReadout">0% of cycle</div>
+    </div>
+
+    <div class="track-outer">
+      <div class="phase-divider"></div>
+      <div class="scrubber-marker" id="marker"></div>
+      <div class="segbar" id="segbar"></div>
+    </div>
+
+    <input type="range" id="scrub" min="0" max="1000" value="0">
+
+    <div class="controls">
+      <button id="playBtn">Play</button>
+      <button class="step-btn" id="backBtn">◂ Prev sub-phase</button>
+      <button class="step-btn" id="fwdBtn">Next sub-phase ▸</button>
+    </div>
+
+    <div class="legend">
+      <span><span class="dot stance"></span>Stance — 60% of cycle</span>
+      <span><span class="dot swing"></span>Swing — 40% of cycle</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="card">
+      <h3>Current sub-phase</h3>
+      <div class="sub-phase-name" id="subName">Heel Strike</div>
+      <div class="sub-phase-desc" id="subDesc"></div>
+    </div>
+    <div class="card">
+      <h3>Leg &amp; whole-body center of mass (simple pendulum)</h3>
+      <div class="foot-stage">
+        <svg id="footSvg" width="220" height="250" viewBox="0 0 220 250">
+          <line x1="10" y1="207" x2="210" y2="207" stroke="#C9CEC9" stroke-width="3" stroke-linecap="round"/>
+          <g id="footGroup" transform="translate(110,195)">
+            <line x1="0" y1="0" x2="0" y2="-125" stroke="#1B2420" stroke-width="5" stroke-linecap="round" id="shin"/>
+            <path d="M -26 6 C -32 4 -33 -6 -26 -9 C -18 -12 -8 -12 2 -10 C 16 -8 30 -4 36 1 C 39 4 38 8 32 9 C 18 11 -4 11 -16 10 C -20 9.5 -24 8 -26 6 Z"
+                  fill="#2F6F63" id="footShape"/>
+            <circle cx="0" cy="-125" r="9" fill="#E8B23D" stroke="#fff" stroke-width="2.5" id="comDot"/>
+            <text x="0" y="-138" text-anchor="middle" class="com-label" id="comLabel">COM</text>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:12.5px; color:var(--ink-soft); margin:6px 2px 0; line-height:1.5;">The amber marker is the <b>whole-body</b> center of mass — not just this leg's — shown here riding atop a simplified single-leg pendulum.</p>
+    </div>
+  </div>
+
+  <div class="glossary-title">Quick reference</div>
+  <div class="gloss-grid">
+    <div class="gloss-card">
+      <div class="gloss-term">Step length</div>
+      <div class="gloss-def">Distance between one foot's contact and the other foot's next contact.</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Step width</div>
+      <div class="gloss-def">Side-to-side distance between the two feet during a step.</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Stride length</div>
+      <div class="gloss-def">Distance covered by one full gait cycle of a single limb — two steps.</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-term">Cadence</div>
+      <div class="gloss-def">Number of steps taken per minute.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const phases = [
+  {name:"Heel Strike",   start:0,  end:2,  side:"stance", desc:"The heel makes first contact with the ground. This single instant marks the start of the gait cycle for this limb."},
+  {name:"Loading Response", start:2, end:12, side:"stance", desc:"Body weight transfers onto the limb that just contacted the ground."},
+  {name:"Midstance",     start:12, end:31, side:"stance", desc:"The body's weight passes directly over the supporting foot."},
+  {name:"Propulsion",    start:31, end:55, side:"stance", desc:"The limb generates force to propel the body forward; the heel begins to lift."},
+  {name:"Terminal Stance",start:55, end:60, side:"stance", desc:"The final push through the toes before the foot leaves the ground."},
+  {name:"Initial Swing", start:60, end:73, side:"swing", desc:"The foot has just left the ground and begins moving forward through the air."},
+  {name:"Mid-Swing",     start:73, end:87, side:"swing", desc:"The limb passes underneath the body as it swings forward."},
+  {name:"Terminal Swing",start:87, end:100,side:"swing", desc:"The limb finishes decelerating and prepares to contact the ground again."}
+];
+
+const scrub = document.getElementById('scrub');
+const segbar = document.getElementById('segbar');
+const marker = document.getElementById('marker');
+const phaseName = document.getElementById('phaseName');
+const pctReadout = document.getElementById('pctReadout');
+const subName = document.getElementById('subName');
+const subDesc = document.getElementById('subDesc');
+const footGroup = document.getElementById('footGroup');
+const footShape = document.getElementById('footShape');
+const shin = document.getElementById('shin');
+const playBtn = document.getElementById('playBtn');
+const backBtn = document.getElementById('backBtn');
+const fwdBtn = document.getElementById('fwdBtn');
+
+// build segment bar
+phases.forEach(p=>{
+  const seg = document.createElement('div');
+  seg.className = 'seg ' + p.side;
+  const width = p.end-p.start;
+  seg.style.width = width + '%';
+  seg.innerHTML = width >= 8 ? '<span class="seg-label">'+p.name+'</span>' : '';
+  seg.title = p.name;
+  segbar.appendChild(seg);
+});
+
+let playing = false;
+let rafId = null;
+
+function currentPhaseIndex(pct){
+  return phases.findIndex(p => pct >= p.start && pct < p.end) ;
+}
+
+function footPose(pct, idx){
+  // idx-based simple pendulum pose: the whole leg (ankle to COM) rotates as one rigid body about the ankle.
+  let rotate = 0, lift = 0;
+  const p = phases[idx];
+  if(p.side === 'stance'){
+    if(p.name === 'Heel Strike') rotate = -18;
+    else if(p.name === 'Loading Response') rotate = -8;
+    else if(p.name === 'Midstance') rotate = 0;
+    else if(p.name === 'Propulsion') rotate = 20;
+    else if(p.name === 'Terminal Stance') rotate = 32;
+    lift = 0;
+  } else {
+    lift = -30;
+    if(p.name === 'Initial Swing') rotate = 26;
+    else if(p.name === 'Mid-Swing') rotate = 6;
+    else if(p.name === 'Terminal Swing') rotate = -10;
+  }
+  footGroup.setAttribute('transform', `translate(110,${195+lift}) rotate(${rotate})`);
+  const tone = p.side === 'stance' ? '#2F6F63' : '#B8622A';
+  footShape.setAttribute('fill', tone);
+  shin.setAttribute('stroke', p.side === 'stance' ? '#1B2420' : '#5A4A3C');
+}
+
+function render(){
+  const val = Number(scrub.value); // 0-1000
+  const pct = val/10; // 0-100
+  const idx = currentPhaseIndex(Math.min(pct,99.999));
+  const p = phases[idx];
+
+  phaseName.textContent = p.side === 'stance' ? 'Stance Phase' : 'Swing Phase';
+  phaseName.className = 'phase-name ' + p.side;
+  pctReadout.textContent = pct.toFixed(0) + '% of cycle';
+  subName.textContent = p.name;
+  subDesc.textContent = p.desc;
+  marker.style.left = pct + '%';
+  footPose(pct, idx);
+}
+
+scrub.addEventListener('input', render);
+
+playBtn.addEventListener('click', ()=>{
+  playing = !playing;
+  playBtn.textContent = playing ? 'Pause' : 'Play';
+  if(playing) tick();
+});
+
+function tick(){
+  if(!playing) return;
+  let v = Number(scrub.value) + 4;
+  if(v > 1000) v = 0;
+  scrub.value = v;
+  render();
+  rafId = setTimeout(tick, 30);
+}
+
+backBtn.addEventListener('click', ()=>{
+  const pct = Number(scrub.value)/10;
+  const idx = currentPhaseIndex(Math.min(pct,99.999));
+  const prevIdx = (idx-1+phases.length) % phases.length;
+  scrub.value = phases[prevIdx].start*10;
+  render();
+});
+fwdBtn.addEventListener('click', ()=>{
+  const pct = Number(scrub.value)/10;
+  const idx = currentPhaseIndex(Math.min(pct,99.999));
+  const nextIdx = (idx+1) % phases.length;
+  scrub.value = phases[nextIdx].start*10;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
