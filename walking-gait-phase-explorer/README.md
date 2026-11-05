@@ -4,7 +4,7 @@ Scrub through one full walking gait cycle of a single limb and name the phase an
 
 - **Topic:** Gait cycle phases and sub-phases
 - **Use:** Pre-class
-- **Unit / week:** [UNIT]
+- **Unit:** Unit 2: Introduction to Human Movement
 
 ## Learning objectives
 

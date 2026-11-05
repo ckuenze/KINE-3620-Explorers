@@ -4,7 +4,7 @@ Explore how vertical ground reaction force and center-of-mass (COM) position, ve
 
 - **Topic:** CMJ kinetics, the impulse–momentum theorem, work, and jump height
 - **Use:** [PRE/IN]
-- **Unit / week:** [UNIT]
+- **Unit:** Unit 3: Movement and Human Performance
 
 ## Learning objectives
 

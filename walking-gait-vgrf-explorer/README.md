@@ -4,7 +4,7 @@ Explore the vertical ground reaction force (vGRF) curve across one stance phase 
 
 - **Topic:** Ground reaction forces in walking
 - **Use:** In-class
-- **Unit / week:** [UNIT]
+- **Unit:** Unit 2: Introduction to Human Movement
 
 ## Learning objectives
 

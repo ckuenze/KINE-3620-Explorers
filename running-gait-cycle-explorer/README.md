@@ -4,7 +4,7 @@ Compare walking and running in two ways: how the gait cycle is structured (doubl
 
 - **Topic:** Walking vs. running mechanics
 - **Use:** [PRE/IN]
-- **Unit / week:** [UNIT]
+- **Unit:** Unit 2: Introduction to Human Movement
 
 ## Learning objectives
 

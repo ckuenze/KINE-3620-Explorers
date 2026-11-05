@@ -4,7 +4,7 @@ Change how high the center of mass (COM) sits and how far the body leans, and se
 
 - **Topic:** Balance, COM height, and gravitational torque
 - **Use:** [PRE/IN]
-- **Unit / week:** [UNIT]
+- **Unit:** Unit 2: Introduction to Human Movement
 
 ## Learning objectives
 

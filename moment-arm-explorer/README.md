@@ -4,7 +4,7 @@ Use the elbow as a model to see how a single joint angle changes both the intern
 
 - **Topic:** Moment arms and torque vs. joint angle
 - **Use:** Pre-class
-- **Unit / week:** [UNIT]
+- **Unit:** Unit 2: Introduction to Human Movement
 
 ## Learning objectives
 

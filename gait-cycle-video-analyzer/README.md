@@ -4,7 +4,7 @@ Load a frontal-plane and a sagittal-plane walking video, step through them frame
 
 - **Topic:** 2D video analysis of walking gait
 - **Use:** In-class
-- **Unit / week:** [UNIT]
+- **Unit:** Unit 2: Introduction to Human Movement
 
 ## Learning objectives
 
