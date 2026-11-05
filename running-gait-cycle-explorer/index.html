@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Walking vs. Running Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158;
+    --stance:#2F6F63; --rust:#B8622A; --amber:#E8B23D; --line-blue:#3A5B8C; --purple:#7A5C8A; --line:#D8DED7; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:28px 18px 60px;}
+  .wrap{max-width:1040px;margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 20px;max-width:700px;line-height:1.5;}
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);margin-bottom:16px;}
+  h2.window-title{margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;}
+  .window-sub{color:var(--ink-soft);font-size:13.5px;margin:0 0 16px;line-height:1.5;}
+  h3{margin:0 0 10px;font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:var(--ink-soft);}
+  .note{font-size:12.5px;line-height:1.6;color:#33392f;}
+
+  .control{margin-bottom:10px;}
+  .control-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .control-label{font-weight:700;font-size:13.5px;}
+  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:var(--amber);}
+  input[type=range]{width:100%;-webkit-appearance:none;height:4px;background:var(--line);border-radius:4px;outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;margin-top:-8px;}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
+
+  .gait-row{margin-bottom:22px;}
+  .gait-row:last-child{margin-bottom:0;}
+  .gait-row h4{margin:0 0 6px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;}
+  .tl-row{display:flex;align-items:center;gap:8px;}
+  .tl-side-label{width:16px;flex-shrink:0;font-family:'Space Grotesk',sans-serif;font-size:11.5px;font-weight:700;color:var(--ink-soft);text-align:center;}
+  .timeline{flex:1;position:relative;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--line);}
+  .tl-seg{position:absolute;top:0;bottom:0;}
+  .tl-labels{flex:1;display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-soft);margin-top:3px;}
+  .overlap-row{flex:1;height:14px;position:relative;margin-top:3px;}
+  .overlap-seg{position:absolute;top:0;bottom:0;border-radius:4px;}
+
+  .legend{display:flex;gap:16px;justify-content:center;margin-top:10px;font-size:12px;font-weight:600;color:var(--ink-soft);flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:9px;height:9px;border-radius:50%;}
+  .sw{width:13px;height:9px;border-radius:2px;}
+
+  .toggles{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .toggle-btn{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;font-weight:700;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:7px;color:var(--ink-soft);}
+  .toggle-btn .sw{opacity:0.35;}
+  .toggle-btn.active{border-color:currentColor;color:var(--ink);}
+  .toggle-btn.active .sw{opacity:1;}
+
+  .axis-mode-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .axis-mode-label{font-size:12.5px;font-weight:700;color:var(--ink-soft);}
+  .axis-mode-group{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:9px;}
+  .axis-mode-btn{border:none;background:transparent;padding:6px 13px;border-radius:7px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--ink-soft);font-family:'Inter',sans-serif;}
+  .axis-mode-btn.active{background:var(--ink);color:#fff;}
+
+  .feat-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .feat-btn{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--ink-soft);}
+  .feat-btn.active{border-color:var(--line-blue);background:#EEF2F7;color:var(--ink);}
+  .feat-explain{margin-top:10px;font-size:13px;line-height:1.5;color:#33392f;background:#F1F4F0;border-radius:10px;padding:11px 13px;min-height:20px;}
+
+  svg.chart{width:100%;height:auto;display:block;}
+  .axis-label{font-size:11px;fill:var(--ink-soft);font-family:'Inter',sans-serif;}
+  .readout{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--ink-soft);}
+  .readout b{font-family:'Space Grotesk',sans-serif;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Walking vs. Running Explorer</h1>
+  <p class="subtitle">Two comparisons: how the gait cycle itself is restructured (double support vs. float phase), and how the ground reaction force curve changes shape — including what a heel strike's impact transient actually looks like next to a forefoot strike without one.</p>
+
+  <div class="card">
+    <h2 class="window-title">Gait cycle structure: double support vs. float phase</h2>
+    <p class="window-sub">Each bar shows one limb's stance (solid) and swing (light) across a full gait cycle, with the left and right limbs offset by half a cycle — exactly like a real step pattern. The strip below each pair marks what both limbs are doing <i>together</i> at each moment.</p>
+
+    <div class="control">
+      <div class="control-head">
+        <span class="control-label">Running pace</span>
+        <span class="control-val" id="paceVal">Easy jog</span>
+      </div>
+      <input type="range" id="paceSlider" min="0" max="100" value="20" step="1">
+    </div>
+
+    <div class="gait-row">
+      <h4>Walking</h4>
+      <div class="tl-row"><span class="tl-side-label">R</span><div class="timeline" id="walkTop"></div></div>
+      <div class="tl-row" style="margin-top:2px;"><span class="tl-side-label">L</span><div class="timeline" id="walkBottom"></div></div>
+      <div class="tl-row"><span class="tl-side-label"></span><div class="overlap-row" id="walkOverlap"></div></div>
+      <div class="tl-row"><span class="tl-side-label"></span><div class="tl-labels"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
+    </div>
+
+    <div class="gait-row">
+      <h4>Running</h4>
+      <div class="tl-row"><span class="tl-side-label">R</span><div class="timeline" id="runTop"></div></div>
+      <div class="tl-row" style="margin-top:2px;"><span class="tl-side-label">L</span><div class="timeline" id="runBottom"></div></div>
+      <div class="tl-row"><span class="tl-side-label"></span><div class="overlap-row" id="runOverlap"></div></div>
+      <div class="tl-row"><span class="tl-side-label"></span><div class="tl-labels"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
+    </div>
+
+    <div class="legend">
+      <span><span class="sw" style="background:#2F6F63;"></span>Stance</span>
+      <span><span class="sw" style="background:#2F6F63; opacity:0.3;"></span>Swing</span>
+      <span><span class="sw" style="background:#3A5B8C;"></span>Double support (both down)</span>
+      <span><span class="sw" style="background:#B8622A;"></span>Float phase (neither down)</span>
+    </div>
+    <p class="note" style="margin-top:12px;">Stance share and float-phase duration here follow the typical pattern of shrinking stance as pace increases — illustrative, not measured data from a specific runner.</p>
+  </div>
+
+  <div class="card">
+    <h2 class="window-title">Ground reaction force: walking vs. running</h2>
+    <p class="window-sub">All three curves are normalized to their own stance phase (0–100%) so you can compare shape directly — running's stance is actually much shorter in real time, which the gait-cycle panel above already shows.</p>
+    <p class="note" id="paceEcho" style="margin-bottom:14px;">Running curves below reflect the <b>Running pace</b> slider above: <span id="paceEchoVal">Easy jog</span>.</p>
+
+    <div class="toggles" id="curveToggles">
+      <button class="toggle-btn active" data-curve="walk" style="color:#2F6F63;"><span class="sw" style="background:#2F6F63;"></span>Walking</button>
+      <button class="toggle-btn active" data-curve="forefoot" style="color:#3A5B8C;"><span class="sw" style="background:#3A5B8C;"></span>Running — forefoot strike (no impact transient)</button>
+      <button class="toggle-btn active" data-curve="rearfoot" style="color:#B8622A;"><span class="sw" style="background:#B8622A;"></span>Running — rearfoot strike (with impact transient)</button>
+    </div>
+
+    <div class="axis-mode-row">
+      <span class="axis-mode-label">X-axis:</span>
+      <div class="axis-mode-group" id="axisModeGroup">
+        <button class="axis-mode-btn active" data-mode="pct">% of stance phase</button>
+        <button class="axis-mode-btn" data-mode="time">Time (seconds)</button>
+      </div>
+    </div>
+
+    <svg class="chart" id="grfChart" viewBox="0 0 640 320" preserveAspectRatio="xMidYMid meet"></svg>
+    <input type="range" id="grfScrub" min="0" max="1000" value="80">
+    <div class="readout" id="grfReadout"></div>
+
+    <div class="feat-row" id="featRow">
+      <button class="feat-btn" data-feat="impact">Impact transient</button>
+      <button class="feat-btn" data-feat="prop">Propulsive peak</button>
+      <button class="feat-btn" data-feat="rate">Loading rate</button>
+    </div>
+    <div class="feat-explain" id="featExplain">Click a feature above to see where it falls on the curve(s).</div>
+
+    <p class="note" style="margin-top:14px;">Curves are illustrative models matched to the typical shapes described in the reading and lecture, not force-plate data from a specific runner. Real impact transients, when present, typically occur within the first ~50 ms of stance.</p>
+  </div>
+</div>
+
+<script>
+// ---------------- Gait cycle structure panel ----------------
+const paceSlider = document.getElementById('paceSlider');
+const paceVal = document.getElementById('paceVal');
+
+function paceLabel(p){
+  if(p<15) return 'Easy jog';
+  if(p<40) return 'Moderate run';
+  if(p<70) return 'Fast run';
+  return 'Sprint';
+}
+
+function walkingStancePct(){ return 60; } // fixed, matches earlier gait-cycle unit
+function runningStancePct(pace){
+  // shrinks from ~42% at easy jog to ~22% at sprint
+  return 42 - (pace/100)*20;
+}
+
+function drawBilateralTimeline(topEl, bottomEl, overlapEl, stancePct, gapColor, gapLabel){
+  const swingPct = 100 - stancePct;
+  // Right limb: stance 0..stancePct, swing stancePct..100
+  // Left limb: offset by 50
+  function seg(el, offsetPct){
+    el.innerHTML = '';
+    const stanceStart = offsetPct % 100;
+    // draw two arcs: stance region and swing region, handling wraparound
+    function addSeg(start, end, cls){
+      start = ((start%100)+100)%100;
+      let span = end-start;
+      const div = document.createElement('div');
+      div.className = 'tl-seg';
+      div.style.left = start+'%';
+      div.style.width = Math.min(span,100-start)+'%';
+      div.style.background = '#2F6F63';
+      div.style.opacity = cls==='swing' ? 0.3 : 1;
+      el.appendChild(div);
+      if(span > (100-start)){
+        const div2 = document.createElement('div');
+        div2.className='tl-seg';
+        div2.style.left='0%';
+        div2.style.width=(span-(100-start))+'%';
+        div2.style.background='#2F6F63';
+        div2.style.opacity = cls==='swing'?0.3:1;
+        el.appendChild(div2);
+      }
+    }
+    addSeg(stanceStart, stanceStart+stancePct, 'stance');
+    addSeg(stanceStart+stancePct, stanceStart+100, 'swing');
+  }
+  seg(topEl, 0);      // Right limb reference, starts at 0
+  seg(bottomEl, 50);  // Left limb, offset 50%
+
+  // compute stance-coverage count at each % to find overlap (double support) and gaps (float)
+  overlapEl.innerHTML = '';
+  const N = 400;
+  let state = null, segStart = 0;
+  for(let i=0;i<=N;i++){
+    const pct = (i/N)*100;
+    const rightStance = isStance(pct, 0, stancePct);
+    const leftStance = isStance(pct, 50, stancePct);
+    const count = (rightStance?1:0)+(leftStance?1:0);
+    let s = count===2 ? 'double' : (count===0 ? 'float' : 'single');
+    if(s !== state){
+      if(state==='double' || state==='float'){
+        addOverlapSeg(overlapEl, segStart, pct, state==='double'?'#3A5B8C':'#B8622A');
+      }
+      state = s; segStart = pct;
+    }
+  }
+  if(state==='double' || state==='float'){
+    addOverlapSeg(overlapEl, segStart, 100, state==='double'?'#3A5B8C':'#B8622A');
+  }
+}
+function isStance(pct, offset, stancePct){
+  let rel = ((pct-offset)%100+100)%100;
+  return rel < stancePct;
+}
+function addOverlapSeg(el, start, end, color){
+  const div = document.createElement('div');
+  div.className='overlap-seg';
+  div.style.left = start+'%';
+  div.style.width = (end-start)+'%';
+  div.style.background = color;
+  el.appendChild(div);
+}
+
+function renderGaitPanel(){
+  const pace = Number(paceSlider.value);
+  paceVal.textContent = paceLabel(pace);
+
+  drawBilateralTimeline(
+    document.getElementById('walkTop'), document.getElementById('walkBottom'), document.getElementById('walkOverlap'),
+    walkingStancePct()
+  );
+  drawBilateralTimeline(
+    document.getElementById('runTop'), document.getElementById('runBottom'), document.getElementById('runOverlap'),
+    runningStancePct(pace)
+  );
+}
+paceSlider.addEventListener('input', ()=>{ renderGaitPanel(); renderGRF(); });
+
+// ---------------- GRF comparison panel ----------------
+function gauss(x, mu, sigma){ return Math.exp(-((x-mu)*(x-mu))/(2*sigma*sigma)); }
+function envelope(x, p){ return Math.pow(Math.max(Math.sin(Math.PI*x/100),0.0001), p); }
+
+function walkGRF(x){
+  const peakB=1.40, peakC=1.42, dip=0.265;
+  const raw = 1 + (peakB-1)*gauss(x,20,9) + (peakC-1)*gauss(x,80,9) - dip*gauss(x,50,14);
+  return Math.max(raw*envelope(x,0.32), 0);
+}
+// pace (0-100) scales running peak magnitude with diminishing returns toward an upper limit,
+// and shrinks real stance duration — shared with the gait-cycle panel's pace slider
+function grfPaceScale(pace){ return 1 + 0.55*(1-Math.exp(-pace/60)); }
+function paceStanceDuration(pace){ return 0.28 - (pace/100)*0.16; } // seconds, 0.28s -> 0.12s
+
+function forefootGRF(x, pace){
+  const scale = grfPaceScale(pace===undefined?20:pace);
+  return Math.max(2.77*scale*gauss(x,43,20)*envelope(x,0.3), 0);
+}
+function rearfootGRF(x, pace){
+  const scale = grfPaceScale(pace===undefined?20:pace);
+  const raw = scale*(2.49*gauss(x,13,6.5) + 2.77*gauss(x,43,14));
+  return Math.max(raw*envelope(x,0.3), 0);
+}
+const CURVES = {
+  walk: {fn:(x)=>walkGRF(x), color:'#2F6F63', label:'Walking', durationFn:()=>0.65},
+  forefoot: {fn:(x)=>forefootGRF(x, currentPace()), color:'#3A5B8C', label:'Running — forefoot', durationFn:()=>paceStanceDuration(currentPace())},
+  rearfoot: {fn:(x)=>rearfootGRF(x, currentPace()), color:'#B8622A', label:'Running — rearfoot', durationFn:()=>paceStanceDuration(currentPace())}
+};
+function currentPace(){ return Number(paceSlider.value); }
+let activeCurves = {walk:true, forefoot:true, rearfoot:true};
+let activeFeature = null;
+let axisMode = 'pct'; // 'pct' or 'time'
+
+document.querySelectorAll('.toggle-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const c = btn.dataset.curve;
+    activeCurves[c] = !activeCurves[c];
+    btn.classList.toggle('active', activeCurves[c]);
+    renderGRF();
+  });
+});
+document.querySelectorAll('.feat-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const f = btn.dataset.feat;
+    activeFeature = (activeFeature===f) ? null : f;
+    document.querySelectorAll('.feat-btn').forEach(b=>b.classList.remove('active'));
+    if(activeFeature) btn.classList.add('active');
+    renderGRF();
+  });
+});
+document.getElementById('axisModeGroup').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.axis-mode-btn');
+  if(!btn) return;
+  axisMode = btn.dataset.mode;
+  document.querySelectorAll('.axis-mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGRF();
+});
+
+function findPeak(fn, xMin, xMax){
+  let bestX=xMin, bestY=-Infinity;
+  for(let x=xMin;x<=xMax;x+=0.5){ const y=fn(x); if(y>bestY){bestY=y;bestX=x;} }
+  return {x:bestX,y:bestY};
+}
+
+const MAX_TIME = 0.7; // seconds, shared axis ceiling for time mode
+
+// convert an intrinsic %-of-stance position for a given curve into the current axis's x-value
+function toAxisX(key, pctValue){
+  if(axisMode==='pct') return pctValue;
+  return (pctValue/100) * CURVES[key].durationFn();
+}
+
+const grfScrub = document.getElementById('grfScrub');
+grfScrub.addEventListener('input', renderGRF);
+
+function renderGRF(){
+  document.getElementById('paceEchoVal').textContent = paceLabel(currentPace());
+  const svgEl = document.getElementById('grfChart');
+  const W=640,H=320, padL=46,padR=18,padT=18,padB=34;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const yMax=4.3;
+  const xDomainMax = axisMode==='pct' ? 100 : MAX_TIME;
+  const xP = x => padL + (x/xDomainMax)*plotW;
+  const yP = y => padT + (1-y/yMax)*plotH;
+  const scrubFrac = Number(grfScrub.value)/1000; // 0..1 across whichever domain is active
+  const xCursor = scrubFrac * xDomainMax;
+
+  let svg='';
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#D8DED7" stroke-width="1.5"/>`;
+  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#D8DED7" stroke-width="1.5"/>`;
+  [0,1,2,3,4].forEach(v=>{
+    const y=yP(v);
+    svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#EDEFEC" stroke-width="1"/>`;
+    svg += `<text x="${padL-8}" y="${y+4}" text-anchor="end" class="axis-label">${v.toFixed(0)}</text>`;
+  });
+  if(axisMode==='pct'){
+    [0,20,40,60,80,100].forEach(v=>{
+      svg += `<text x="${xP(v)}" y="${H-padB+18}" text-anchor="middle" class="axis-label">${v}%</text>`;
+    });
+    svg += `<text x="${W-padR}" y="${H-8}" text-anchor="end" class="axis-label">% of stance phase</text>`;
+  } else {
+    [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7].forEach(v=>{
+      svg += `<text x="${xP(v)}" y="${H-padB+18}" text-anchor="middle" class="axis-label">${v.toFixed(1)}s</text>`;
+    });
+    svg += `<text x="${W-padR}" y="${H-8}" text-anchor="end" class="axis-label">Time since initial contact (s)</text>`;
+  }
+  svg += `<text x="${padL}" y="14" class="axis-label">Force (BW)</text>`;
+  svg += `<line x1="${padL}" y1="${yP(1)}" x2="${W-padR}" y2="${yP(1)}" stroke="#9AA39B" stroke-width="1.3" stroke-dasharray="5,4"/>`;
+  svg += `<text x="${padL+4}" y="${yP(1)-6}" class="axis-label">1.0 BW</text>`;
+
+  Object.keys(CURVES).forEach(key=>{
+    if(!activeCurves[key]) return;
+    const c = CURVES[key];
+    let d='';
+    let started = false;
+    for(let pct=0;pct<=100;pct+=1){
+      const xAxis = toAxisX(key, pct);
+      if(axisMode==='time' && xAxis > c.durationFn()) break;
+      const px=xP(xAxis), py=yP(c.fn(pct));
+      d += (!started?'M':'L')+px.toFixed(1)+' '+py.toFixed(1)+' ';
+      started = true;
+    }
+    svg += `<path d="${d}" fill="none" stroke="${c.color}" stroke-width="3"/>`;
+  });
+
+  // feature highlighting (positions defined intrinsically in %stance, converted to current axis)
+  if(activeFeature==='impact' && activeCurves.rearfoot){
+    const pk = findPeak(CURVES.rearfoot.fn, 2, 22);
+    const ax = toAxisX('rearfoot', pk.x);
+    svg += `<line x1="${xP(ax)}" y1="${yP(pk.y)}" x2="${xP(ax)}" y2="${H-padB}" stroke="#B8622A" stroke-width="1.3" stroke-dasharray="3,3"/>`;
+    svg += `<circle cx="${xP(ax)}" cy="${yP(pk.y)}" r="6" fill="#B8622A" stroke="#fff" stroke-width="2"/>`;
+    const posLabel = axisMode==='pct' ? `${pk.x.toFixed(0)}%` : `${ax.toFixed(2)}s`;
+    svg += `<text x="${xP(ax)+8}" y="${yP(pk.y)-8}" class="axis-label" font-weight="700" fill="#B8622A">${pk.y.toFixed(2)} BW at ${posLabel}</text>`;
+  }
+  if(activeFeature==='prop'){
+    ['forefoot','rearfoot'].forEach(key=>{
+      if(!activeCurves[key]) return;
+      const c = CURVES[key];
+      const pk = findPeak(c.fn, 35, 95);
+      const ax = toAxisX(key, pk.x);
+      svg += `<circle cx="${xP(ax)}" cy="${yP(pk.y)}" r="6" fill="${c.color}" stroke="#fff" stroke-width="2"/>`;
+      svg += `<text x="${xP(ax)+8}" y="${yP(pk.y)-8}" class="axis-label" font-weight="700" fill="${c.color}">${pk.y.toFixed(2)} BW</text>`;
+    });
+  }
+  if(activeFeature==='rate'){
+    ['walk','forefoot','rearfoot'].forEach(key=>{
+      if(!activeCurves[key]) return;
+      const c = CURVES[key];
+      const p0=1, p1 = key==='rearfoot' ? 13 : 18;
+      const ax0=toAxisX(key,p0), ax1=toAxisX(key,p1);
+      svg += `<line x1="${xP(ax0)}" y1="${yP(c.fn(p0))}" x2="${xP(ax1)}" y2="${yP(c.fn(p1))}" stroke="${c.color}" stroke-width="2.5" stroke-dasharray="4,3"/>`;
+    });
+  }
+
+  // scrubber markers + readout
+  let readoutParts = [];
+  Object.keys(CURVES).forEach(key=>{
+    if(!activeCurves[key]) return;
+    const c = CURVES[key];
+    if(axisMode==='time' && xCursor > c.durationFn()){
+      readoutParts.push(`<span>${c.label}: <b style="color:${c.color};">stance ended</b></span>`);
+      return;
+    }
+    const pct = axisMode==='pct' ? xCursor : (xCursor/c.durationFn())*100;
+    const val = c.fn(pct);
+    svg += `<circle cx="${xP(xCursor)}" cy="${yP(val)}" r="5" fill="${c.color}" stroke="#fff" stroke-width="2"/>`;
+    readoutParts.push(`<span>${c.label}: <b style="color:${c.color};">${val.toFixed(2)}</b> BW</span>`);
+  });
+  svg += `<line x1="${xP(xCursor)}" y1="${padT}" x2="${xP(xCursor)}" y2="${H-padB}" stroke="#E8B23D" stroke-width="1.3" stroke-dasharray="3,3" opacity="0.7"/>`;
+
+  svgEl.innerHTML = svg;
+  const cursorLabel = axisMode==='pct' ? `${xCursor.toFixed(0)}%` : `${xCursor.toFixed(2)}s`;
+  document.getElementById('grfReadout').innerHTML = `<span>${axisMode==='pct'?'% stance':'time'}: <b>${cursorLabel}</b></span>` + readoutParts.join('');
+
+  const featText = {
+    impact: 'The impact transient is a rapid spike within roughly the first 50 ms of stance, seen in rearfoot strikers — the foot (and heel) decelerate abruptly against the ground. Forefoot strikers typically do not show this spike at all, which is why that curve stays smooth here.',
+    prop: 'The propulsive peak is the later, usually larger peak as the body pushes off the ground — present in both running strike patterns, absent as a sharp running-style peak in walking.',
+    rate: 'Loading rate is how steeply the curve rises before its first peak — notice how much steeper the rearfoot curve\'s initial rise is compared to the forefoot curve\'s smoother ramp.'
+  };
+  document.getElementById('featExplain').textContent = activeFeature ? featText[activeFeature] : 'Click a feature above to see where it falls on the curve(s).';
+}
+
+renderGaitPanel();
+renderGRF();
+</script>
+</body>
+</html>
