@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moment Arms &amp; Torque vs. Joint Angle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5;
+    --card:#FFFFFF;
+    --ink:#1B2420;
+    --ink-soft:#586158;
+    --stance:#2F6F63;
+    --rust:#B8622A;
+    --amber:#E8B23D;
+    --line:#D8DED7;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:1000px;margin:0 auto;}
+  h1{
+    font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);
+    font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;
+  }
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 24px;max-width:640px;line-height:1.5;}
+  .card{
+    background:var(--card);border-radius:var(--radius);padding:20px;
+    box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);
+    margin-bottom:16px;
+  }
+  h2.window-title{
+    margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;
+  }
+  .window-sub{color:var(--ink-soft);font-size:13.5px;margin:0 0 16px;line-height:1.5;}
+
+  .control{margin-bottom:16px;}
+  .control:last-child{margin-bottom:0;}
+  .control-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .control-label{font-weight:700;font-size:14px;}
+  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;}
+  .control-val.muscle{color:var(--stance);}
+  .control-val.weight{color:var(--rust);}
+  .control-val.angle{color:var(--amber);}
+  input[type=range]{
+    width:100%;-webkit-appearance:none;height:4px;background:var(--line);border-radius:4px;outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+    background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;margin-top:-8px;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;background:var(--amber);
+    border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;
+  }
+
+  .controls-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media (max-width:620px){ .controls-row{grid-template-columns:1fr;} }
+  @media (min-width:621px){ .weight-control{grid-column:2;} }
+
+  .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:700px){ .charts-row{grid-template-columns:1fr;} }
+  .elbow-diagram-wrap{display:flex;justify-content:center;margin-bottom:8px;}
+  .chart-box h3{
+    margin:0 0 8px;font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:var(--ink-soft);
+    text-align:center;
+  }
+  svg.chart{width:100%;height:auto;display:block;}
+  .axis-label{font-size:11px;fill:var(--ink-soft);font-family:'Inter',sans-serif;}
+  .readout-line{text-align:center;font-size:13.5px;margin-top:8px;color:var(--ink-soft);}
+  .readout-line b{font-family:'Space Grotesk',sans-serif;}
+
+  .verdict{
+    margin-top:14px;border-radius:12px;padding:14px 16px;text-align:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;
+  }
+  .verdict.flex{background:#E4EEEA;color:var(--stance);}
+  .verdict.ext{background:#F5E7DC;color:var(--rust);}
+  .verdict.hold{background:#F1F4F0;color:var(--ink-soft);}
+
+  .legend{display:flex;gap:18px;justify-content:center;margin-top:10px;font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:9px;height:9px;border-radius:50%;}
+
+  .note{font-size:13.5px;line-height:1.6;color:#33392f;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Moment Arms &amp; Torque vs. Joint Angle</h1>
+  <p class="subtitle">One angle, two things it changes. Drag the angle slider once — both windows below update together.</p>
+
+  <div class="card">
+    <div class="controls-row">
+      <div class="control">
+        <div class="control-head">
+          <span class="control-label">Joint angle (θ)</span>
+          <span class="control-val angle" id="thetaVal">45°</span>
+        </div>
+        <input type="range" id="thetaSlider" min="0" max="150" value="45" step="1">
+        <div class="window-sub" style="margin:6px 0 0;">0° = hanging straight down · 150° = curled up near the shoulder</div>
+      </div>
+      <div class="control">
+        <div class="control-head">
+          <span class="control-label">Muscle force (constant)</span>
+          <span class="control-val muscle" id="fMuscleVal">350 N</span>
+        </div>
+        <input type="range" id="fMuscleSlider" min="0" max="800" value="350" step="10">
+      </div>
+      <div class="control weight-control">
+        <div class="control-head">
+          <span class="control-label">Segment weight (constant)</span>
+          <span class="control-val weight" id="wSegVal">20 N</span>
+        </div>
+        <input type="range" id="wSegSlider" min="5" max="40" value="20" step="1">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="window-title">Window 1 — How the moment arms change with angle</h2>
+    <p class="window-sub">Force doesn't enter into this window at all — just geometry. Watch how differently the two moment arms respond to the same angle change.</p>
+    <div class="elbow-diagram-wrap">
+      <svg class="chart" id="elbowDiagram" viewBox="0 0 320 330" preserveAspectRatio="xMidYMid meet" style="max-width:380px;"></svg>
+    </div>
+    <div class="charts-row">
+      <div class="chart-box">
+        <h3>External (weight) moment arm</h3>
+        <svg class="chart" id="chartExtArm" viewBox="0 0 320 220" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="readout-line">d = <b id="dWeightOut">0.14</b> m</div>
+      </div>
+      <div class="chart-box">
+        <h3>Internal (muscle) moment arm</h3>
+        <svg class="chart" id="chartMuscleArm" viewBox="0 0 320 220" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="readout-line">d<sub>m</sub> = <b id="dMuscleOut">3.9</b> cm</div>
+      </div>
+    </div>
+    <p class="note" style="margin-top:14px;">The weight's moment arm is the horizontal distance to the center of mass — that works because gravity's line of action is always vertical. The muscle's moment arm isn't a horizontal (or any straight-line) distance to the insertion point — it's the perpendicular distance to the muscle's whole line of pull, which real tendons bend around the joint. That's a wrapping effect a simple diagram can't draw exactly, so the muscle curve here follows a typical illustrative pattern — smallest at the extremes of the joint's range, largest somewhere in the middle — rather than being measured from the insertion point shown. Real muscle moment-arm curves vary by muscle and by person.</p>
+  </div>
+
+  <div class="card">
+    <h2 class="window-title">Window 2 — How torque changes with angle (force held constant)</h2>
+    <p class="window-sub">Same muscle force and same segment weight at every angle on this chart — only the moment arms (from Window 1) are changing. That's the entire reason these curves aren't flat.</p>
+    <div class="chart-box">
+      <svg class="chart" id="chartTorque" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:#2F6F63;"></span>Internal (muscle) torque</span>
+      <span><span class="dot" style="background:#B8622A;"></span>External (weight) torque</span>
+    </div>
+    <div class="verdict" id="verdict">Flexion — the muscle wins</div>
+  </div>
+</div>
+
+<script>
+const L_COM = 0.20;
+const D_MIN = 0.015, D_MAX = 0.045;
+
+function externalArm(thetaDeg){ return L_COM * Math.sin(thetaDeg*Math.PI/180); }
+function muscleArm(thetaDeg){
+  const t = Math.max(0, Math.min(150, thetaDeg));
+  return D_MIN + (D_MAX-D_MIN) * Math.sin(Math.PI*t/150);
+}
+
+const thetaSlider = document.getElementById('thetaSlider');
+const fMuscleSlider = document.getElementById('fMuscleSlider');
+const wSegSlider = document.getElementById('wSegSlider');
+
+// ---- generic small line chart ----
+function drawLineChart(svgEl, opts){
+  const {W=320,H=220,padL=44,padR=16,padT=14,padB=30,
+         xMin=0,xMax=150,yMin=0,yMax,
+         curves, markerX, xLabel, yTicks} = opts;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xP = x => padL + (x-xMin)/(xMax-xMin)*plotW;
+  const yP = y => padT + (1-(y-yMin)/(yMax-yMin))*plotH;
+
+  let svg='';
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#D8DED7" stroke-width="1.5"/>`;
+  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#D8DED7" stroke-width="1.5"/>`;
+
+  (yTicks||[]).forEach(v=>{
+    const y=yP(v);
+    svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#EDEFEC" stroke-width="1"/>`;
+    svg += `<text x="${padL-6}" y="${y+4}" text-anchor="end" class="axis-label">${v}</text>`;
+  });
+  [0,50,100,150].forEach(v=>{
+    if(v<xMin||v>xMax) return;
+    const x=xP(v);
+    svg += `<text x="${x}" y="${H-padB+16}" text-anchor="middle" class="axis-label">${v}°</text>`;
+  });
+  if(xLabel) svg += `<text x="${(padL+W-padR)/2}" y="${H-6}" text-anchor="middle" class="axis-label">${xLabel}</text>`;
+
+  curves.forEach(c=>{
+    let d='';
+    for(let x=xMin;x<=xMax;x+=1){
+      const px=xP(x), py=yP(c.fn(x));
+      d += (x===xMin?'M':'L')+px.toFixed(1)+' '+py.toFixed(1)+' ';
+    }
+    svg += `<path d="${d}" fill="none" stroke="${c.color}" stroke-width="3"/>`;
+  });
+
+  curves.forEach(c=>{
+    const mx=xP(markerX), my=yP(c.fn(markerX));
+    svg += `<line x1="${mx}" y1="${padT}" x2="${mx}" y2="${H-padB}" stroke="#E8B23D" stroke-width="1.3" stroke-dasharray="3,3" opacity="0.7"/>`;
+    svg += `<circle cx="${mx}" cy="${my}" r="5.5" fill="${c.color}" stroke="#fff" stroke-width="2"/>`;
+  });
+
+  svgEl.innerHTML = svg;
+}
+
+function drawElbowDiagram(theta, dMuscle, dWeight){
+  const svgEl = document.getElementById('elbowDiagram');
+  const elbowX=110, elbowY=160, forearmLen=150, upperArmLen=45;
+  const thetaRad = theta*Math.PI/180;
+  const shoulderX = elbowX, shoulderY = elbowY - upperArmLen;
+
+  const handX = elbowX + forearmLen*Math.sin(thetaRad);
+  const handY = elbowY + forearmLen*Math.cos(thetaRad);
+  const comFrac = 0.20/0.28;
+  const comX = elbowX + (handX-elbowX)*comFrac;
+  const comY = elbowY + (handY-elbowY)*comFrac;
+
+  // muscle insertion point: a fixed fraction along the forearm, close to the elbow —
+  // roughly where the biceps tendon attaches to the radius
+  const insertFrac = 0.16;
+  const insertX = elbowX + (handX-elbowX)*insertFrac;
+  const insertY = elbowY + (handY-elbowY)*insertFrac;
+  // muscle origin: partway up the upper-arm stub
+  const originFrac = 0.4;
+  const originX = shoulderX;
+  const originY = elbowY + (shoulderY-elbowY)*originFrac;
+
+  const musclePxPerCm = 8;
+  const muscleLen = Math.max(6, dMuscle*100*musclePxPerCm);
+  const muscleLineY = elbowY - 24;
+  const muscleEndX = elbowX + muscleLen;
+
+  let svg = '';
+  svg += `<defs><marker id="arrowW" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+           <path d="M0,0 L8,4 L0,8 Z" fill="#1B2420"/></marker></defs>`;
+
+  // upper arm stub
+  svg += `<line x1="${shoulderX}" y1="${shoulderY}" x2="${elbowX}" y2="${elbowY}" stroke="#586158" stroke-width="12" stroke-linecap="round"/>`;
+
+  // vertical reference through elbow
+  svg += `<line x1="${elbowX}" y1="${elbowY}" x2="${elbowX}" y2="${elbowY+forearmLen}" stroke="#C9CEC9" stroke-width="1.5" stroke-dasharray="4,4"/>`;
+
+  // angle arc + label
+  const arcR = 26;
+  const arcEndX = elbowX + arcR*Math.sin(thetaRad);
+  const arcEndY = elbowY + arcR*Math.cos(thetaRad);
+  if(theta > 2){
+    svg += `<path d="M ${elbowX} ${elbowY+arcR} A ${arcR} ${arcR} 0 0 1 ${arcEndX} ${arcEndY}" fill="none" stroke="#8A5A2E" stroke-width="2"/>`;
+    const midAngle = thetaRad/2;
+    svg += `<text x="${elbowX+(arcR+13)*Math.sin(midAngle)}" y="${elbowY+(arcR+13)*Math.cos(midAngle)+4}" text-anchor="middle" class="axis-label" fill="#8A5A2E" font-weight="700">${theta}°</text>`;
+  }
+
+  // forearm
+  svg += `<line x1="${elbowX}" y1="${elbowY}" x2="${handX}" y2="${handY}" stroke="#2F6F63" stroke-width="12" stroke-linecap="round"/>`;
+  svg += `<circle cx="${elbowX}" cy="${elbowY}" r="7" fill="#1B2420"/>`;
+
+  // muscle line from its origin (upper arm) to its insertion point (on the forearm)
+  svg += `<line x1="${originX}" y1="${originY}" x2="${insertX}" y2="${insertY}" stroke="#E8B23D" stroke-width="3" stroke-linecap="round"/>`;
+  // insertion point marker, distinct from the elbow joint dot
+  svg += `<circle cx="${insertX}" cy="${insertY}" r="5.5" fill="#2F6F63" stroke="#fff" stroke-width="2"/>`;
+  svg += `<text x="${insertX}" y="${insertY+20}" text-anchor="middle" class="axis-label" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">insertion</text>`;
+
+  // muscle moment-arm indicator — a schematic length near the joint, NOT a measurement
+  // from the insertion point (the real moment arm is the perpendicular distance to the
+  // muscle's whole line of pull, which the insertion point alone doesn't determine)
+  svg += `<line x1="${elbowX}" y1="${elbowY}" x2="${elbowX}" y2="${muscleLineY}" stroke="#2F6F63" stroke-width="1.3" stroke-dasharray="2,2"/>`;
+  svg += `<line x1="${elbowX}" y1="${muscleLineY}" x2="${muscleEndX}" y2="${muscleLineY}" stroke="#2F6F63" stroke-width="2.5" stroke-dasharray="3,3"/>`;
+  svg += `<text x="${muscleEndX+6}" y="${muscleLineY+4}" text-anchor="start" class="axis-label" fill="#2F6F63" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">dₘ = ${(dMuscle*100).toFixed(1)} cm</text>`;
+
+  // weight moment-arm horizontal line (at COM height, true geometry)
+  svg += `<line x1="${elbowX}" y1="${comY}" x2="${comX}" y2="${comY}" stroke="#B8622A" stroke-width="2.5" stroke-dasharray="3,3"/>`;
+  svg += `<text x="${elbowX-8}" y="${comY-8}" text-anchor="end" class="axis-label" fill="#B8622A" font-weight="700" paint-order="stroke" stroke="#fff" stroke-width="3">d = ${dWeight.toFixed(2)} m</text>`;
+
+  // COM marker + weight vector
+  svg += `<circle cx="${comX}" cy="${comY}" r="7" fill="#E8B23D" stroke="#fff" stroke-width="2"/>`;
+  svg += `<line x1="${comX}" y1="${comY}" x2="${comX}" y2="${comY+34}" stroke="#1B2420" stroke-width="2.2" marker-end="url(#arrowW)"/>`;
+
+  svgEl.innerHTML = svg;
+}
+
+function render(){
+  const theta = Number(thetaSlider.value);
+  const fMuscle = Number(fMuscleSlider.value);
+  const wSeg = Number(wSegSlider.value);
+
+  document.getElementById('thetaVal').textContent = theta + '°';
+  document.getElementById('fMuscleVal').textContent = fMuscle + ' N';
+  document.getElementById('wSegVal').textContent = wSeg + ' N';
+
+  const dWeight = externalArm(theta);
+  const dMuscle = muscleArm(theta);
+  document.getElementById('dWeightOut').textContent = dWeight.toFixed(2);
+  document.getElementById('dMuscleOut').textContent = (dMuscle*100).toFixed(1);
+  drawElbowDiagram(theta, dMuscle, dWeight);
+
+  // Window 1 charts
+  drawLineChart(document.getElementById('chartExtArm'), {
+    yMax: 0.22, markerX: theta, xLabel: 'joint angle',
+    yTicks: [0,0.1,0.2],
+    curves: [{fn: externalArm, color:'#B8622A'}]
+  });
+  drawLineChart(document.getElementById('chartMuscleArm'), {
+    yMax: 0.05, markerX: theta, xLabel: 'joint angle',
+    yTicks: [0,0.02,0.04],
+    curves: [{fn: muscleArm, color:'#2F6F63'}]
+  });
+
+  // Window 2 chart (torque)
+  const tauMuscleFn = x => fMuscle*muscleArm(x);
+  const tauWeightFn = x => wSeg*externalArm(x);
+  const maxY = Math.max(fMuscle*D_MAX, wSeg*L_COM) * 1.15 || 1;
+  drawLineChart(document.getElementById('chartTorque'), {
+    W:640,H:300,padL:50,
+    yMax: maxY, markerX: theta, xLabel: 'joint angle (θ)',
+    yTicks: [0, Math.round(maxY/2*10)/10, Math.round(maxY*10)/10],
+    curves: [
+      {fn: tauMuscleFn, color:'#2F6F63'},
+      {fn: tauWeightFn, color:'#B8622A'}
+    ]
+  });
+
+  const tauMuscle = tauMuscleFn(theta), tauWeight = tauWeightFn(theta);
+  const net = tauMuscle - tauWeight;
+  const verdict = document.getElementById('verdict');
+  if(Math.abs(net) < 0.3){
+    verdict.textContent = `Balanced — ${tauMuscle.toFixed(1)} vs ${tauWeight.toFixed(1)} Nm`;
+    verdict.className = 'verdict hold';
+  } else if(net > 0){
+    verdict.textContent = `Flexion — the muscle wins (${tauMuscle.toFixed(1)} vs ${tauWeight.toFixed(1)} Nm)`;
+    verdict.className = 'verdict flex';
+  } else {
+    verdict.textContent = `Extension — the weight wins (${tauMuscle.toFixed(1)} vs ${tauWeight.toFixed(1)} Nm)`;
+    verdict.className = 'verdict ext';
+  }
+}
+
+[thetaSlider, fMuscleSlider, wSegSlider].forEach(el => el.addEventListener('input', render));
+render();
+</script>
+</body>
+</html>
