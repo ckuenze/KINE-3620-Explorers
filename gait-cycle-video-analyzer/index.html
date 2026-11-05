@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gait Video Analysis Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158;
+    --stance:#2F6F63; --rust:#B8622A; --amber:#E8B23D; --line-blue:#3A5B8C; --line:#D8DED7; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:28px 18px 60px;}
+  .wrap{max-width:1160px;margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 20px;max-width:720px;line-height:1.5;}
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);margin-bottom:16px;}
+  h3{margin:0 0 10px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--ink-soft);}
+  .note{font-size:12.5px;line-height:1.55;color:#33392f;}
+
+  .toprow{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  .sync-block{display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:520px;}
+  .sync-status{font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  .sync-status.on{color:var(--stance);}
+
+  .limb-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);}
+  .limb-label{font-size:13px;font-weight:700;}
+  .limb-group{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:9px;}
+  .limb-btn{border:none;background:transparent;padding:6px 14px;border-radius:7px;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink-soft);font-family:'Space Grotesk',sans-serif;}
+  .limb-btn.active{background:var(--ink);color:#fff;}
+
+  .st-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+  .st-duration{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;color:var(--stance);min-width:56px;}
+  .st-list{list-style:none;margin:6px 0 14px;padding:0;font-size:12.5px;}
+  .st-list li{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:7px;background:#F1F4F0;margin-bottom:5px;}
+  .st-list li b{font-family:'Space Grotesk',sans-serif;}
+
+  .views{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:880px){ .views{grid-template-columns:1fr;} }
+  .view-card h2{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;margin:0 0 12px;}
+
+  .upload-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+  .file-btn{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink);}
+  .file-name{font-size:12.5px;color:var(--ink-soft);}
+
+  .video-wrap{position:relative;width:100%;background:#0c0f0d;border-radius:10px;overflow:hidden;min-height:160px;display:flex;align-items:center;justify-content:center;}
+  .video-wrap video{width:100%;display:block;}
+  .video-wrap canvas{position:absolute;top:0;left:0;cursor:crosshair;}
+  .placeholder{color:#8a948e;font-size:13px;padding:40px 10px;text-align:center;}
+
+  .controls{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .icon-btn{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:7px 11px;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink);}
+  .icon-btn:hover{background:#F1F4F0;}
+  .time-readout{font-family:'Space Grotesk',sans-serif;font-size:12.5px;color:var(--ink-soft);white-space:nowrap;}
+  input[type=range]{flex:1;min-width:80px;-webkit-appearance:none;height:4px;background:var(--line);border-radius:4px;outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--amber);border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;margin-top:-6px;}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--amber);border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
+  .fps-input{width:44px;font-size:12px;border:1px solid var(--line);border-radius:6px;padding:4px 5px;}
+
+  .trim-overlay-wrap{position:relative;height:7px;background:var(--line);border-radius:4px;margin:2px 0 4px;overflow:hidden;}
+  .trim-overlay-fill{position:absolute;top:0;bottom:0;left:0;width:100%;background:var(--amber);opacity:0.55;border-radius:4px;}
+  .trim-readout{font-size:12.5px;color:var(--ink-soft);margin:6px 0;font-weight:600;}
+  .loop-toggle{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft);margin-bottom:4px;cursor:pointer;}
+
+  .section-label{font-size:12.5px;font-weight:700;color:var(--ink-soft);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.02em;}
+  .event-btns{display:flex;flex-wrap:wrap;gap:6px;}
+  .event-btn{border:none;border-radius:8px;padding:7px 11px;font-weight:700;font-size:12px;cursor:pointer;color:#fff;}
+  .event-list, .measure-list{list-style:none;margin:8px 0 0;padding:0;font-size:12.5px;}
+  .event-list li, .measure-list li{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:7px;background:#F1F4F0;margin-bottom:5px;}
+  .event-list li b, .measure-list li b{font-family:'Space Grotesk',sans-serif;}
+  .rm-btn{border:none;background:none;color:var(--rust);font-weight:700;cursor:pointer;font-size:13px;padding:0 4px;}
+
+  .measure-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  select{border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;font-family:'Inter',sans-serif;color:var(--ink);background:#fff;}
+  .measure-status{font-size:12.5px;color:var(--rust);font-weight:600;min-height:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Gait Video Analysis Tool</h1>
+  <p class="subtitle">Upload a frontal-plane and sagittal-plane walking video, step through them frame by frame, mark gait events, and click-measure joint angles directly on the image — using the same proximal / joint-center / distal method from the reading.</p>
+
+  <div class="card">
+    <div class="toprow">
+      <div class="note" style="max-width:480px;">Videos stay in your browser for this session only — nothing is uploaded or saved. Reloading the page clears everything, so finish your measurements before you navigate away.</div>
+      <div class="sync-block">
+        <button class="icon-btn" id="setSyncBtn">Set sync point here</button>
+        <button class="icon-btn" id="unsyncBtn" style="display:none;">Unsync</button>
+        <span class="sync-status" id="syncStatus">Not synced — scrub each video to the same event, then click "Set sync point here."</span>
+      </div>
+    </div>
+    <div class="limb-row">
+      <span class="limb-label">Marking events for limb:</span>
+      <div class="limb-group" id="limbGroup">
+        <button class="limb-btn active" data-limb="R">R</button>
+        <button class="limb-btn" data-limb="L">L</button>
+      </div>
+      <span class="note" style="margin:0;">Applies to the event buttons below in both views — switch before marking the other side's contact.</span>
+    </div>
+  </div>
+
+  <div class="views" id="views"></div>
+</div>
+
+<script>
+const EVENTS = [
+  {key:'ic', label:'Initial Contact', color:'#2F6F63'},
+  {key:'ms', label:'Midstance', color:'#3A5B8C'},
+  {key:'to', label:'Toe-Off', color:'#B8622A'},
+  {key:'msw', label:'Mid-Swing', color:'#8A5A2E'}
+];
+const JOINTS = ['Hip','Knee','Ankle','Other'];
+
+// ---- shared sync state ----
+// when linked, sagittal.currentTime is always kept at frontal.currentTime + syncOffset
+let isLinked = false;
+let syncOffset = 0;
+let selectedLimb = 'R';
+
+function fmtTime(t){
+  if(!isFinite(t)) return '0:00.00';
+  const m = Math.floor(t/60), s = (t%60).toFixed(2).padStart(5,'0');
+  return `${m}:${s}`;
+}
+
+function makeView(container, planeName){
+  const root = document.createElement('div');
+  root.className = 'view-card card';
+  root.innerHTML = `
+    <h2>${planeName} view</h2>
+    <div class="upload-row">
+      <label class="file-btn">Choose video
+        <input type="file" accept="video/*" style="display:none;" class="fileInput">
+      </label>
+      <span class="file-name">No file selected</span>
+    </div>
+    <div class="video-wrap">
+      <div class="placeholder">Upload a ${planeName.toLowerCase()}-plane walking video to begin</div>
+    </div>
+    <div class="controls" style="display:none;">
+      <button class="icon-btn playBtn">Play</button>
+      <button class="icon-btn prevBtn">◂ Frame</button>
+      <button class="icon-btn nextBtn">Frame ▸</button>
+      <input type="range" class="scrub" min="0" max="1000" value="0">
+      <span class="time-readout"><span class="curTime">0:00.00</span> / <span class="durTime">0:00.00</span></span>
+      <span style="font-size:11.5px;color:var(--ink-soft);">fps <input type="number" class="fps-input" value="30" min="1" max="120"></span>
+    </div>
+    <div class="trim-overlay-wrap"><div class="trim-overlay-fill"></div></div>
+
+    <div class="section-label">Trim to 1 or 2 gait cycles</div>
+    <p class="note" style="margin-top:0;">Scrub to a frame, mark it as the start or end of the clip you want, then play, step, and sync will all stay inside that window. This does not cut the actual file, it just narrows playback to the range you set.</p>
+    <div class="st-row">
+      <button class="icon-btn trimStartBtn">Set trim start here</button>
+      <button class="icon-btn trimEndBtn">Set trim end here</button>
+      <button class="icon-btn trimResetBtn">Reset trim</button>
+    </div>
+    <div class="trim-readout">Full video (no trim set)</div>
+    <label class="loop-toggle"><input type="checkbox" class="loopCheckbox"> Loop the trimmed range during playback</label>
+
+    <div class="section-label">Mark gait events</div>
+    <div class="event-btns"></div>
+    <ul class="event-list"></ul>
+
+    <div class="section-label">Step &amp; stride timing</div>
+    <div class="st-row">
+      <button class="icon-btn stepStartBtn">Mark step start</button>
+      <button class="icon-btn stepEndBtn">Mark step end</button>
+      <span class="st-duration stepDuration">—</span>
+    </div>
+    <ul class="st-list stepList"></ul>
+    <div class="st-row">
+      <button class="icon-btn strideStartBtn">Mark stride start</button>
+      <button class="icon-btn strideEndBtn">Mark stride end</button>
+      <span class="st-duration strideDuration">—</span>
+    </div>
+    <ul class="st-list strideList"></ul>
+
+    ${planeName==='Frontal' ? `
+    <div class="section-label">Step width (frontal plane)</div>
+    <p class="note" style="margin-top:0;">No real-world scale, so this reports pixel distance only — useful for comparing steps relative to each other, not an actual measurement in cm or inches.</p>
+    <div class="st-row">
+      <button class="icon-btn widthBtn">Click 2 points: left foot → right foot</button>
+    </div>
+    <div class="measure-status widthStatus"></div>
+    <ul class="st-list widthList"></ul>
+    ` : ''}
+
+    <div class="section-label">Measure a joint angle</div>
+    <div class="measure-row">
+      <select class="jointSelect"><option value="">Select joint…</option></select>
+      <button class="icon-btn measureBtn" disabled>Click 3 points: proximal → center → distal</button>
+    </div>
+    <div class="measure-status"></div>
+    <ul class="measure-list"></ul>
+  `;
+  container.appendChild(root);
+
+  const fileInput = root.querySelector('.fileInput');
+  const fileName = root.querySelector('.file-name');
+  const videoWrap = root.querySelector('.video-wrap');
+  const controls = root.querySelector('.controls');
+  const playBtn = root.querySelector('.playBtn');
+  const prevBtn = root.querySelector('.prevBtn');
+  const nextBtn = root.querySelector('.nextBtn');
+  const scrub = root.querySelector('.scrub');
+  const curTimeEl = root.querySelector('.curTime');
+  const durTimeEl = root.querySelector('.durTime');
+  const fpsInput = root.querySelector('.fps-input');
+  const eventBtnsWrap = root.querySelector('.event-btns');
+  const eventList = root.querySelector('.event-list');
+  const jointSelect = root.querySelector('.jointSelect');
+  const measureBtn = root.querySelector('.measureBtn');
+  const measureStatus = root.querySelector('.measure-status');
+  const measureList = root.querySelector('.measure-list');
+  const stepStartBtn = root.querySelector('.stepStartBtn');
+  const stepEndBtn = root.querySelector('.stepEndBtn');
+  const stepDurationEl = root.querySelector('.stepDuration');
+  const stepList = root.querySelector('.stepList');
+  const strideStartBtn = root.querySelector('.strideStartBtn');
+  const strideEndBtn = root.querySelector('.strideEndBtn');
+  const strideDurationEl = root.querySelector('.strideDuration');
+  const strideList = root.querySelector('.strideList');
+  const widthBtn = root.querySelector('.widthBtn');
+  const widthStatus = root.querySelector('.widthStatus');
+  const widthList = root.querySelector('.widthList');
+  const trimStartBtn = root.querySelector('.trimStartBtn');
+  const trimEndBtn = root.querySelector('.trimEndBtn');
+  const trimResetBtn = root.querySelector('.trimResetBtn');
+  const trimOverlayFill = root.querySelector('.trim-overlay-fill');
+  const trimReadout = root.querySelector('.trim-readout');
+  const loopCheckbox = root.querySelector('.loopCheckbox');
+
+  JOINTS.forEach(j=>{
+    const opt = document.createElement('option'); opt.value=j; opt.textContent=j;
+    jointSelect.appendChild(opt);
+  });
+  EVENTS.forEach(ev=>{
+    const btn = document.createElement('button');
+    btn.className='event-btn'; btn.textContent=ev.label; btn.style.background=ev.color;
+    btn.addEventListener('click', ()=>{
+      markEvent(ev, selectedLimb);
+      if(isLinked && view.otherView && view.otherView.video) view.otherView.markEvent(ev, selectedLimb);
+    });
+    eventBtnsWrap.appendChild(btn);
+  });
+
+  let video=null, canvas=null, ctx=null;
+  let clickPoints=[];
+  let measureMode=null; // 'angle' | 'width'
+  let pendingStepStart=null, pendingStrideStart=null;
+  let suppressSync=false;
+  let trimStart=null, trimEnd=null;
+
+  const view = { root, planeName, get video(){return video;}, get scrub(){return scrub;}, get playBtn(){return playBtn;}, isPlaying:()=>video && !video.paused, markEvent:(ev,limb)=>markEvent(ev,limb) };
+
+  fileInput.addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    fileName.textContent = file.name;
+    const url = URL.createObjectURL(file);
+    videoWrap.innerHTML = '';
+    video = document.createElement('video');
+    video.src = url; video.playsInline = true;
+    canvas = document.createElement('canvas');
+    ctx = canvas.getContext('2d');
+    videoWrap.appendChild(video);
+    videoWrap.appendChild(canvas);
+    controls.style.display='flex';
+    measureBtn.disabled = false;
+    trimStart = null; trimEnd = null;
+    updateTrimUI();
+
+    video.addEventListener('loadedmetadata', ()=>{
+      durTimeEl.textContent = fmtTime(video.duration);
+      sizeCanvas();
+      updateTrimUI();
+    });
+    video.addEventListener('timeupdate', ()=>{
+      curTimeEl.textContent = fmtTime(video.currentTime);
+      if(video.duration) scrub.value = (video.currentTime/video.duration)*1000;
+      clearCanvas();
+      if(trimEnd!==null && video.currentTime >= trimEnd){
+        if(loopCheckbox.checked && trimStart!==null){
+          video.currentTime = trimStart;
+        } else {
+          video.pause();
+        }
+      }
+    });
+    video.addEventListener('play', ()=>{ playBtn.textContent='Pause'; syncPlayState(true); });
+    video.addEventListener('pause', ()=>{ playBtn.textContent='Play'; syncPlayState(false); });
+    window.addEventListener('resize', sizeCanvas);
+  });
+
+  function sizeCanvas(){
+    if(!video || !canvas) return;
+    canvas.width = video.clientWidth; canvas.height = video.clientHeight;
+    canvas.style.width = video.clientWidth+'px'; canvas.style.height = video.clientHeight+'px';
+  }
+  function clearCanvas(){
+    if(ctx) ctx.clearRect(0,0,canvas.width,canvas.height);
+    clickPoints=[]; measureMode=null; measureStatus.textContent='';
+    if(widthStatus) widthStatus.textContent='';
+  }
+
+  function updateTrimUI(){
+    if(!video || !video.duration){
+      trimOverlayFill.style.left='0%'; trimOverlayFill.style.width='100%';
+      trimReadout.textContent = 'Full video (no trim set)';
+      return;
+    }
+    const dur = video.duration;
+    const left = trimStart!==null ? (trimStart/dur)*100 : 0;
+    const right = trimEnd!==null ? (trimEnd/dur)*100 : 100;
+    trimOverlayFill.style.left = left+'%';
+    trimOverlayFill.style.width = Math.max(0, right-left)+'%';
+    if(trimStart===null && trimEnd===null){
+      trimReadout.textContent = 'Full video (no trim set)';
+    } else if(trimStart!==null && trimEnd===null){
+      trimReadout.textContent = `Start set at ${fmtTime(trimStart)}. Scrub to the end of the clip and set the end.`;
+    } else if(trimStart===null && trimEnd!==null){
+      trimReadout.textContent = `End set at ${fmtTime(trimEnd)}. Scrub to the start of the clip and set the start.`;
+    } else {
+      trimReadout.textContent = `Trimmed: ${fmtTime(trimStart)} to ${fmtTime(trimEnd)} (${(trimEnd-trimStart).toFixed(2)}s)`;
+    }
+  }
+
+  trimStartBtn.addEventListener('click', ()=>{
+    if(!video) return;
+    trimStart = video.currentTime;
+    if(trimEnd!==null && trimStart>=trimEnd) trimEnd=null;
+    updateTrimUI();
+  });
+  trimEndBtn.addEventListener('click', ()=>{
+    if(!video) return;
+    trimEnd = video.currentTime;
+    if(trimStart!==null && trimEnd<=trimStart) trimStart=null;
+    updateTrimUI();
+  });
+  trimResetBtn.addEventListener('click', ()=>{
+    trimStart=null; trimEnd=null; updateTrimUI();
+  });
+
+  playBtn.addEventListener('click', ()=>{
+    if(!video) return;
+    if(video.paused){
+      if(trimStart!==null && trimEnd!==null && (video.currentTime < trimStart || video.currentTime >= trimEnd)){
+        video.currentTime = trimStart;
+      }
+      video.play();
+    } else {
+      video.pause();
+    }
+  });
+  prevBtn.addEventListener('click', ()=>{
+    if(!video) return;
+    video.pause();
+    const delta = 1/Number(fpsInput.value||30);
+    const floor = trimStart!==null ? trimStart : 0;
+    video.currentTime = Math.max(floor, video.currentTime - delta);
+    if(isLinked && view.otherView && view.otherView.video){
+      const ov = view.otherView.video;
+      ov.pause();
+      ov.currentTime = Math.max(0, Math.min(ov.duration||0, ov.currentTime - delta));
+    }
+  });
+  nextBtn.addEventListener('click', ()=>{
+    if(!video) return;
+    video.pause();
+    const delta = 1/Number(fpsInput.value||30);
+    const ceil = trimEnd!==null ? trimEnd : (video.duration||0);
+    video.currentTime = Math.min(ceil, video.currentTime + delta);
+    if(isLinked && view.otherView && view.otherView.video){
+      const ov = view.otherView.video;
+      ov.pause();
+      ov.currentTime = Math.max(0, Math.min(ov.duration||0, ov.currentTime + delta));
+    }
+  });
+  scrub.addEventListener('input', ()=>{
+    if(!video||!video.duration) return;
+    video.currentTime = (scrub.value/1000)*video.duration;
+    if(isLinked && view.otherView && view.otherView.video){
+      const ov = view.otherView.video;
+      const target = (view.planeName==='Frontal') ? video.currentTime + syncOffset : video.currentTime - syncOffset;
+      ov.currentTime = Math.max(0, Math.min(ov.duration||0, target));
+    }
+  });
+
+  function markEvent(ev, limb){
+    if(!video) return;
+    const li = document.createElement('li');
+    const limbTag = limb ? ` (${limb})` : '';
+    li.innerHTML = `<span><b>${ev.label}${limbTag}</b> — ${fmtTime(video.currentTime)}</span>`;
+    const rm = document.createElement('button'); rm.className='rm-btn'; rm.textContent='✕';
+    rm.addEventListener('click', ()=>li.remove());
+    li.appendChild(rm);
+    eventList.appendChild(li);
+  }
+
+  function addListEntry(listEl, html){
+    const li = document.createElement('li');
+    li.innerHTML = `<span>${html}</span>`;
+    const rm = document.createElement('button'); rm.className='rm-btn'; rm.textContent='✕';
+    rm.addEventListener('click', ()=>li.remove());
+    li.appendChild(rm);
+    listEl.appendChild(li);
+  }
+
+  stepStartBtn.addEventListener('click', ()=>{
+    if(!video) return;
+    pendingStepStart = video.currentTime;
+    stepDurationEl.textContent = 'start set…';
+  });
+  stepEndBtn.addEventListener('click', ()=>{
+    if(!video) return;
+    if(pendingStepStart===null){ stepDurationEl.textContent = 'mark start first'; return; }
+    const end = video.currentTime;
+    const dur = end - pendingStepStart;
+    stepDurationEl.textContent = dur.toFixed(2)+'s';
+    addListEntry(stepList, `<b>Step</b> (${selectedLimb}) — ${dur.toFixed(2)}s &nbsp; <span style="color:var(--ink-soft);">(${fmtTime(pendingStepStart)} → ${fmtTime(end)})</span>`);
+    pendingStepStart = null;
+  });
+
+  strideStartBtn.addEventListener('click', ()=>{
+    if(!video) return;
+    pendingStrideStart = video.currentTime;
+    strideDurationEl.textContent = 'start set…';
+  });
+  strideEndBtn.addEventListener('click', ()=>{
+    if(!video) return;
+    if(pendingStrideStart===null){ strideDurationEl.textContent = 'mark start first'; return; }
+    const end = video.currentTime;
+    const dur = end - pendingStrideStart;
+    strideDurationEl.textContent = dur.toFixed(2)+'s';
+    addListEntry(strideList, `<b>Stride</b> (${selectedLimb}) — ${dur.toFixed(2)}s &nbsp; <span style="color:var(--ink-soft);">(${fmtTime(pendingStrideStart)} → ${fmtTime(end)})</span>`);
+    pendingStrideStart = null;
+  });
+
+  measureBtn.addEventListener('click', ()=>{
+    if(!jointSelect.value){ measureStatus.textContent = 'Pick a joint first.'; return; }
+    measureMode = 'angle'; clickPoints = [];
+    clearMarksOnly();
+    measureStatus.textContent = `Click 1 of 3: proximal marker for ${jointSelect.value}`;
+  });
+
+  if(widthBtn){
+    widthBtn.addEventListener('click', ()=>{
+      measureMode = 'width'; clickPoints = [];
+      clearMarksOnly();
+      widthStatus.textContent = 'Click 1 of 2: left foot';
+    });
+  }
+
+  function clearMarksOnly(){ if(ctx) ctx.clearRect(0,0,canvas.width,canvas.height); }
+
+  function drawPoint(p, label, color){
+    ctx.fillStyle = color; ctx.strokeStyle='#fff'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(p.x,p.y,6,0,7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#1B2420'; ctx.font='bold 12px Inter, sans-serif';
+    ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+    ctx.strokeText(label, p.x+9, p.y-9); ctx.fillText(label, p.x+9, p.y-9);
+  }
+  function drawLine(a,b,color){
+    ctx.strokeStyle=color; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  }
+
+  videoWrap.addEventListener('click', (e)=>{
+    if(!measureMode || !canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    if(x<0||y<0||x>canvas.width||y>canvas.height) return;
+    clickPoints.push({x,y});
+    const idx = clickPoints.length;
+
+    if(measureMode === 'width'){
+      const labels=['L','R'], colors=['#3A5B8C','#B8622A'];
+      drawPoint({x,y}, labels[idx-1], colors[idx-1]);
+      if(idx===1){ widthStatus.textContent = 'Click 2 of 2: right foot'; return; }
+      drawLine(clickPoints[0], clickPoints[1], '#9AA39B');
+      const dx = clickPoints[1].x-clickPoints[0].x, dy = clickPoints[1].y-clickPoints[0].y;
+      const distPx = Math.sqrt(dx*dx+dy*dy);
+      const midx=(clickPoints[0].x+clickPoints[1].x)/2, midy=(clickPoints[0].y+clickPoints[1].y)/2;
+      ctx.fillStyle='#1B2420'; ctx.font='bold 14px Space Grotesk, sans-serif';
+      ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+      ctx.strokeText(distPx.toFixed(0)+' px', midx+8, midy-8);
+      ctx.fillText(distPx.toFixed(0)+' px', midx+8, midy-8);
+      addListEntry(widthList, `<b>Step width</b> — ${distPx.toFixed(0)} px at ${fmtTime(video.currentTime)}`);
+      measureMode=null; widthStatus.textContent = 'Added below. Click the button again to measure another.';
+      clickPoints=[];
+      return;
+    }
+
+    // angle mode (3 points: proximal, center, distal)
+    const labels=['P','C','D'], colors=['#3A5B8C','#E8B23D','#B8622A'];
+    drawPoint({x,y}, labels[idx-1], colors[idx-1]);
+    if(idx===2) drawLine(clickPoints[0], clickPoints[1], '#9AA39B');
+    if(idx===3){
+      drawLine(clickPoints[1], clickPoints[2], '#9AA39B');
+      const v1 = {x:clickPoints[0].x-clickPoints[1].x, y:clickPoints[0].y-clickPoints[1].y};
+      const v2 = {x:clickPoints[2].x-clickPoints[1].x, y:clickPoints[2].y-clickPoints[1].y};
+      const dot = v1.x*v2.x+v1.y*v2.y;
+      const cross = v1.x*v2.y-v1.y*v2.x;
+      let ang = Math.atan2(Math.abs(cross), dot) * 180/Math.PI;
+      ctx.fillStyle='#1B2420'; ctx.font='bold 14px Space Grotesk, sans-serif';
+      ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+      ctx.strokeText(ang.toFixed(1)+'°', clickPoints[1].x+10, clickPoints[1].y+18);
+      ctx.fillText(ang.toFixed(1)+'°', clickPoints[1].x+10, clickPoints[1].y+18);
+
+      const li = document.createElement('li');
+      li.innerHTML = `<span><b>${jointSelect.value}</b> — ${ang.toFixed(1)}° at ${fmtTime(video.currentTime)}</span>`;
+      const rm = document.createElement('button'); rm.className='rm-btn'; rm.textContent='✕';
+      rm.addEventListener('click', ()=>li.remove());
+      li.appendChild(rm);
+      measureList.appendChild(li);
+
+      measureMode=null; measureStatus.textContent = 'Measurement added below. Click "Click 3 points…" to measure another.';
+      clickPoints=[];
+    } else {
+      measureStatus.textContent = `Click ${idx+1} of 3: ${idx===1?'joint center':'distal marker'} for ${jointSelect.value}`;
+    }
+  });
+
+  // ---- sync helpers ----
+  function syncPlayState(playing){
+    if(suppressSync || !isLinked) return;
+    const other = view.otherView;
+    if(!other || !other.video) return;
+    other.suppressSync = true;
+    playing ? other.video.play() : other.video.pause();
+    setTimeout(()=>other.suppressSync=false, 50);
+  }
+  Object.defineProperty(view, 'suppressSync', {
+    get(){ return suppressSync; }, set(v){ suppressSync = v; }
+  });
+
+  return view;
+}
+
+const viewsContainer = document.getElementById('views');
+const frontalView = makeView(viewsContainer, 'Frontal');
+const sagittalView = makeView(viewsContainer, 'Sagittal');
+frontalView.otherView = sagittalView;
+sagittalView.otherView = frontalView;
+
+const setSyncBtn = document.getElementById('setSyncBtn');
+const unsyncBtn = document.getElementById('unsyncBtn');
+const syncStatus = document.getElementById('syncStatus');
+
+setSyncBtn.addEventListener('click', ()=>{
+  if(!frontalView.video || !sagittalView.video){
+    syncStatus.textContent = 'Upload both videos first, then scrub each to the same event.';
+    syncStatus.className = 'sync-status';
+    return;
+  }
+  syncOffset = sagittalView.video.currentTime - frontalView.video.currentTime;
+  isLinked = true;
+  setSyncBtn.style.display = 'none';
+  unsyncBtn.style.display = 'inline-block';
+  syncStatus.textContent = `Synced ✓ — play, frame-step, scrubbing, and event marks on either video now move both together.`;
+  syncStatus.className = 'sync-status on';
+});
+
+unsyncBtn.addEventListener('click', ()=>{
+  isLinked = false;
+  setSyncBtn.style.display = 'inline-block';
+  unsyncBtn.style.display = 'none';
+  syncStatus.textContent = 'Not synced — scrub each video to the same event, then click "Set sync point here."';
+  syncStatus.className = 'sync-status';
+});
+
+document.getElementById('limbGroup').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.limb-btn');
+  if(!btn) return;
+  selectedLimb = btn.dataset.limb;
+  document.querySelectorAll('.limb-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+});
+</script>
+</body>
+</html>
