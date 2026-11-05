@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>External Moment Arm &amp; Torque Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5;
+    --card:#FFFFFF;
+    --ink:#1B2420;
+    --ink-soft:#586158;
+    --stance:#2F6F63;
+    --rust:#B8622A;
+    --line-blue:#3A5B8C;
+    --amber:#E8B23D;
+    --line:#D8DED7;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:920px;margin:0 auto;}
+  h1{
+    font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);
+    font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;
+  }
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 24px;max-width:600px;line-height:1.5;}
+  .layout{display:grid;grid-template-columns:1.15fr 1fr;gap:16px;}
+  @media (max-width:800px){ .layout{grid-template-columns:1fr;} }
+  .card{
+    background:var(--card);border-radius:var(--radius);padding:20px;
+    box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);
+    margin-bottom:16px;
+  }
+  h3{margin:0 0 14px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--ink-soft);}
+  #stage{width:100%;height:auto;display:block;}
+  .axis-label{font-size:11px;fill:var(--ink-soft);font-family:'Inter',sans-serif;}
+
+  .control{margin-bottom:20px;}
+  .control:last-child{margin-bottom:0;}
+  .control-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .control-label{font-weight:700;font-size:14px;}
+  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--stance);}
+  .control-val.angle{color:var(--rust);}
+  .control-val.mass{color:var(--ink-soft);}
+  input[type=range]{
+    width:100%;-webkit-appearance:none;height:4px;background:var(--line);border-radius:4px;outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+    background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;margin-top:-8px;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;background:var(--amber);
+    border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;
+  }
+  .control-sub{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+  .divider{height:1px;background:var(--line);margin:18px 0;}
+  .preset-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+  .preset-btn{
+    border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;
+    font-weight:600;font-size:12.5px;cursor:pointer;color:var(--ink-soft);font-family:'Inter',sans-serif;
+  }
+  .preset-btn:hover{background:#F1F4F0;}
+
+  .equation{
+    font-family:'Space Grotesk',sans-serif;font-size:15px;background:#F1F4F0;border-radius:10px;
+    padding:14px 16px;line-height:1.7;
+  }
+  .equation .row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px;font-family:'Inter',sans-serif;color:var(--ink-soft);}
+  .equation .row b{color:var(--ink);font-family:'Space Grotesk',sans-serif;}
+  .result-big{
+    display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;
+    border-top:1px dashed var(--line);
+  }
+  .result-big .label{font-size:13px;font-weight:700;color:var(--ink-soft);}
+  .result-big .value{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:var(--line-blue);}
+
+  .note{font-size:13.5px;line-height:1.6;color:#33392f;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>External Moment Arm &amp; Torque Explorer</h1>
+  <p class="subtitle">Change how high the center of mass sits and how far the body leans from vertical, and watch what happens to the moment arm and the external torque gravity creates about the base of support.</p>
+
+  <div class="layout">
+    <div class="card">
+      <h3>Side view</h3>
+      <svg id="stage" viewBox="0 0 420 420" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="control">
+          <div class="control-head">
+            <span class="control-label">COM height (h)</span>
+            <span class="control-val" id="hVal">0.95 m</span>
+          </div>
+          <input type="range" id="hSlider" min="40" max="160" value="95" step="1">
+          <div class="control-sub">Height of the center of mass above the ankle/base of support.</div>
+        </div>
+
+        <div class="control">
+          <div class="control-head">
+            <span class="control-label">Angle from vertical (θ)</span>
+            <span class="control-val angle" id="thetaVal">10°</span>
+          </div>
+          <input type="range" id="thetaSlider" min="0" max="40" value="10" step="0.5">
+          <div class="control-sub">How far the body has leaned away from true vertical.</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="control" style="margin-bottom:0;">
+          <div class="control-head">
+            <span class="control-label">Body mass</span>
+            <span class="control-val mass" id="mVal">70 kg</span>
+          </div>
+          <input type="range" id="mSlider" min="40" max="110" value="70" step="1">
+          <div class="control-sub">Used only to convert the moment arm into a torque value (N·m).</div>
+        </div>
+
+        <div class="preset-row">
+          <button class="preset-btn" data-h="140" data-t="10">Standing tall, slight sway</button>
+          <button class="preset-btn" data-h="70" data-t="10">Partial crouch, same sway</button>
+          <button class="preset-btn" data-h="95" data-t="35">Near limit of stability</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Live calculation</h3>
+        <div class="equation">
+          <div class="row">Moment arm: <b>d = h × sin(θ)</b></div>
+          <div class="row" id="dCalc">d = 0.95 m × sin(10°)</div>
+          <div class="result-big">
+            <span class="label">Moment arm (d)</span>
+            <span class="value" id="dVal">0.16 m</span>
+          </div>
+        </div>
+        <div class="equation" style="margin-top:12px;">
+          <div class="row">External torque: <b>τ = m·g·d</b></div>
+          <div class="row" id="tCalc">τ = 70 kg × 9.81 × 0.16 m</div>
+          <div class="result-big">
+            <span class="label">External torque (τ)</span>
+            <span class="value" id="tauVal">115.4 N·m</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Why this matters</h3>
+    <p class="note">The external torque gravity creates about your base of support depends on <b>both</b> variables — not just how far you've leaned. A tall, extended body (higher h) produces a much larger torque for the exact same lean angle than a lower, more crouched body does. That's part of why a hip strategy — which keeps the COM relatively high — has to work against more torque than an ankle strategy, and why crouching lowers your COM and reduces the torque a given perturbation can create.</p>
+  </div>
+</div>
+
+<script>
+const hSlider = document.getElementById('hSlider');
+const thetaSlider = document.getElementById('thetaSlider');
+const mSlider = document.getElementById('mSlider');
+const stage = document.getElementById('stage');
+const g = 9.81;
+
+function render(){
+  const h = Number(hSlider.value)/100; // m
+  const theta = Number(thetaSlider.value); // deg
+  const m = Number(mSlider.value); // kg
+  const thetaRad = theta * Math.PI/180;
+  // round d to 3 decimals and compute torque from the rounded value,
+  // so the numbers shown in the calculation multiply out to the result shown
+  const d = Math.round(h * Math.sin(thetaRad) * 1000) / 1000;
+  const W = m*g;
+  const tau = W * d;
+
+  document.getElementById('hVal').textContent = h.toFixed(2) + ' m';
+  document.getElementById('thetaVal').textContent = theta.toFixed(1) + '°';
+  document.getElementById('mVal').textContent = m + ' kg';
+  document.getElementById('dVal').textContent = d.toFixed(3) + ' m';
+  document.getElementById('tauVal').textContent = tau.toFixed(1) + ' N·m';
+  document.getElementById('dCalc').textContent = `d = ${h.toFixed(2)} m × sin(${theta.toFixed(1)}°) = ${d.toFixed(3)} m`;
+  document.getElementById('tCalc').textContent = `τ = ${m} kg × 9.81 × ${d.toFixed(3)} m = ${tau.toFixed(1)} N·m`;
+
+  drawStage(h, theta, d);
+}
+
+function drawStage(h, thetaDeg, d){
+  const W=420,H=420;
+  const pivotX = 150, pivotY = 360;
+  const scale = 190; // px per meter, calibrated so 1.6m fits
+  const thetaRad = thetaDeg*Math.PI/180;
+
+  // rod endpoint (COM), leaning to the right as theta increases
+  const comX = pivotX + h*scale*Math.sin(thetaRad);
+  const comY = pivotY - h*scale*Math.cos(thetaRad);
+
+  // vertical reference top (full scale, 1.6m)
+  const vertTopY = pivotY - 1.6*scale;
+
+  let svg = '';
+  // ground
+  svg += `<line x1="40" y1="${pivotY}" x2="${W-20}" y2="${pivotY}" stroke="#D8DED7" stroke-width="2"/>`;
+  svg += `<text x="${W-24}" y="${pivotY+18}" text-anchor="end" class="axis-label">base of support</text>`;
+
+  // vertical reference (dashed)
+  svg += `<line x1="${pivotX}" y1="${pivotY}" x2="${pivotX}" y2="${vertTopY}" stroke="#B7BFB8" stroke-width="1.5" stroke-dasharray="4,4"/>`;
+
+  // height scale ticks
+  [0.5,1.0,1.5].forEach(v=>{
+    const y = pivotY - v*scale;
+    svg += `<line x1="${pivotX-6}" y1="${y}" x2="${pivotX+6}" y2="${y}" stroke="#B7BFB8" stroke-width="1.5"/>`;
+    svg += `<text x="${pivotX-12}" y="${y+4}" text-anchor="end" class="axis-label">${v.toFixed(1)}m</text>`;
+  });
+
+  // horizontal projection line (moment arm) from COM down to vertical line's height, then to vertical axis
+  svg += `<line x1="${pivotX}" y1="${comY}" x2="${comX}" y2="${comY}" stroke="#3A5B8C" stroke-width="2" stroke-dasharray="5,4"/>`;
+
+  // moment arm label — anchored just right of the COM marker to avoid the height-scale ticks
+  svg += `<text x="${comX+16}" y="${comY-8}" text-anchor="start" class="axis-label" fill="#3A5B8C" font-weight="700">d = ${d.toFixed(3)} m</text>`;
+
+  // pivot point
+  svg += `<circle cx="${pivotX}" cy="${pivotY}" r="6" fill="#1B2420"/>`;
+
+  // rod (body segment)
+  svg += `<line x1="${pivotX}" y1="${pivotY}" x2="${comX}" y2="${comY}" stroke="#2F6F63" stroke-width="8" stroke-linecap="round"/>`;
+
+  // torque arc at pivot, direction matches lean
+  const arcR = 34;
+  const sweep = thetaDeg > 0 ? 1 : 0;
+  const arcEndX = pivotX + arcR*Math.sin(thetaRad*0.9);
+  const arcEndY = pivotY - arcR*Math.cos(thetaRad*0.9);
+  if(thetaDeg > 1){
+    svg += `<path d="M ${pivotX} ${pivotY-arcR} A ${arcR} ${arcR} 0 0 1 ${arcEndX} ${arcEndY}" fill="none" stroke="#B8622A" stroke-width="3"/>`;
+    svg += `<circle cx="${arcEndX}" cy="${arcEndY}" r="3.5" fill="#B8622A"/>`;
+  }
+
+  // COM marker
+  svg += `<circle cx="${comX}" cy="${comY}" r="11" fill="#E8B23D" stroke="#fff" stroke-width="2.5"/>`;
+  svg += `<text x="${comX}" y="${comY-18}" text-anchor="middle" class="axis-label" font-weight="700">COM</text>`;
+
+  // weight vector (downward arrow from COM)
+  const wLen = 46;
+  svg += `<line x1="${comX}" y1="${comY}" x2="${comX}" y2="${comY+wLen}" stroke="#1B2420" stroke-width="2.5" marker-end="url(#arrow)"/>`;
+  svg += `<text x="${comX+10}" y="${comY+wLen-4}" class="axis-label" font-weight="700">W</text>`;
+
+  svg = `<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+           <path d="M0,0 L8,4 L0,8 Z" fill="#1B2420"/></marker></defs>` + svg;
+
+  stage.innerHTML = svg;
+}
+
+[hSlider, thetaSlider, mSlider].forEach(el => el.addEventListener('input', render));
+
+document.querySelectorAll('.preset-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    hSlider.value = btn.dataset.h;
+    thetaSlider.value = btn.dataset.t;
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
