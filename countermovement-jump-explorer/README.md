@@ -3,7 +3,7 @@
 Explore how vertical ground reaction force and center-of-mass (COM) position, velocity, and acceleration change through one countermovement jump. You can also measure your own jump height from a video.
 
 - **Topic:** CMJ kinetics, the impulse–momentum theorem, work, and jump height
-- **Use:** [PRE/IN]
+- **Use:** In-class
 - **Unit:** Unit 3: Movement and Human Performance
 
 ## Learning objectives

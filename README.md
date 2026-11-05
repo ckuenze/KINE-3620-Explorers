@@ -11,15 +11,15 @@ Each tool is a single HTML file that runs in any modern web browser. There's not
 | [Walking Gait Phase Explorer](walking-gait-phase-explorer/) | Phases and sub-phases of the walking gait cycle | Pre-class |
 | [Walking Gait vGRF Explorer](walking-gait-vgrf-explorer/) | Vertical and horizontal ground reaction forces in walking | In-class |
 | [Gait Cycle Video Analyzer](gait-cycle-video-analyzer/) | Video analysis of gait events, timing, and joint angles | In-class |
-| [Running Gait Cycle Explorer](running-gait-cycle-explorer/) | Walking vs. running: gait cycle structure and GRF | [PRE/IN] |
+| [Running Gait Cycle Explorer](running-gait-cycle-explorer/) | Walking vs. running: gait cycle structure and GRF | Pre-class |
 | [Moment Arm Explorer](moment-arm-explorer/) | Internal and external moment arms and torque vs. joint angle | Pre-class |
-| [Balance and the External Moment Arm](balance-external-moment-arm/) | COM height, lean angle, and gravitational torque in balance | [PRE/IN] |
+| [Balance and the External Moment Arm](balance-external-moment-arm/) | COM height, lean angle, and gravitational torque in balance | Pre-class |
 
 ## Unit 3: Movement and Human Performance
 
 | Tool | Topic | Use |
 |---|---|---|
-| [Countermovement Jump Explorer](countermovement-jump-explorer/) | Force, impulse, COM motion, and jump height in the CMJ | [PRE/IN] |
+| [Countermovement Jump Explorer](countermovement-jump-explorer/) | Force, impulse, COM motion, and jump height in the CMJ | In-class |
 
 ## How to open a tool
 

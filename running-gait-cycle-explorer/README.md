@@ -3,7 +3,7 @@
 Compare walking and running in two ways: how the gait cycle is structured (double support vs. float phase), and how the ground reaction force curve changes shape, including the impact transient seen with a rearfoot strike.
 
 - **Topic:** Walking vs. running mechanics
-- **Use:** [PRE/IN]
+- **Use:** Pre-class
 - **Unit:** Unit 2: Introduction to Human Movement
 
 ## Learning objectives

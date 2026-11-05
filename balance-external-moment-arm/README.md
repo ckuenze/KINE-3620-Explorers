@@ -3,7 +3,7 @@
 Change how high the center of mass (COM) sits and how far the body leans, and see what happens to the moment arm and to the external torque gravity creates about the base of support.
 
 - **Topic:** Balance, COM height, and gravitational torque
-- **Use:** [PRE/IN]
+- **Use:** Pre-class
 - **Unit:** Unit 2: Introduction to Human Movement
 
 ## Learning objectives
