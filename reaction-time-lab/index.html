@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reaction Time Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* UVA game-night theme: navy and orange, always dark so every device looks the same */
+:root{
+  --bg:#0E1630; --card:#18223F; --ink:#F4F6FB; --ink-soft:#A9B3CF; --soft:#222D52; --line:#34416B;
+  --teal:#E57200; --orange:#E57200; --orange-hot:#F84C1E; --navy:#232D4B; --led:#FFB547; --red:#E0453A;
+  --go:#2FA866; --wait:#232D4B; --warn-bg:#3A2610; --ok-bg:#2A2410; --radius:14px;
+  --shadow:0 2px 0 rgba(0,0,0,0.35),0 10px 30px rgba(0,0,0,0.35);
+  --sport:"Oswald","Arial Narrow","Franklin Gothic Medium",Impact,sans-serif;
+  --digit:"Orbitron","Consolas","Courier New",monospace;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box;}
+body{margin:0;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:20px 16px 60px;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(circle at 1px 1px,rgba(255,255,255,.04) 1px,transparent 1.6px) 0 0/6px 6px,radial-gradient(ellipse at top,#1D2747 0%,var(--bg) 70%);background-color:var(--bg);min-height:100vh;}
+.wrap{max-width:900px;margin:0 auto;}
+input[type=radio]{accent-color:var(--orange);}
+.bar{background:linear-gradient(90deg,var(--orange-hot),var(--orange)) !important;}
+.banner{position:relative;overflow:hidden;text-align:center;background:linear-gradient(180deg,var(--navy),#141C33);border:3px solid var(--orange);border-radius:16px;
+  padding:16px 18px 14px;margin-bottom:16px;box-shadow:0 0 0 4px var(--bg),0 0 36px rgba(229,114,0,.25);}
+.banner:before,.banner:after{content:"";position:absolute;top:0;bottom:0;width:64px;background:repeating-linear-gradient(-55deg,var(--orange) 0 10px,transparent 10px 22px);opacity:.18;}
+.banner:before{left:0;} .banner:after{right:0;transform:scaleX(-1);}
+.banner .kick{font-family:var(--sport);font-size:13px;letter-spacing:.32em;color:var(--orange);font-weight:700;position:relative;}
+h1{font-family:var(--sport);font-size:clamp(30px,6vw,52px);font-weight:700;margin:2px 0 4px;letter-spacing:.04em;text-transform:uppercase;line-height:1.05;
+  text-shadow:0 3px 0 var(--orange),0 6px 16px rgba(0,0,0,.6);position:relative;}
+.subtitle{color:var(--ink-soft);font-size:15px;margin:8px auto 0;line-height:1.5;max-width:640px;position:relative;}
+.card{background:var(--card);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--line);}
+h2.ct{margin:0 0 10px;font-family:var(--sport);font-size:20px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);}
+h3{margin:14px 0 6px;font-size:14.5px;}
+p{line-height:1.55;margin:0 0 10px;font-size:14.5px;}
+.sub{color:var(--ink-soft);font-size:13.5px;}
+.note{font-size:12.5px;color:var(--ink-soft);line-height:1.55;}
+.seg{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;flex-wrap:wrap;margin-bottom:16px;}
+.seg button{border:none;background:transparent;padding:9px 14px;border-radius:9px;font-weight:700;font-size:15px;cursor:pointer;color:var(--ink-soft);font-family:var(--sport);letter-spacing:.1em;text-transform:uppercase;}
+.seg button:hover{color:var(--ink);}
+.seg button.on{background:var(--orange);color:var(--bg);}
+.btn{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:9px 16px;font-weight:700;font-size:15px;cursor:pointer;color:var(--ink);font-family:var(--sport);letter-spacing:.08em;text-transform:uppercase;}
+.btn:hover{background:var(--soft);}
+.btn.primary{background:var(--orange);border-color:var(--orange);color:var(--bg);}
+.btn.primary:hover{filter:brightness(1.08);}
+.btn.small{padding:6px 10px;font-size:12.5px;}
+.btn:disabled{opacity:0.45;cursor:not-allowed;}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.hidden{display:none !important;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;font-size:13.5px;line-height:1.5;}
+@media (max-width:700px){.grid2{grid-template-columns:1fr;}}
+.grid2 b{display:block;font-size:14px;margin-bottom:1px;}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;}
+.chip{padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);font-size:12.5px;font-weight:700;color:var(--ink-soft);}
+.chip.done{background:var(--ok-bg);border-color:var(--teal);color:var(--teal);}
+.chip.next{border-color:var(--ink);color:var(--ink);}
+.pred{border:1.5px dashed var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;}
+.pred label{display:block;font-size:14px;padding:3px 0;cursor:pointer;}
+.stagehead{display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:13.5px;}
+.stagehead .blkP{color:var(--ink-soft);margin-left:auto;}
+.stage{min-height:280px;border-radius:16px;border:2px solid var(--line);background:var(--soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:18px;user-select:none;-webkit-user-select:none;touch-action:manipulation;outline:none;}
+.stage[data-state="wait"]{background:var(--wait);}
+.stage.go{background:var(--go);border-color:var(--go);color:#fff;}
+.stage.nogo{background:var(--red);border-color:var(--red);color:#fff;}
+.stmsg{font-size:clamp(18px,3.2vw,26px);font-weight:800;line-height:1.3;max-width:560px;}
+.stmsg .instr{font-size:15px;font-weight:500;line-height:1.55;display:block;margin:6px 0 14px;}
+.boxes{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.box{width:92px;height:92px;border-radius:16px;border:3px solid var(--ink-soft);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:var(--ink-soft);cursor:pointer;touch-action:manipulation;}
+.box.lit{background:var(--go);border-color:var(--go);color:#fff;}
+.box.litred{background:var(--red);border-color:var(--red);color:#fff;}
+.hint{font-size:54px;font-weight:800;line-height:1;min-height:56px;color:var(--ink);}
+.feed{font-size:14px;font-weight:700;min-height:22px;margin:10px 0 0;color:var(--ink-soft);}
+.stage{position:relative;}
+.stage[data-state="feedback"] .stmsg,.stage .stmsg.rt{font-family:var(--digit);}
+.rtnum{font-family:var(--digit);font-size:clamp(40px,8vw,64px);color:var(--led);text-shadow:0 0 14px rgba(255,181,71,.55);line-height:1;}
+.rtnum small{font-size:.4em;margin-left:4px;}
+.cheer{font-family:var(--sport);font-size:clamp(20px,3.6vw,28px);letter-spacing:.12em;text-transform:uppercase;color:var(--orange);margin-top:6px;animation:pop .45s cubic-bezier(.2,1.6,.4,1);}
+.cheer.best{color:var(--led);}
+@keyframes pop{0%{transform:scale(.4);opacity:0;}100%{transform:scale(1);opacity:1;}}
+.streak{font-family:var(--sport);letter-spacing:.14em;color:var(--orange);font-size:14px;}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+.badge{border:2px solid var(--orange);border-radius:12px;padding:8px 12px;background:linear-gradient(135deg,#2A1A08,var(--card));min-width:150px;}
+.badge .bt{font-family:var(--sport);font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--led);}
+.badge .bd{font-size:12.5px;color:var(--ink-soft);}
+.sumbox{background:var(--soft);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:14px;line-height:1.55;}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;}
+table.t th{text-align:left;font-size:12px;color:var(--ink-soft);font-weight:700;padding:6px;border-bottom:1.5px solid var(--line);}
+table.t td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top;}
+table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:700;}
+.bar{height:14px;border-radius:7px;background:var(--teal);min-width:2px;}
+.barrow{display:grid;grid-template-columns:170px 1fr 70px;gap:8px;align-items:center;font-size:13px;margin:5px 0;}
+@media (max-width:600px){.barrow{grid-template-columns:110px 1fr 56px;}}
+.diff{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;}
+@media (max-width:700px){.diff{grid-template-columns:1fr;}}
+.dcard{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;}
+.dcard .v{font-size:22px;font-weight:800;}
+.dcard .l{font-size:12.5px;color:var(--ink-soft);}
+.msg{border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;margin-top:10px;}
+.msg.warn{background:var(--warn-bg);} .msg.ok{background:var(--ok-bg);}
+details{margin-top:6px;} summary{cursor:pointer;font-weight:700;font-size:14px;padding:5px 0;}
+.qa{font-size:13.5px;line-height:1.6;padding:2px 0 8px 4px;color:var(--ink-soft);}
+textarea{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:var(--card);color:var(--ink);min-height:84px;}
+input[type=number]{width:84px;font-size:14px;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-family:inherit;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="banner">
+    <div class="kick">UVA KINESIOLOGY · BIOMECHANICS</div>
+    <h1>Reaction Time Lab</h1>
+    <p class="subtitle">How fast are your reflexes, Hoos? Run three short experiments, earn your stat line, and see how your reactions connect to agility.</p>
+  </header>
+
+  <div class="seg" id="tabs">
+    <button type="button" data-tab="start" class="on">Start</button>
+    <button type="button" data-tab="e1">1 Simple</button>
+    <button type="button" data-tab="e2">2 Choices</button>
+    <button type="button" data-tab="e3">3 Twists</button>
+    <button type="button" data-tab="res">Results</button>
+    <button type="button" data-tab="ins">Instructor</button>
+  </div>
+
+  <!-- START -->
+  <section id="tab-start">
+    <div class="card">
+      <h2 class="ct">What you will do (about 15 minutes)</h2>
+      <p><b>Experiment 1, Simple.</b> Respond to one signal. Is a sound or a light faster?</p>
+      <p><b>Experiment 2, Choices.</b> Respond to 1, 2, 3 or 4 possible signals. What does a decision cost?</p>
+      <p><b>Experiment 3, Twists.</b> Add rules, fakes and hints. Which one slows you down most?</p>
+      <p>Before each experiment you will make a prediction. Your results page then compares your predictions with what happened and shows what your reaction time means on the field or court.</p>
+    </div>
+    <div class="card">
+      <h2 class="ct">Before you begin</h2>
+      <p>Sit comfortably with the page in front of you. Silence notifications. Use the keyboard if you can, because it is the most consistent. A tap on a touchscreen also works.</p>
+      <p>For the sound experiment, use the device speakers or wired headphones. <b>Bluetooth headphones add a delay</b> and will make your sound times look slower than they are. No headphones in a noisy room? You can skip the sound block in Experiment 1.</p>
+      <div class="row"><button class="btn primary" id="beepTest" type="button">Play a test beep</button><span class="note">Set your volume so the beep is clear but not loud.</span></div>
+    </div>
+    <div class="card">
+      <h2 class="ct">Words you will see</h2>
+      <div class="grid2">
+        <div><b>Stimulus</b>The signal you respond to, such as a light or a sound.</div>
+        <div><b>Reaction time (RT)</b>The time from the stimulus to your response, in milliseconds (ms). 1000 ms is one second.</div>
+        <div><b>Median</b>The middle value of your trials. It is not thrown off by one odd trial.</div>
+        <div><b>Choice</b>A task where you must pick the right response from several options.</div>
+        <div><b>Anticipation</b>Responding before the signal, or so early that it must be a guess.</div>
+        <div><b>Accuracy</b>How often you picked the right response.</div>
+      </div>
+      <div class="msg warn"><b>A note about the numbers.</b> Screens, speakers, and keyboards add a small delay, so your times will be longer than in a research lab. Compare your own conditions with each other on the same device. Do not compare your numbers with a classmate who used a different device.</div>
+    </div>
+    <div class="row"><button class="btn primary" data-go="e1" type="button">Start Experiment 1</button></div>
+  </section>
+
+  <!-- EXPERIMENTS -->
+  <section id="tab-e1" class="hidden"></section>
+  <section id="tab-e2" class="hidden"></section>
+  <section id="tab-e3" class="hidden"></section>
+
+  <!-- RESULTS -->
+  <section id="tab-res" class="hidden"></section>
+
+  <!-- INSTRUCTOR -->
+  <section id="tab-ins" class="hidden">
+    <div class="card">
+      <h2 class="ct">Combine class results (instructor)</h2>
+      <p class="sub">Students copy their results code from the Results tab and submit it, for example in a Canvas quiz or form. Paste the codes here, one per line. Everything is calculated in this browser. Nothing is uploaded.</p>
+      <textarea id="insBox" placeholder="RTLAB1|dev=kb|sv=231|sa=198|..."></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="insGo" type="button">Combine</button><button class="btn" id="insClear" type="button">Clear</button></div>
+      <div id="insOut"></div>
+    </div>
+  </section>
+  <p class="note">Nothing you do here leaves your device. Closing the page clears your results unless you copy your results code first.</p>
+</div>
+
+<script>
+(function(){
+'use strict';
+var FAST=/[?&]fast/.test(location.search);
+function $(id){return document.getElementById(id);}
+function rnd(a,b){return a+Math.random()*(b-a);}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function med(a){if(!a.length)return null;var s=a.slice().sort(function(x,y){return x-y;}),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;}
+function mean(a){if(!a.length)return null;var s=0;a.forEach(function(x){s+=x;});return s/a.length;}
+function rd(x){return x===null||x===undefined||isNaN(x)?'':String(Math.round(x));}
+function sgn(x){return (x>=0?'+':'−')+Math.abs(Math.round(x));}
+
+/* ---------- data ---------- */
+var D={r:{},done:{},skip:{},pred:{},inp:{kb:0,touch:0,mouse:0}};
+function R(k){if(!D.r[k])D.r[k]={rts:[],err:0,ant:0,miss:0,inhib:0,n:0};return D.r[k];}
+
+/* ---------- audio ---------- */
+var AC=null;
+function ac(){
+  if(!AC){var C=window.AudioContext||window.webkitAudioContext;if(C)AC=new C();}
+  if(AC&&AC.state==='suspended')AC.resume();
+  return AC;
+}
+function beep(){
+  var a=ac();if(!a)return performance.now()+30;
+  var when=a.currentTime+0.04,o=a.createOscillator(),g=a.createGain();
+  o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(0,when);g.gain.linearRampToValueAtTime(0.35,when+0.005);g.gain.setValueAtTime(0.35,when+0.2);g.gain.linearRampToValueAtTime(0,when+0.22);
+  o.connect(g);g.connect(a.destination);o.start(when);o.stop(when+0.25);
+  var perf=null;
+  if(a.getOutputTimestamp){var ts=a.getOutputTimestamp();if(ts&&ts.contextTime>0&&ts.performanceTime>0)perf=ts.performanceTime+(when-ts.contextTime)*1000;}
+  if(perf===null)perf=performance.now()+40+((a.outputLatency||a.baseLatency||0)*1000);
+  return perf;
+}
+$('beepTest').addEventListener('click',function(){beep();});
+
+/* ---------- experiment definitions ---------- */
+var BLK={
+  sv:{key:'sv',type:'simple-v',n:8,fp:[1.5,4],title:'Light',instr:'Wait for the screen to turn green. Then press the Space bar (or tap the screen) as fast as you can. Do not press early.'},
+  sa:{key:'sa',type:'simple-a',n:8,fp:[1.5,4],title:'Sound',instr:'Wait for the beep. Then press the Space bar (or tap the screen) as fast as you can. Do not press early. Make sure your sound is on.'},
+  c1:{key:'c1',type:'choice',nopts:1,n:10,fp:[1,2.5],title:'1 box',instr:'There is one box. When it lights up, press 1 or tap it.'},
+  c2:{key:'c2',type:'choice',nopts:2,n:10,fp:[1,2.5],title:'2 boxes',instr:'There are two boxes. When one lights up, press its number (1 or 2) or tap it.'},
+  c3:{key:'c3',type:'choice',nopts:3,n:12,fp:[1,2.5],title:'3 boxes',instr:'There are three boxes. When one lights up, press its number (1, 2 or 3) or tap it.'},
+  c4:{key:'c4',type:'choice',nopts:4,n:12,fp:[1,2.5],title:'4 boxes',instr:'There are four boxes. When one lights up, press its number (1, 2, 3 or 4) or tap it.'},
+  dir:{key:'dir',type:'choice',nopts:2,n:10,fp:[1,2.5],title:'Same side',instr:'Two boxes. Respond to the box that lights up. Press 1 or tap the left box, or press 2 or tap the right box.'},
+  rev:{key:'rev',type:'rev',nopts:2,n:10,fp:[1,2.5],title:'Opposite side',instr:'Two boxes. Respond to the OPPOSITE box. If the left box lights up, press 2 or tap the right box. If the right box lights up, press 1 or tap the left box.'},
+  gng:{key:'gng',type:'gng',nopts:2,n:12,fp:[1,2.5],title:'Go or stop',instr:'Two boxes. A GREEN box means go: press the box that lights up. A RED box means stop: do nothing and wait.'},
+  chg:{key:'chg',type:'chg',nopts:2,n:12,fp:[1,2.5],title:'Late change',instr:'Two boxes. A box lights up, but sometimes the light jumps to the other box after a moment. Respond to the box where the light ends up.'},
+  hint:{key:'hint',type:'hint',nopts:2,n:14,fp:[0.9,0.9],title:'Hint arrow',instr:'Two boxes. An arrow gives a hint about which box will light up. The hint is right most of the time, but not always. Respond to the box that lights up.'}
+};
+var EXP={
+  e1:{name:'Experiment 1: Simple reaction time',blocks:['sv','sa'],
+    intro:'One signal, one response. You will do two blocks in random order: a light and a sound. Each block has one practice trial and then 8 real trials. The wait before each signal changes every time, so you cannot guess.',
+    pred:{q:'Before you start: which signal do you think you will respond to faster?',opts:['Light','Sound','About the same']}},
+  e2:{name:'Experiment 2: Choice reaction time',blocks:['c1','c2','c3','c4'],
+    intro:'Now you must choose. Boxes numbered 1 to 4 appear and one lights up. You will do four blocks in random order, with 1, 2, 3 and 4 boxes.',
+    pred:{q:'Before you start: as the number of boxes goes up, what will happen to your reaction time?',opts:['It will stay about the same','It will go up a little','It will keep going up with every added box']}},
+  e3:{name:'Experiment 3: Twists',blocks:['dir','rev','gng','chg','hint'],
+    intro:'Five blocks with two boxes each, in random order. The first rule is the plain version. The other four add a twist that is like something an athlete faces: a reversed rule, a stop signal, a feint, and a hint that is sometimes wrong.',
+    pred:{q:'Before you start: which twist do you think will slow you down the most?',opts:['Opposite side','Go or stop','Late change','Hint arrow']}}
+};
+var order={};   // randomized block order per experiment
+Object.keys(EXP).forEach(function(k){order[k]=shuffle(EXP[k].blocks.slice());});
+
+/* ---------- stage and trial engine ---------- */
+var cur=null;
+function buildStage(host){
+  host.innerHTML='<div class="stagehead"><b class="blkT"></b><span class="blkP"></span><button class="btn small blkQ hidden" type="button">Stop block</button></div>'+
+    '<div class="stage" tabindex="0" data-state="idle"><div class="stmsg"></div><div class="hint"></div><div class="boxes"></div></div><p class="feed" aria-live="polite"></p>';
+  var u={host:host,T:host.querySelector('.blkT'),P:host.querySelector('.blkP'),Q:host.querySelector('.blkQ'),st:host.querySelector('.stage'),msg:host.querySelector('.stmsg'),hint:host.querySelector('.hint'),boxes:host.querySelector('.boxes'),feed:host.querySelector('.feed')};
+  u.st.addEventListener('pointerdown',function(e){if(cur&&cur.ui===u&&(cur.cfg.type==='simple-v'||cur.cfg.type==='simple-a')){e.preventDefault();resp(0,e.timeStamp,e.pointerType);}});
+  u.Q.addEventListener('click',function(){stopBlock();});
+  u.msg.textContent='Press Start next block above to begin.';
+  return u;
+}
+function clearTimers(){if(!cur)return;['timer','miss','chgT','nogoT','nextT'].forEach(function(k){if(cur[k]){clearTimeout(cur[k]);cur[k]=null;}});}
+function setBoxes(n,lit,red){
+  var b=cur.ui.boxes;b.innerHTML='';
+  for(var i=0;i<n;i++){
+    var d=document.createElement('div');d.className='box'+(i===lit?(red?' litred':' lit'):'');d.textContent=String(i+1);d.setAttribute('role','button');d.setAttribute('aria-label','Box '+(i+1));
+    (function(ix){d.addEventListener('pointerdown',function(e){e.preventDefault();resp(ix,e.timeStamp,e.pointerType);});})(i);
+    b.appendChild(d);
+  }
+}
+function genTrials(cfg){
+  var t=[],i,n=cfg.n,np=cfg.nopts||1;
+  function balanced(){var a=[];for(i=0;i<n;i++)a.push(i%np);return shuffle(a);}
+  if(cfg.type==='simple-v'||cfg.type==='simple-a'){t.push({p:true});for(i=0;i<n;i++)t.push({});}
+  else if(cfg.type==='choice'||cfg.type==='rev'){t.push({p:true,box:Math.floor(Math.random()*np)});balanced().forEach(function(b){t.push({box:b});});}
+  else if(cfg.type==='gng'){t.push({p:true,box:0});var g=[];for(i=0;i<n;i++)g.push({box:i%2,nogo:i>=9});shuffle(g).forEach(function(x){t.push(x);});}
+  else if(cfg.type==='chg'){t.push({p:true,box:1,change:false});var c=[];for(i=0;i<n;i++)c.push({box:i%2,change:i<4});shuffle(c).forEach(function(x){t.push(x);});}
+  else if(cfg.type==='hint'){t.push({p:true,box:0,valid:true});var h=[];for(i=0;i<n;i++)h.push({box:i%2,valid:i>=4});shuffle(h).forEach(function(x){if(!x.valid)x.hintBox=1-x.box;else x.hintBox=x.box;t.push(x);});t[0].hintBox=0;}
+  return t;
+}
+function resetKeys(id){(id==='chg'?['nc','chg']:(id==='hint'?['hv','hi']:[id])).forEach(function(k){delete D.r[k];});}
+function startBlock(ui,id,after){
+  resetKeys(id);var cfg=BLK[id];cur={ui:ui,cfg:cfg,id:id,trials:genTrials(cfg),idx:0,state:'idle',after:after,real:0};
+  ui.T.textContent=cfg.title;ui.P.textContent='';ui.Q.classList.remove('hidden');ui.feed.textContent='';
+  ui.st.className='stage';ui.st.dataset.state='idle';ui.hint.textContent='';
+  ui.boxes.innerHTML='';
+  ui.msg.innerHTML='<span class="instr"></span><button class="btn primary" type="button" id="goBlk">Start block</button>';
+  ui.msg.querySelector('.instr').textContent=cfg.instr+' The first trial is practice.';
+  $('goBlk').addEventListener('click',function(){nextTrial();});
+  ui.st.focus();
+}
+function stopBlock(){
+  if(!cur)return;clearTimers();var ui=cur.ui;cur=null;
+  ui.st.className='stage';ui.st.dataset.state='idle';ui.msg.textContent='Block stopped. Start it again when you are ready.';ui.boxes.innerHTML='';ui.hint.textContent='';ui.Q.classList.add('hidden');ui.T.textContent='';ui.P.textContent='';
+}
+function nextTrial(){
+  if(!cur)return;var c=cur,ui=c.ui,cfg=c.cfg;clearTimers();
+  if(c.idx>=c.trials.length){return endBlock();}
+  var tr=c.trials[c.idx];c.tr=tr;c.state='wait';c.t0=null;c.changed=false;ui.feed.textContent='';
+  ui.st.className='stage';ui.st.dataset.state='wait';ui.hint.textContent='';ui.msg.textContent=tr.p?'Practice: get ready':'Get ready';
+  ui.P.textContent=tr.p?'Practice trial':'Trial '+(c.real+1)+' of '+cfg.n;
+  if(cfg.type==='simple-v'||cfg.type==='simple-a'){ui.boxes.innerHTML='';}
+  else{setBoxes(cfg.nopts,-1);}
+  var fp=FAST?(cfg.type==='hint'?150:rnd(60,120)):rnd(cfg.fp[0],cfg.fp[1])*1000;
+  if(cfg.type==='hint'){ui.hint.textContent=tr.hintBox===0?'←':'→';ui.msg.textContent='';}
+  c.timer=setTimeout(showStim,fp);
+}
+function paintT0(){
+  var c=cur;requestAnimationFrame(function(){if(cur===c&&c.state==='stim')c.t0=performance.now();});
+}
+function showStim(){
+  if(!cur)return;var c=cur,ui=c.ui,cfg=c.cfg,tr=c.tr;c.timer=null;c.state='stim';
+  ui.st.dataset.state='stim';
+  var missMs=FAST?900:2000;
+  if(cfg.type==='simple-v'){ui.st.classList.add('go');ui.msg.textContent='GO!';paintT0();}
+  else if(cfg.type==='simple-a'){ui.msg.textContent='Listen';c.t0=beep();}
+  else if(cfg.type==='choice'){ui.msg.textContent='';setBoxes(cfg.nopts,tr.box);paintT0();}
+  else if(cfg.type==='rev'){ui.msg.textContent='';setBoxes(2,tr.box);paintT0();}
+  else if(cfg.type==='hint'){ui.msg.textContent='';setBoxes(2,tr.box);paintT0();}
+  else if(cfg.type==='gng'){ui.msg.textContent='';setBoxes(2,tr.box,tr.nogo);paintT0();
+    if(tr.nogo){c.nogoT=setTimeout(nogoOK,FAST?200:1100);}}
+  else if(cfg.type==='chg'){ui.msg.textContent='';setBoxes(2,tr.box);
+    if(tr.change){c.t0=null;c.chgT=setTimeout(doChange,FAST?80:220);}else{paintT0();}}
+  if(cfg.type!=='gng'||!tr.nogo)c.miss=setTimeout(onMiss,missMs);
+}
+function doChange(){
+  if(!cur||cur.state!=='stim')return;var c=cur;c.chgT=null;c.changed=true;setBoxes(2,1-c.tr.box);
+  requestAnimationFrame(function(){if(cur===c&&c.state==='stim')c.t0=performance.now();});
+}
+function feedback(text,ms){
+  var c=cur,ui=c.ui;ui.feed.textContent=text;c.state='feedback';ui.st.dataset.state='feedback';
+  c.nextT=setTimeout(function(){if(cur===c)nextTrial();},FAST?30:(ms||800));
+}
+function realKey(){var c=cur;if(c.cfg.type==='chg')return c.tr.change?'chg':'nc';if(c.cfg.type==='hint')return c.tr.valid?'hv':'hi';return c.cfg.key;}
+function nogoOK(){
+  if(!cur||cur.state!=='stim')return;var c=cur;c.nogoT=null;
+  if(!c.tr.p){R('gng').inhib++;R('gng').n++;}
+  c.idx++;if(!c.tr.p)c.real++;
+  c.ui.st.classList.remove('nogo');feedback('Good. You held back.',700);
+}
+function onMiss(){
+  if(!cur||cur.state!=='stim')return;var c=cur;c.miss=null;c.streak=0;
+  if(!c.tr.p){var o=R(realKey());o.miss++;o.n++;}
+  c.idx++;if(!c.tr.p)c.real++;
+  feedback('Too slow. Try to respond faster.',900);
+}
+function anticipation(){
+  var c=cur;clearTimers();c.streak=0;
+  if(!c.tr.p){R(c.cfg.type==='chg'?'chg':(c.cfg.type==='hint'?(c.tr.valid?'hv':'hi'):c.cfg.key)).ant++;}
+  c.ui.hint.textContent='';c.ui.msg.textContent='Too soon! Wait for the signal.';
+  c.state='feedback';c.ui.st.dataset.state='feedback';c.ui.feed.textContent='Anticipation. That trial will repeat.';
+  c.nextT=setTimeout(function(){if(cur===c)nextTrial();},FAST?40:1200);
+}
+function expected(c){
+  var tr=c.tr,t=c.cfg.type;
+  if(t==='simple-v'||t==='simple-a')return 0;
+  if(t==='rev')return 1-tr.box;
+  if(t==='chg')return tr.change?1-tr.box:tr.box;
+  return tr.box;
+}
+function resp(idx,ts,src){
+  if(!cur)return;var c=cur;
+  var kind=(src==='key')?'kb':(src==='touch'||src==='pen'?'touch':'mouse');
+  if(c.state==='wait'){D.inp[kind]++;anticipation();return;}
+  if(c.state!=='stim')return;
+  D.inp[kind]++;
+  var cfg=c.cfg,tr=c.tr;
+  if(cfg.type==='gng'&&tr.nogo){
+    clearTimers();c.streak=0;if(!tr.p){var o=R('gng');o.err++;o.n++;}
+    c.idx++;if(!tr.p)c.real++;c.ui.st.classList.remove('nogo');feedback('That was a STOP signal. You should not respond.',1100);return;
+  }
+  if(cfg.type==='chg'&&tr.change&&!c.changed){
+    clearTimers();c.streak=0;if(!tr.p){var o2=R('chg');o2.err++;o2.n++;}
+    c.idx++;if(!tr.p)c.real++;feedback('You went to the first light. Wait to see where it ends up.',1100);return;
+  }
+  if(c.t0===null||c.t0===undefined)return;
+  var rt=ts-c.t0;
+  if(rt<100){anticipation();return;}
+  clearTimers();
+  var key=realKey(),o3=R(key),ok=(idx===expected(c));
+  if(cfg.type==='simple-v'||cfg.type==='simple-a')ok=true;
+  if(!tr.p){o3.n++;if(ok)o3.rts.push(rt);else o3.err++;}
+  c.idx++;if(!tr.p)c.real++;
+  c.ui.st.classList.remove('go');
+  if(!ok){c.streak=0;feedback('Wrong box. Check the rule.',1100);return;}
+  var isBest=false,line;
+  if(!tr.p){c.streak=(c.streak||0)+1;if(c.best===undefined||rt<c.best){isBest=c.best!==undefined;c.best=rt;}}
+  if(tr.p)line='Practice rep';
+  else if(isBest)line='New block best!';
+  else if(c.streak>=4&&c.streak%4===0)line=c.streak+' in a row!';
+  else line=CHEERS[Math.floor(Math.random()*CHEERS.length)];
+  c.ui.msg.innerHTML='<div class="rtnum">'+Math.round(rt)+'<small>ms</small></div><div class="cheer'+(isBest?' best':'')+'">'+line+'</div>';
+  feedback('',900);
+}
+var CHEERS=['Wahoo!','Quick hands!','Hoos fast!','Nice!','Locked in!','Sharp!','Smooth!','Good rep!','Ready!','On it!'];
+function endBlock(){
+  var c=cur,ui=c.ui;cur=null;ui.st.className='stage';ui.st.dataset.state='idle';ui.boxes.innerHTML='';ui.hint.textContent='';
+  ui.msg.innerHTML='<div class="cheer">Block complete. Wahoowa!</div>'+(c.best!==undefined?'<div class="streak" style="margin-top:8px">BLOCK BEST</div><div class="rtnum">'+Math.round(c.best)+'<small>ms</small></div>':'');ui.Q.classList.add('hidden');ui.P.textContent='';ui.feed.textContent='';
+  D.done[c.id]=true;if(c.after)c.after();
+}
+document.addEventListener('keydown',function(e){
+  if(!cur||e.repeat)return;
+  if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'))return;
+  var t=cur.cfg.type,k=e.key;
+  if(cur.state==='idle')return;
+  if(t==='simple-v'||t==='simple-a'){if(k===' '||k==='Enter'){e.preventDefault();resp(0,e.timeStamp,'key');}return;}
+  var ix=-1;
+  if(k>='1'&&k<='4')ix=Number(k)-1;
+  else if(k==='ArrowLeft')ix=0;else if(k==='ArrowRight')ix=cur.cfg.nopts>1?1:0;
+  if(ix>=0){
+    if(ix>=cur.cfg.nopts)return;
+    e.preventDefault();resp(ix,e.timeStamp,'key');
+  } else if(k===' '){e.preventDefault();}
+},true);
+
+/* ---------- experiment panels ---------- */
+var UI={};
+function buildExp(id){
+  var ex=EXP[id],host=$('tab-'+id);
+  var h='<div class="card"><h2 class="ct">'+ex.name+'</h2><p>'+ex.intro+'</p>'+
+    '<div class="pred"><b>'+ex.pred.q+'</b>'+ex.pred.opts.map(function(o,i){return '<label><input type="radio" name="pred-'+id+'" value="'+o+'"> '+o+'</label>';}).join('')+'</div>'+
+    '<div class="chips" id="chips-'+id+'"></div>'+
+    '<div class="row"><button class="btn primary" id="next-'+id+'" type="button">Start next block</button>'+
+    (id==='e1'?'<button class="btn" id="skipSa" type="button">No headphones? Skip the sound block</button>':'')+'</div></div>'+
+    '<div class="card"><div id="stage-'+id+'"></div></div>'+
+    '<div class="card hidden" id="sum-'+id+'"><h2 class="ct">What you found</h2><div id="sumbody-'+id+'"></div><div class="row" style="margin-top:10px"><button class="btn primary" data-go="'+(id==='e1'?'e2':id==='e2'?'e3':'res')+'" type="button">'+(id==='e3'?'See all results':'Next experiment')+'</button></div></div>';
+  host.innerHTML=h;
+  UI[id]=buildStage($('stage-'+id));
+  host.querySelectorAll('input[type=radio]').forEach(function(r){r.addEventListener('change',function(){D.pred[id]=r.value;});});
+  $('next-'+id).addEventListener('click',function(){
+    if(cur)return;var nb=order[id].filter(function(b){return !D.done[b];})[0];
+    if(!nb)return;ac();startBlock(UI[id],nb,function(){refreshExp(id);});
+    UI[id].host.scrollIntoView({block:'center',behavior:'smooth'});
+  });
+  if(id==='e1')$('skipSa').addEventListener('click',function(){
+    if(cur||D.done.sa)return;
+    if(!confirm('Skip the sound block? You will still do the light block, but you will not get a light versus sound comparison.'))return;
+    delete D.r.sa;D.done.sa=true;D.skip.sa=true;refreshExp('e1');
+  });
+  refreshExp(id);
+}
+function refreshExp(id){
+  var ch=$('chips-'+id),h='',nextFound=false;
+  order[id].forEach(function(b,i){
+    var cls='chip';if(D.done[b])cls+=' done';else if(!nextFound){cls+=' next';nextFound=true;}
+    h+='<span class="'+cls+'">Block '+(i+1)+': '+BLK[b].title+(D.done[b]?(D.skip[b]?' (skipped)':' (done)'):'')+'</span>';
+  });
+  ch.innerHTML=h;
+  if(id==='e1')$('skipSa').classList.toggle('hidden',!!D.done.sa);
+  var all=order[id].every(function(b){return D.done[b];});
+  $('next-'+id).disabled=all;
+  if(all){$('next-'+id).textContent='All blocks done';$('sum-'+id).classList.remove('hidden');renderSummary(id);}
+}
+function medOf(k){var r=D.r[k];return r&&r.rts.length>=3?med(r.rts):null;}
+function accOf(k){var r=D.r[k];if(!r||!r.n)return null;return r.rts.length/r.n*100;}
+function renderSummary(id){
+  var b=$('sumbody-'+id),h='';
+  if(id==='e1'){
+    var v=medOf('sv'),a=medOf('sa');
+    h='<p>Median reaction time: <b>light '+(v===null?'n/a':rd(v)+' ms')+'</b> and <b>sound '+(D.skip.sa?'skipped':(a===null?'n/a':rd(a)+' ms'))+'</b>.</p>';
+    if(v!==null&&a!==null)h+='<p>You responded <b>'+Math.abs(Math.round(v-a))+' ms '+(a<v?'faster to the sound':(a>v?'faster to the light':'the same'))+'</b>. In lab studies sound is usually a bit faster, because the hearing system passes signals along quickly. Device delays can hide or exaggerate this, so look at your own pattern.</p>';
+    if(D.pred.e1)h+='<p class="note">Your prediction: '+D.pred.e1+'.</p>';
+  } else if(id==='e2'){
+    var ks=['c1','c2','c3','c4'];h='<p>Median reaction time by number of boxes:</p>'+barsFor(ks.map(function(k){return {l:BLK[k].title,v:medOf(k)};}));
+    var s=hick();if(s!==null)h+='<p>Each time the number of choices <b>doubles</b>, your reaction time went up by about <b>'+Math.round(s)+' ms</b>. This is called Hick’s law. More options means more time to decide.</p>';
+    if(D.pred.e2)h+='<p class="note">Your prediction: '+D.pred.e2+'.</p>';
+  } else {
+    var ks3=['dir','rev','gng','chg','hv','hi'];
+    h='<p>Median reaction time:</p>'+barsFor([{l:'Same side',v:medOf('dir')},{l:'Opposite side',v:medOf('rev')},{l:'Go (green)',v:medOf('gng')},{l:'Late change: no change',v:medOf('nc')},{l:'Late change: after the jump',v:medOf('chg')},{l:'Hint was right',v:medOf('hv')},{l:'Hint was wrong',v:medOf('hi')}]);
+    if(D.pred.e3)h+='<p class="note">Your prediction: '+D.pred.e3+'.</p>';
+  }
+  b.innerHTML=h;
+}
+function barsFor(items){
+  var mx=0;items.forEach(function(i){if(i.v!==null&&i.v>mx)mx=i.v;});
+  if(!mx)return '<p class="note">Not enough valid trials yet.</p>';
+  return items.map(function(i){return '<div class="barrow"><span>'+i.l+'</span><span>'+(i.v===null?'':'<div class="bar" style="width:'+Math.max(2,i.v/mx*100)+'%"></div>')+'</span><b>'+(i.v===null?'n/a':rd(i.v)+' ms')+'</b></div>';}).join('');
+}
+function hick(){
+  var pts=[];[['c1',0],['c2',1],['c3',Math.log(3)/Math.log(2)],['c4',2]].forEach(function(p){var m=medOf(p[0]);if(m!==null)pts.push([p[1],m]);});
+  if(pts.length<3)return null;
+  var n=pts.length,sx=0,sy=0,sxx=0,sxy=0;pts.forEach(function(p){sx+=p[0];sy+=p[1];sxx+=p[0]*p[0];sxy+=p[0]*p[1];});
+  var den=n*sxx-sx*sx;if(!den)return null;return (n*sxy-sx*sy)/den;
+}
+
+/* ---------- results ---------- */
+function codeStr(){
+  var dev='kb',m=D.inp;if(m.touch>m.kb&&m.touch>=m.mouse)dev='touch';else if(m.mouse>m.kb&&m.mouse>m.touch)dev='mouse';
+  var keys=['sv','sa','c1','c2','c3','c4','dir','rev','gng','nc','chg','hv','hi'];
+  var parts=['RTLAB1','dev='+dev];keys.forEach(function(k){parts.push(k+'='+rd(medOf(k)));});
+  var ant=0,err=0;Object.keys(D.r).forEach(function(k){ant+=D.r[k].ant;err+=D.r[k].err;});
+  parts.push('ant='+ant);parts.push('err='+err);
+  return parts.join('|');
+}
+var NAMES={sv:'Simple: light',sa:'Simple: sound',c1:'Choice: 1 box',c2:'Choice: 2 boxes',c3:'Choice: 3 boxes',c4:'Choice: 4 boxes',dir:'Same side (2 boxes)',rev:'Opposite side',gng:'Go or stop (go trials)',nc:'Late change: light stays',chg:'Late change: light jumps',hv:'Hint was right',hi:'Hint was wrong'};
+function renderResults(){
+  var host=$('tab-res'),keys=Object.keys(NAMES),any=keys.some(function(k){return medOf(k)!==null;});
+  if(!any){host.innerHTML='<div class="card"><h2 class="ct">Results</h2><p>Complete at least one experiment to see your results here.</p></div>';return;}
+  var h='<div class="card"><h2 class="ct">Your reaction times</h2><table class="t"><tr><th>Condition</th><th class="n">Median (ms)</th><th class="n">Best (ms)</th><th class="n">Correct</th><th class="n">Wrong</th><th class="n">Too early</th></tr>';
+  keys.forEach(function(k){
+    var r=D.r[k];if(!r||!r.n&&!r.ant)return;
+    var best=r.rts.length?Math.min.apply(null,r.rts):null,accTxt=r.n?r.rts.length+(k==='gng'?r.inhib:0)+' of '+r.n:'';
+    if(k==='gng'){accTxt=(r.rts.length+r.inhib)+' of '+r.n;}
+    h+='<tr><td>'+NAMES[k]+'</td><td class="n">'+(medOf(k)===null?'n/a':rd(medOf(k)))+'</td><td class="n">'+rd(best)+'</td><td class="n">'+accTxt+'</td><td class="n">'+(r.err+r.miss)+'</td><td class="n">'+r.ant+'</td></tr>';
+  });
+  h+='</table><p class="note" style="margin-top:8px">The median is the middle of your valid trials. Wrong means the wrong box, a response to a stop signal, or a response that was too slow.</p></div>';
+  // badges
+  var bg=[],allRts=[],totErr=0,totAnt=0;
+  Object.keys(D.r).forEach(function(k){allRts=allRts.concat(D.r[k].rts);totErr+=D.r[k].err+D.r[k].miss;totAnt+=D.r[k].ant;});
+  if(allRts.length)bg.push(['Quick Draw','Fastest single reaction: '+Math.round(Math.min.apply(null,allRts))+' ms']);
+  if(D.done.sv&&D.done.sa&&medOf('sa')!==null&&medOf('sv')!==null)bg.push(medOf('sa')<medOf('sv')?['Ears On','Faster to sound than light']:['Eagle Eye','Faster to light than sound']);
+  if(D.r.gng&&D.r.gng.n&&!D.r.gng.err)bg.push(['Ice Veins','Never fooled by a stop signal']);
+  if(D.r.chg&&D.r.chg.n&&!D.r.chg.err)bg.push(['Unfakeable','Waited out every late change']);
+  if(['e1','e2','e3'].every(function(x){return order[x].every(function(b){return D.done[b];});}))bg.push(['Full Season','Finished all three experiments']);
+  if(allRts.length&&!totErr&&!totAnt)bg.push(['Clean Sheet','No wrong, slow, or early responses']);
+  if(bg.length)h='<div class="card"><h2 class="ct">Your badges</h2><div class="badges">'+bg.map(function(b){return '<div class="badge"><div class="bt">'+b[0]+'</div><div class="bd">'+b[1]+'</div></div>';}).join('')+'</div></div>'+h;
+  // differences
+  var d=[],s,v;
+  var sv=medOf('sv'),sa=medOf('sa');if(sv!==null&&sa!==null)d.push([sgn(sv-sa)+' ms','Light minus sound','If positive, you were faster to the sound.']);
+  s=hick();if(s!==null)d.push(['+'+Math.round(s)+' ms','Cost of each doubling of choices','From your 1, 2, 3 and 4 box blocks.']);
+  var dr=medOf('dir'),rv=medOf('rev');if(dr!==null&&rv!==null)d.push([sgn(rv-dr)+' ms','Opposite side minus same side','The cost of translating a cue into the opposite response.']);
+  var gn=medOf('gng');if(dr!==null&&gn!==null)d.push([sgn(gn-dr)+' ms','Go trials with a stop signal possible, minus plain two-box','The cost of holding back. Stop errors: '+(D.r.gng?D.r.gng.err:0)+'.']);
+  var nc=medOf('nc'),ch=medOf('chg');if(nc!==null&&ch!==null)d.push([sgn(ch-nc)+' ms','After a late change minus no change','Time to change your mind. Wrong first moves: '+(D.r.chg?D.r.chg.err:0)+'.']);
+  var hv=medOf('hv'),hi=medOf('hi');if(hv!==null&&dr!==null)d.push([sgn(hv-dr)+' ms','Right hint minus no hint','A correct hint lets you prepare, so this is usually negative.']);
+  if(hv!==null&&hi!==null)d.push([sgn(hi-hv)+' ms','Wrong hint minus right hint','The price of being fooled.']);
+  if(d.length){h+='<div class="card"><h2 class="ct">What changed your reaction time</h2><div class="diff">'+d.map(function(x){return '<div class="dcard"><div class="v">'+x[0]+'</div><b>'+x[1]+'</b><div class="l">'+x[2]+'</div></div>';}).join('')+'</div></div>';}
+  // predictions
+  var pr='';
+  if(D.pred.e1&&sv!==null&&sa!==null){var f=sa<sv?'Sound':(sv<sa?'Light':'About the same');pr+='<p><b>Experiment 1.</b> You predicted: '+D.pred.e1+'. Faster for you: '+f+'.</p>';}
+  if(D.pred.e2&&s!==null)pr+='<p><b>Experiment 2.</b> You predicted: '+D.pred.e2+'. Your reaction time rose about '+Math.round(s)+' ms with each doubling of choices.</p>';
+  if(D.pred.e3){var tw=[['Opposite side',rv!==null&&dr!==null?rv-dr:null],['Go or stop',gn!==null&&dr!==null?gn-dr:null],['Late change',nc!==null&&ch!==null?ch-nc:null],['Hint arrow',hv!==null&&hi!==null?hi-hv:null]].filter(function(x){return x[1]!==null;});
+    if(tw.length){tw.sort(function(a,b){return b[1]-a[1];});pr+='<p><b>Experiment 3.</b> You predicted: '+D.pred.e3+'. The biggest cost for you was: '+tw[0][0]+' (+'+Math.round(tw[0][1])+' ms).</p>';}}
+  if(pr)h+='<div class="card"><h2 class="ct">Your predictions</h2>'+pr+'</div>';
+  // distance
+  h+='<div class="card"><h2 class="ct">What reaction time means for agility</h2><p>While you decide, your body keeps moving. The distance you travel before you start to react is <b>speed × reaction time</b>.</p>'+
+     '<div class="row" style="margin-bottom:8px"><label>Your speed (m/s) <input type="number" id="spd" value="5" min="1" max="10" step="0.5"></label><span class="note">Walking 1.5, jogging 3, running 5, sprinting 8</span></div><div id="distOut"></div>'+
+     '<h3>Think about it</h3>'+
+     qa('Why do reactive agility tests tell coaches more than pre-planned drills?','In a planned drill the athlete already knows where to go, so there is almost no decision cost. In a reactive drill the athlete must also perceive the cue and choose a response. The costs you measured here (more choices, rules, fakes) are added on top of how fast the athlete can cut.')+
+     qa('How could an athlete shrink the cost of many choices?','By reading cues earlier, such as an opponent’s hips and shoulders, by learning the common patterns of a sport so that fewer options need a decision, and by practicing the same scenes until the response becomes automatic.')+
+     qa('Why is a wrong hint or a fake so costly?','Acting on a guess is fast when the guess is right and slow when it is wrong, because you must stop, re-decide and start a new movement. That is why defenders and attackers use fakes.')+
+     qa('Why compare your own conditions instead of comparing numbers with a classmate?','Screens, keyboards, speakers and phones add different delays. Those delays are about the same inside one device, so the differences between your conditions stay meaningful.')+'</div>';
+  // code
+  var code=codeStr();
+  h+='<div class="card"><h2 class="ct">Class contest: save your results for the scoreboard</h2><p class="sub">Type your name, then save the file and turn it in where your instructor tells you. The file holds your name and your median times only.</p>'+
+     '<div class="row"><label for="sbName" style="font-size:14px;font-weight:700">Your name</label><input type="text" id="sbName" maxlength="40" autocomplete="off" style="flex:1;min-width:180px;font-size:15px;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-family:inherit"><button class="btn primary" id="dlSb" type="button">Save for scoreboard</button></div><p class="note" id="sbMsg" style="margin:8px 0 0"></p></div>';
+  h+='<div class="card"><h2 class="ct">Your results code</h2><p class="sub">If your instructor asks for it, copy this code and paste it where you are told. It contains your median times only. It has no name.</p><textarea id="codeBox" readonly>'+code+'</textarea>'+
+     '<div class="row" style="margin-top:8px"><button class="btn primary" id="copyCode" type="button">Copy code</button><button class="btn" id="dlCsv" type="button">Save as a spreadsheet</button><span class="note" id="copyMsg"></span></div></div>';
+  host.innerHTML=h;
+  function dist(){
+    var sp=Number($('spd').value)||0,rows=[['Light (simple)',sv],['Sound (simple)',sa],['4 choices',medOf('c4')],['Opposite side',rv],['After a late change',ch]].filter(function(r){return r[1]!==null;});
+    $('distOut').innerHTML='<table class="t"><tr><th>Reaction</th><th class="n">Time (ms)</th><th class="n">Distance traveled (m)</th></tr>'+rows.map(function(r){return '<tr><td>'+r[0]+'</td><td class="n">'+rd(r[1])+'</td><td class="n">'+(sp*r[1]/1000).toFixed(2)+'</td></tr>';}).join('')+'</table>';
+  }
+  $('spd').addEventListener('input',dist);dist();
+  $('sbName').value=D.name||'';
+  $('sbName').addEventListener('input',function(){D.name=this.value;});
+  $('dlSb').addEventListener('click',function(){
+    var nm=$('sbName').value.replace(/[|\r\n,]+/g,' ').replace(/\s+/g,' ').trim();
+    if(!nm){$('sbMsg').textContent='Type your name first.';$('sbName').focus();return;}
+    var fn='RTLAB_'+(nm.replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'results')+'.txt';
+    var blob=new Blob([nm+', '+codeStr()+'\n'],{type:'text/plain'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);},500);
+    $('sbMsg').textContent='Saved as '+fn+'. Check your Downloads folder.';
+  });
+  $('copyCode').addEventListener('click',function(){
+    var box=$('codeBox');box.select();var ok=false;
+    try{ok=document.execCommand('copy');}catch(e){}
+    if(!ok&&navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(code).then(function(){$('copyMsg').textContent='Copied.';},function(){$('copyMsg').textContent='Select the code and copy it by hand.';});}
+    else{$('copyMsg').textContent=ok?'Copied.':'Select the code and copy it by hand.';}
+  });
+  $('dlCsv').addEventListener('click',function(){
+    var rows=['condition,median_ms,valid_trials,wrong_or_slow,too_early'];
+    Object.keys(NAMES).forEach(function(k){var r=D.r[k];if(r)rows.push('"'+NAMES[k]+'",'+rd(medOf(k))+','+r.rts.length+','+(r.err+r.miss)+','+r.ant);});
+    var blob=new Blob([rows.join('\n')],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='reaction-time-results.csv';document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);},500);
+  });
+}
+function qa(q,a){return '<details><summary>'+q+'</summary><div class="qa">'+a+'</div></details>';}
+
+/* ---------- instructor combiner ---------- */
+function parseCode(line){
+  var at=line.indexOf('RTLAB1|');if(at<0)return null;line=line.slice(at).trim();var o={};line.split('|').slice(1).forEach(function(p){var i=p.indexOf('=');if(i>0)o[p.slice(0,i)]=p.slice(i+1);});return o;
+}
+function combine(){
+  var codes=$('insBox').value.split(/\r?\n/).map(parseCode).filter(function(x){return x;});
+  var out=$('insOut');if(!codes.length){out.innerHTML='<div class="msg warn">No valid codes found. Each line should start with RTLAB1.</div>';return;}
+  var keys=Object.keys(NAMES),rows='',items=[],stats={};
+  keys.forEach(function(k){
+    var v=codes.map(function(c){return c[k]===''||c[k]===undefined?NaN:Number(c[k]);}).filter(function(x){return !isNaN(x);});
+    stats[k]=v.length?med(v):null;
+    if(v.length){rows+='<tr><td>'+NAMES[k]+'</td><td class="n">'+rd(med(v))+'</td><td class="n">'+rd(mean(v))+'</td><td class="n">'+rd(Math.min.apply(null,v))+' to '+rd(Math.max.apply(null,v))+'</td><td class="n">'+v.length+'</td></tr>';items.push({l:NAMES[k],v:med(v)});}
+  });
+  var dev={};codes.forEach(function(c){dev[c.dev]=(dev[c.dev]||0)+1;});
+  var diffs=[];
+  function df(a,b,l){if(stats[a]!==null&&stats[b]!==null)diffs.push('<div class="dcard"><div class="v">'+sgn(stats[a]-stats[b])+' ms</div><b>'+l+'</b></div>');}
+  df('sv','sa','Light minus sound');df('c4','c1','4 choices minus 1 box');df('rev','dir','Opposite side minus same side');df('gng','dir','Go trials minus plain two-box');df('chg','nc','After a late change minus no change');df('hi','hv','Wrong hint minus right hint');
+  out.innerHTML='<h3>'+codes.length+' result code'+(codes.length===1?'':'s')+' combined</h3><p class="note">Devices: '+Object.keys(dev).map(function(k){return k+' '+dev[k];}).join(', ')+'. Medians of student medians are shown.</p>'+
+    '<table class="t"><tr><th>Condition</th><th class="n">Class median (ms)</th><th class="n">Class mean (ms)</th><th class="n">Range (ms)</th><th class="n">Students</th></tr>'+rows+'</table>'+
+    '<h3>Class pattern</h3>'+barsFor(items)+(diffs.length?'<h3>Class differences</h3><div class="diff">'+diffs.join('')+'</div>':'');
+}
+$('insGo').addEventListener('click',combine);
+$('insClear').addEventListener('click',function(){$('insBox').value='';$('insOut').innerHTML='';});
+
+/* ---------- tabs ---------- */
+function showTab(t){
+  document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-tab')===t);});
+  ['start','e1','e2','e3','res','ins'].forEach(function(x){$('tab-'+x).classList.toggle('hidden',x!==t);});
+  if(t==='res')renderResults();
+  window.scrollTo({top:0});
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-tab]');if(b&&b.parentNode&&b.parentNode.id==='tabs'){if(cur)stopBlock();showTab(b.getAttribute('data-tab'));return;}
+  var g=e.target.closest('[data-go]');if(g){if(cur)stopBlock();showTab(g.getAttribute('data-go'));}
+});
+['e1','e2','e3'].forEach(buildExp);
+})();
+</script>
+</body>
+</html>
