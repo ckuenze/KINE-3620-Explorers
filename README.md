@@ -20,6 +20,8 @@ Each tool is a single HTML file that runs in any modern web browser. There's not
 | Tool | Topic | Use |
 |---|---|---|
 | [Countermovement Jump Explorer](countermovement-jump-explorer/) | Force, impulse, COM motion, and jump height in the CMJ | In-class |
+| [Reaction Time Lab](reaction-time-lab/) | Simple and choice reaction time, Hick's law, feints, and reactive agility | In-class |
+| [Reaction Time Classic Scoreboard](reaction-time-scoreboard/) | Class contest scoreboard for the Reaction Time Lab (instructor) | In-class |
 
 ## How to open a tool
 
