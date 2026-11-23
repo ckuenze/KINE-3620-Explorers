@@ -21,6 +21,7 @@ Each tool is a single HTML file that runs in any modern web browser. There's not
 |---|---|---|
 | [Countermovement Jump Explorer](countermovement-jump-explorer/) | Force, impulse, COM motion, and jump height in the CMJ | In-class |
 | [Reaction Time Lab](reaction-time-lab/) | Simple and choice reaction time, Hick's law, feints, and reactive agility, with a class contest scoreboard | In-class |
+| [Throwing Phase Explorer](throwing-phase-explorer/) | Phases, events, and shoulder and elbow loading in baseball vs. windmill softball pitching | Pre-class |
 
 ## How to open a tool
 

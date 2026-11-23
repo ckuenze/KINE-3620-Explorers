@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Throwing Phase Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158;
+    --stance:#2F6F63; --rust:#B8622A; --amber:#E8B23D; --line-blue:#3A5B8C; --purple:#7A5C8A; --line:#D8DED7; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:28px 18px 60px;}
+  .wrap{max-width:1040px;margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 20px;max-width:720px;line-height:1.5;}
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);margin-bottom:16px;min-width:0;}
+  h2.window-title{margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;}
+  .window-sub{color:var(--ink-soft);font-size:13.5px;margin:0 0 16px;line-height:1.5;}
+  h3{margin:0 0 10px;font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:var(--ink-soft);}
+  .note{font-size:12.5px;line-height:1.6;color:#33392f;}
+  button{font-family:'Inter',sans-serif;}
+
+  /* segmented toggles */
+  .axis-mode-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .axis-mode-label{font-size:12.5px;font-weight:700;color:var(--ink-soft);}
+  .axis-mode-group{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:9px;flex-wrap:wrap;}
+  .axis-mode-btn{border:none;background:transparent;padding:6px 13px;border-radius:7px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--ink-soft);}
+  .axis-mode-btn.active{background:var(--ink);color:#fff;}
+
+  /* stage */
+  .stage-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+  .stage-grid.both{grid-template-columns:1fr 1fr;}
+  @media (max-width:640px){ .stage-grid.both{grid-template-columns:1fr;} }
+  .stage{background:#FBFCFA;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .stage svg{width:100%;height:auto;display:block;}
+  .stage-grid:not(.both) .stage{max-width:660px;width:100%;margin:0 auto;}
+  .stage-phase{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;}
+  .stage-sport{font-family:'Inter',sans-serif;font-weight:700;font-size:13px;fill:var(--ink-soft);}
+  .stage-small{font-family:'Inter',sans-serif;font-size:12.5px;fill:var(--ink-soft);}
+
+  .controls{display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap;}
+  .btn{font-weight:600;font-size:14px;border:none;border-radius:9px;padding:9px 16px;cursor:pointer;transition:transform 0.08s ease;}
+  .btn:active{transform:scale(0.96);}
+  #playBtn{background:var(--ink);color:#fff;min-width:78px;}
+  .step-btn{background:var(--card);color:var(--ink);border:1px solid var(--line);}
+  .step-btn:hover{background:#E4EEEA;}
+  .toggle-btn{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;font-weight:700;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:7px;color:var(--ink-soft);}
+  .toggle-btn .sw{opacity:0.35;}
+  .toggle-btn.active{border-color:var(--amber);color:var(--ink);}
+  .toggle-btn.active .sw{opacity:1;}
+
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--line);border-radius:4px;outline:none;margin:16px 0 4px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;margin-top:-8px;}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
+  .readout{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft);}
+  .readout b{font-family:'Space Grotesk',sans-serif;color:var(--ink);}
+
+  .legend{display:flex;gap:8px 16px;justify-content:center;margin-top:12px;font-size:12px;font-weight:600;color:var(--ink-soft);flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .sw{width:14px;height:5px;border-radius:3px;display:inline-block;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  /* timeline */
+  .tl-block{margin-top:16px;}
+  .tl-sport{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;margin-bottom:2px;}
+  .tl-track{position:relative;}
+  .tl-events{position:relative;height:30px;}
+  .tl-ev{position:absolute;bottom:0;transform:translateX(-50%);font-size:10.5px;font-weight:700;color:var(--ink-soft);white-space:nowrap;text-align:center;line-height:1;}
+  .tl-ev::after{content:'';display:block;width:1.5px;height:5px;background:var(--ink-soft);margin:2px auto 0;}
+  .tl-ev.r1{bottom:14px;}
+  .tl-ev.r1::after{height:19px;}
+  .segbar{position:relative;height:40px;border-radius:8px;overflow:hidden;display:flex;border:1px solid var(--line);cursor:pointer;}
+  .seg{position:relative;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#fff;text-align:center;line-height:1.1;overflow:hidden;white-space:nowrap;opacity:0.42;transition:opacity .15s;padding:0 1px;}
+  .seg.dark-text{color:var(--ink);}
+  .seg.active{opacity:1;}
+  .seg + .seg{border-left:1px solid rgba(255,255,255,0.6);}
+  .tl-marker{position:absolute;bottom:-5px;width:2px;height:50px;background:var(--ink);pointer-events:none;margin-left:-1px;}
+  .tl-marker::before{content:'';position:absolute;top:-7px;left:-6px;width:14px;height:14px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 3px white, 0 1px 4px rgba(0,0,0,0.25);}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+  .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .chip.active{color:var(--ink);border-color:var(--ink);}
+  .tl-key{font-size:11.5px;color:var(--ink-soft);margin-top:8px;line-height:1.5;}
+
+  /* phase info */
+  .row{display:grid;grid-template-columns:1fr;gap:16px;}
+  .row.both{grid-template-columns:1fr 1fr;}
+  @media (max-width:720px){ .row.both{grid-template-columns:1fr;} }
+  .phase-title{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;margin:0 0 10px;}
+  .meta{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13.5px;line-height:1.45;margin-bottom:12px;}
+  .meta dt{font-weight:700;color:var(--ink-soft);}
+  .meta dd{margin:0;}
+  .purpose{font-size:14px;line-height:1.55;color:#33392f;margin:0 0 8px;}
+  .actions{margin:0 0 4px;padding-left:20px;font-size:14px;line-height:1.55;color:#33392f;}
+  .actions li{margin-bottom:4px;}
+  .feat-explain{margin-top:10px;font-size:13px;line-height:1.5;color:#33392f;background:#F1F4F0;border-radius:10px;padding:11px 13px;min-height:20px;}
+
+  /* charts */
+  svg.chart{width:100%;height:auto;display:block;}
+  .axis-label{font-size:11px;fill:var(--ink-soft);font-family:'Inter',sans-serif;}
+  .panel-title{font-size:11.5px;font-weight:700;fill:var(--ink);font-family:'Inter',sans-serif;}
+  .ann{font-size:11px;font-weight:700;font-family:'Inter',sans-serif;}
+  .chart-block + .chart-block{margin-top:22px;}
+  .chart-block h4{margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;}
+
+  /* compare table */
+  .table-wrap{overflow-x:auto;}
+  table.compare{width:100%;border-collapse:collapse;font-size:13px;line-height:1.45;}
+  table.compare th, table.compare td{text-align:left;vertical-align:top;padding:8px 8px;border-bottom:1px solid var(--line);}
+  table.compare th{font-family:'Space Grotesk',sans-serif;font-size:13px;}
+  table.compare td:first-child{font-weight:700;color:var(--ink-soft);width:24%;}
+  @media (max-width:480px){ table.compare{font-size:12px;} table.compare th, table.compare td{padding:7px 4px;} }
+
+  /* quiz */
+  .q{border-top:1px solid var(--line);padding:14px 0 4px;}
+  .q:first-of-type{border-top:none;padding-top:4px;}
+  .q-text{font-weight:700;font-size:14.5px;line-height:1.45;margin-bottom:8px;}
+  .q-opts{display:flex;flex-direction:column;gap:6px;}
+  .q-opt{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;font-weight:600;font-size:13px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.4;}
+  .q-opt:hover{border-color:var(--ink-soft);}
+  .q-opt.right{border-color:var(--stance);background:#E4EEEA;}
+  .q-opt.wrong{border-color:var(--rust);background:#F5E7DC;}
+  .q .feat-explain{display:none;}
+  .q.answered .feat-explain{display:block;}
+  .score{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:var(--ink-soft);}
+
+  .refs{font-size:12.5px;line-height:1.55;color:#33392f;padding-left:20px;margin:8px 0 0;}
+  .refs li{margin-bottom:4px;overflow-wrap:anywhere;}
+  .refs a{color:var(--line-blue);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Throwing Phase Explorer</h1>
+  <p class="subtitle">Step through the phases of an overhand baseball pitch and a windmill softball pitch. Watch where the arm goes, which feet are on the ground, and where the load lands on the shoulder and elbow.</p>
+
+  <!-- ============ Figure + controls ============ -->
+  <div class="card">
+    <div class="axis-mode-row">
+      <span class="axis-mode-label">Show:</span>
+      <div class="axis-mode-group" id="sportGroup">
+        <button class="axis-mode-btn active" data-mode="baseball" aria-pressed="true">Baseball pitch (overhand)</button>
+        <button class="axis-mode-btn" data-mode="softball" aria-pressed="false">Windmill softball pitch</button>
+        <button class="axis-mode-btn" data-mode="both" aria-pressed="false">Side-by-side</button>
+      </div>
+    </div>
+
+    <div class="stage-grid" id="stageGrid">
+      <div class="stage" id="stage-baseball"><svg id="fig-baseball" viewBox="0 0 480 320" role="img" aria-label="Stick figure of a right-handed baseball pitcher"></svg></div>
+      <div class="stage" id="stage-softball" hidden><svg id="fig-softball" viewBox="0 0 480 320" role="img" aria-label="Stick figure of a right-handed windmill softball pitcher"></svg></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="playBtn">Play</button>
+      <button class="btn step-btn" id="backBtn">&#9666; Prev phase</button>
+      <button class="btn step-btn" id="fwdBtn">Next phase &#9656;</button>
+      <div class="axis-mode-group" id="speedGroup" aria-label="Playback speed">
+        <button class="axis-mode-btn" data-speed="0.25">0.25x</button>
+        <button class="axis-mode-btn active" data-speed="0.5">0.5x</button>
+        <button class="axis-mode-btn" data-speed="1">1x</button>
+      </div>
+      <button class="toggle-btn" id="trailBtn" aria-pressed="false"><span class="sw" style="background:var(--amber);"></span>Hand path</button>
+    </div>
+
+    <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Time through the delivery">
+    <div class="readout"><span>Time: <b id="pctOut">0%</b> of the delivery</span><span id="phaseOut"></span></div>
+
+    <div class="legend">
+      <span><span class="sw" style="background:var(--rust);"></span>Throwing arm</span>
+      <span><span class="sw" style="background:#9AA39B;"></span>Glove arm</span>
+      <span><span class="sw" style="background:var(--ink);"></span>Drive (back) leg</span>
+      <span><span class="sw" style="background:var(--stance);"></span>Stride (lead) leg</span>
+      <span><span class="sw" style="background:var(--line-blue);"></span>Pelvis width</span>
+      <span><span class="sw" style="background:var(--purple);"></span>Shoulder width</span>
+      <span><span class="dot" style="background:var(--stance);opacity:.5;"></span>Foot on ground</span>
+    </div>
+    <p class="note" style="margin-top:12px;">Side view from the throwing-arm side of a right-handed pitcher, with home plate to the right. The blue (pelvis) and purple (shoulder) bars get shorter as that segment turns to face home plate, so you can watch the hips open before the shoulders. Even at 1x the animation is far slower than a real pitch.</p>
+
+    <!-- timelines -->
+    <div class="tl-block" id="tlblock-baseball">
+      <div class="tl-sport" id="tlname-baseball" hidden>Baseball pitch</div>
+      <div class="tl-track">
+        <div class="tl-events" id="tlev-baseball"></div>
+        <div class="segbar" id="seg-baseball" role="group" aria-label="Baseball phases"></div>
+        <div class="tl-marker" id="mark-baseball"></div>
+      </div>
+      <div class="chips" id="chips-baseball"></div>
+      <div class="tl-key">PKH = peak knee height · SFC = stride foot contact · MER = maximum shoulder external rotation · BR = ball release · MIR = maximum shoulder internal rotation</div>
+    </div>
+    <div class="tl-block" id="tlblock-softball" hidden>
+      <div class="tl-sport" id="tlname-softball" hidden>Windmill softball pitch</div>
+      <div class="tl-track">
+        <div class="tl-events" id="tlev-softball"></div>
+        <div class="segbar" id="seg-softball" role="group" aria-label="Softball phases"></div>
+        <div class="tl-marker" id="mark-softball"></div>
+      </div>
+      <div class="chips" id="chips-softball"></div>
+      <div class="tl-key">Clock positions are where the hand is on the circle, seen from this side: 3:00 points at the batter, 12:00 is straight overhead, 9:00 points back toward second base. FC = stride foot contact · BR = ball release</div>
+    </div>
+    <p class="note" id="bothNote" hidden style="margin-top:10px;">Both throws are stretched to 0–100% of the delivery so they line up, but the same % is not the same event. Compare phases by their start and end events, not by the clock.</p>
+  </div>
+
+  <!-- ============ Phase info ============ -->
+  <div class="row" id="infoRow">
+    <div class="card" id="info-baseball"></div>
+    <div class="card" id="info-softball" hidden></div>
+  </div>
+
+  <!-- ============ Curves ============ -->
+  <div class="card">
+    <h2 class="window-title">What the shoulder and elbow are doing</h2>
+    <p class="window-sub">The amber cursor follows the animation. Curve <b>shapes</b> are illustrative. The only numbers that come from research are the labeled reference values, which are placed where the studies report them.</p>
+    <div class="chart-block" id="chartblock-baseball">
+      <h4 id="charttitle-baseball" hidden>Baseball pitch</h4>
+      <svg class="chart" id="chart-baseball" role="img" aria-label="Illustrative shoulder external rotation angle and torque curves for the baseball pitch"></svg>
+      <div class="legend" style="justify-content:flex-start;">
+        <span><span class="sw" style="background:var(--purple);"></span>Shoulder external rotation angle</span>
+        <span><span class="sw" style="background:var(--rust);"></span>Elbow varus torque</span>
+        <span><span class="sw" style="background:var(--line-blue);"></span>Shoulder internal rotation torque</span>
+      </div>
+      <div class="feat-explain"><b>Reference values (adult pitchers).</b> MER is about 175–180°, a combination of glenohumeral external rotation, scapular motion, and trunk extension (Dillman 1993; Fleisig 1996). From MER the arm internally rotates about 80° in the roughly 0.03 s before release, reaching about 7,000°/s (Dillman 1993). Shortly before MER: about 64 N·m elbow varus torque and 67 N·m shoulder internal rotation torque (Fleisig 1995). Not plotted: about 1090 N of shoulder compressive force shortly after release, which is what keeps the arm from being pulled out of the socket.</div>
+    </div>
+    <div class="chart-block" id="chartblock-softball" hidden>
+      <h4 id="charttitle-softball" hidden>Windmill softball pitch</h4>
+      <svg class="chart" id="chart-softball" role="img" aria-label="Arm position around the circle and illustrative shoulder force curve for the windmill softball pitch"></svg>
+      <div class="legend" style="justify-content:flex-start;">
+        <span><span class="sw" style="background:var(--purple);"></span>Arm position around the circle (from the animation)</span>
+        <span><span class="sw" style="background:var(--rust);"></span>Shoulder force resisting distraction</span>
+      </div>
+      <div class="feat-explain"><b>Reference values.</b> Peak compressive forces at the elbow and shoulder were 70–98% of body weight during the delivery, with shoulder extension and abduction torques of 9–10% of body weight × height (Barrentine 1998). In youth pitchers, shoulder distraction stress averaged 94% of body weight, and elbow and shoulder loads were similar to those reported for baseball pitchers (Werner 2005). Softball values are scaled to body weight, so convert before comparing them with the baseball newtons.</div>
+    </div>
+  </div>
+
+  <!-- ============ Compare ============ -->
+  <div class="card">
+    <h2 class="window-title">Compare the two pitches</h2>
+    <p class="window-sub">"Underhand" does not mean "easy on the arm."</p>
+    <div class="table-wrap">
+      <table class="compare">
+        <thead><tr><th></th><th>Baseball pitch</th><th>Windmill softball pitch</th></tr></thead>
+        <tbody>
+          <tr><td>Pitching distance</td><td>60 ft 6 in</td><td>43 ft (high school and NCAA)</td></tr>
+          <tr><td>Hand path in this view</td><td>Down, back, up, and over the top (clockwise here)</td><td>A full forward circle: 6:00 → 3:00 → 12:00 → 9:00 → release (counterclockwise here)</td></tr>
+          <tr><td>Release point</td><td>Above and in front of the head</td><td>Near the hip, as the arm brushes past the thigh</td></tr>
+          <tr><td>Key shoulder load</td><td>About 1090 N compressive force shortly after release (Fleisig 1995)</td><td>Peak compressive forces of 70–98% body weight (Barrentine 1998); youth distraction stress averaged 94% body weight (Werner 2005)</td></tr>
+          <tr><td>Elbow load</td><td>About 64 N·m varus torque shortly before MER (Fleisig 1995)</td><td>Similar to baseball in youth pitchers (Werner 2005)</td></tr>
+          <tr><td>Legs</td><td>Push-off shear about 0.35 BW toward home plate; landing leg resists about 0.72 BW (MacWilliams 1998)</td><td>Stride foot vertical and braking forces exceeded body weight (Werner 2005)</td></tr>
+          <tr><td>Workload limits</td><td>Pitch Smart guidelines (MLB and USA Baseball)</td><td>No widely adopted pitch-count limits comparable to Pitch Smart</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ Quiz ============ -->
+  <div class="card">
+    <h2 class="window-title">Quick check</h2>
+    <p class="window-sub">Pick an answer to see feedback. <span class="score" id="score"></span></p>
+    <div id="quiz"></div>
+  </div>
+
+  <!-- ============ Footer ============ -->
+  <div class="card">
+    <p class="note" style="margin:0;"><b>Poses and curves are illustrative teaching models, not motion-capture data from a specific athlete. Reference values are from the published studies listed.</b> Phase timing in the animation is scaled for viewing; only the arm acceleration duration (about 0.03 s) reflects real time.</p>
+    <ol class="refs">
+      <li>Dillman CJ, Fleisig GS, Andrews JR. <i>J Orthop Sports Phys Ther</i>. 1993;18:402-8. <a href="https://doi.org/10.2519/jospt.1993.18.2.402" target="_blank" rel="noopener">doi:10.2519/jospt.1993.18.2.402</a></li>
+      <li>Fleisig GS, et al. <i>Am J Sports Med</i>. 1995;23:233-9. <a href="https://doi.org/10.1177/036354659502300218" target="_blank" rel="noopener">doi:10.1177/036354659502300218</a></li>
+      <li>Fleisig GS, et al. <i>Sports Med</i>. 1996;21:421-37. <a href="https://doi.org/10.2165/00007256-199621060-00004" target="_blank" rel="noopener">doi:10.2165/00007256-199621060-00004</a></li>
+      <li>MacWilliams BA, et al. <i>Am J Sports Med</i>. 1998;26:66-71. <a href="https://doi.org/10.1177/03635465980260014101" target="_blank" rel="noopener">doi:10.1177/03635465980260014101</a></li>
+      <li>Barrentine SW, et al. <i>J Orthop Sports Phys Ther</i>. 1998;28:405-15. <a href="https://doi.org/10.2519/jospt.1998.28.6.405" target="_blank" rel="noopener">doi:10.2519/jospt.1998.28.6.405</a></li>
+      <li>Maffet MW, et al. <i>Am J Sports Med</i>. 1997;25:369-74. <a href="https://doi.org/10.1177/036354659702500317" target="_blank" rel="noopener">doi:10.1177/036354659702500317</a></li>
+      <li>Werner SL, et al. <i>Am J Sports Med</i>. 2005;33:552-60. <a href="https://doi.org/10.1177/0363546504269253" target="_blank" rel="noopener">doi:10.1177/0363546504269253</a></li>
+    </ol>
+  </div>
+</div>
+
+<script>
+// ===================== Phase content =====================
+const SPORTS = {
+  baseball: {
+    name: 'Baseball pitch',
+    release: 89,
+    plate: 'Rubber to home plate: 60 ft 6 in',
+    ballDir: -7, ballSpeed: 0.42,
+    events: [
+      {t:45, label:'PKH'}, {t:70, label:'SFC'}, {t:86, label:'MER'}, {t:89, label:'BR'}, {t:94, label:'MIR'}
+    ],
+    phases: [
+      {name:'Wind-up', short:'Wind-up', start:0, end:45, color:'#2F6F63',
+       from:'First movement', to:'Peak knee height of the lead leg (PKH)',
+       bos:'Single support on the drive leg once the lead knee lifts.',
+       purpose:'Get balanced over the drive leg and set up a controlled start to the stride.',
+       actions:['The lead knee lifts toward its peak height.','The hands stay together with the ball hidden in the glove.','The body stays closed: the glove side points toward home plate.'],
+       load:'Low. The drive leg holds body weight while the pitcher balances.'},
+      {name:'Stride', short:'Stride', start:45, end:70, color:'#3A5B8C',
+       from:'Peak knee height', to:'Stride foot contact (SFC)',
+       bos:'Single support on the drive leg.',
+       purpose:'Move the body toward home plate and build momentum that the trunk and arm will use later.',
+       actions:['The drive leg pushes the body toward home plate.','The lead leg reaches out and lands in front.','The hands separate. The throwing arm swings down, back, and up.','The pelvis starts to open while the shoulders stay closed.'],
+       load:'The drive leg. Push-off shear force is about 0.35 × body weight toward home plate (MacWilliams 1998).'},
+      {name:'Arm cocking', short:'Cocking', start:70, end:86, color:'#7A5C8A',
+       from:'Stride foot contact', to:'Maximum shoulder external rotation (MER)',
+       bos:'Double support.',
+       purpose:'Stop the stride with the lead leg, turn the pelvis and then the trunk, and stretch the shoulder into external rotation.',
+       actions:['The lead leg lands and resists about 0.72 × body weight (MacWilliams 1998).','The pelvis rotates toward home plate first, then the upper torso follows (Fleisig 1996).','The shoulder reaches MER, about 175–180°. That total combines glenohumeral external rotation, scapular motion, and trunk extension (Dillman 1993; Fleisig 1996).'],
+       load:'Shoulder and medial elbow. About 380 N of anterior shoulder force during cocking. Shortly before MER: about 67 N·m shoulder internal rotation torque and about 64 N·m elbow varus torque (Fleisig 1995). The varus torque is how the elbow resists the large valgus load on its medial side (the UCL), so this is where the elbow\'s valgus load is greatest.'},
+      {name:'Arm acceleration', short:'Accel.', start:86, end:89, color:'#B8622A',
+       from:'MER', to:'Ball release (BR)',
+       bos:'Double support. The back foot may drag or come off the ground, depending on the pitcher.',
+       purpose:'Pass the energy built by the legs and trunk out to the hand and the ball.',
+       actions:['This phase is extremely brief: about 0.03 s in real time.','The shoulder internally rotates about 80° in that time, peaking near 7,000°/s (Dillman 1993).','The elbow extends and the trunk flexes forward over the braced lead leg.'],
+       load:'The arm is moving its fastest. The big shoulder and elbow torques from late cocking are dropping.'},
+      {name:'Arm deceleration', short:'Decel.', start:89, end:94, color:'#E8B23D', dark:true,
+       from:'Ball release', to:'Maximum shoulder internal rotation (MIR)',
+       bos:'Single support on the lead leg.',
+       purpose:'Slow the arm down after the ball is gone.',
+       actions:['The posterior shoulder muscles work eccentrically to slow internal rotation and elbow extension.','The trunk keeps flexing forward, which spreads the work over more of the body.','The back leg swings up off the ground.'],
+       load:'Posterior shoulder. Shortly after release: about 1090 N of shoulder compressive force, about 400 N of posterior force, and about 97 N·m of horizontal abduction torque (Fleisig 1995).'},
+      {name:'Follow-through', short:'Follow', start:94, end:100, color:'#8A938B',
+       from:'Maximum shoulder internal rotation', to:'Balanced fielding position',
+       bos:'Single support on the lead leg, then both feet as the back leg lands.',
+       purpose:'Get rid of the remaining energy and finish ready to field.',
+       actions:['The throwing arm finishes across the body toward the glove-side knee.','The back leg comes around and lands.','The pitcher ends square to home plate.'],
+       load:'Low and falling.'}
+    ],
+    // Keyframes. Units: meters, degrees. Angles are absolute (0 = toward home plate, 90 = up).
+    // hip = pelvis center, tr = trunk angle, pr/sr = pelvis/shoulder rotation (0 = glove side toward plate, 90 = facing plate)
+    // RA/LA = right (drive) and left (stride) ankle [x, y, foot angle]. R = throwing arm, G = glove arm.
+    keys: [
+      {t:0,   hip:[0.02,0.95], tr:89, pr:0,   sr:0,   RA:[-0.14,0.08,0], LA:[0.20,0.08,0],  R:{hand:[0.05,1.26],side:-1}, G:{hand:[0.09,1.27],side:1}},
+      {t:15,  hip:[0.00,0.96], tr:90, pr:-5,  sr:-5,  RA:[-0.14,0.08,0], LA:[0.18,0.10,-5], R:{hand:[0.04,1.27],side:-1}, G:{hand:[0.08,1.28],side:1}},
+      {t:30,  hip:[-0.02,0.97],tr:91, pr:-15, sr:-12, RA:[-0.14,0.08,0], LA:[0.12,0.42,-25],R:{hand:[0.03,1.30],side:-1}, G:{hand:[0.07,1.31],side:1}},
+      {t:45,  hip:[-0.03,0.97],tr:91, pr:-25, sr:-20, RA:[-0.14,0.08,0], LA:[0.12,0.70,-35],R:{hand:[0.02,1.32],side:-1}, G:{hand:[0.06,1.33],side:1}},
+      {t:55,  hip:[0.20,0.90], tr:94, pr:-18, sr:-18, RA:[-0.14,0.08,0], LA:[0.45,0.48,-25],R:{u:-100,f:-95}, G:{u:-30,f:0}},
+      {t:63,  hip:[0.48,0.80], tr:95, pr:-8,  sr:-15, RA:[-0.10,0.09,-8],LA:[0.95,0.30,-15],R:{u:-150,f:-175}, G:{u:-5,f:5}},
+      {t:67,  hip:[0.62,0.74], tr:94, pr:10,  sr:-10, RA:[-0.04,0.11,-20],LA:[1.22,0.15,-8],R:{u:-175,f:-235}, G:{u:2,f:8}},
+      {t:70,  hip:[0.70,0.71], tr:93, pr:30,  sr:-5,  RA:[0.02,0.12,-28], LA:[1.35,0.08,0], R:{u:-180,f:-270}, G:{u:5,f:10}},
+      {t:78,  hip:[0.82,0.75], tr:90, pr:70,  sr:35,  RA:[0.15,0.13,-35], LA:[1.35,0.08,0], R:{u:-182,f:-225,us:0.8}, G:{u:-25,f:40}},
+      {t:86,  hip:[0.92,0.82], tr:86, pr:95,  sr:85,  RA:[0.34,0.17,-45], LA:[1.35,0.08,0], R:{u:-188,f:-198,us:0.55}, G:{u:-70,f:55}},
+      {t:87.5,hip:[0.96,0.85], tr:75, pr:100, sr:98,  RA:[0.39,0.19,-50], LA:[1.35,0.08,0], R:{u:-250,f:-262,us:0.35}, G:{u:-82,f:58}},
+      {t:89,  hip:[1.00,0.88], tr:62, pr:105, sr:110, RA:[0.44,0.22,-55], LA:[1.35,0.08,0], R:{u:-328,f:-336,us:0.9}, G:{u:-95,f:60}},
+      {t:94,  hip:[1.07,0.86], tr:45, pr:115, sr:140, RA:[0.60,0.48,-70], LA:[1.35,0.08,0], R:{u:-400,f:-425}, G:{u:-110,f:30}},
+      {t:97,  hip:[1.12,0.84], tr:42, pr:125, sr:155, RA:[0.95,0.40,-40], LA:[1.35,0.08,0], R:{u:-440,f:-450}, G:{u:-115,f:20}},
+      {t:100, hip:[1.28,0.91], tr:52, pr:130, sr:160, RA:[1.62,0.08,0],   LA:[1.35,0.08,0], R:{u:-460,f:-445}, G:{u:-120,f:10}}
+    ]
+  },
+  softball: {
+    name: 'Windmill softball pitch',
+    release: 86,
+    plate: 'Pitching plate to home plate: 43 ft',
+    ballDir: 6, ballSpeed: 0.36,
+    events: [
+      {t:20, label:'6:00'}, {t:42, label:'3:00'}, {t:56, label:'FC'}, {t:60, label:'12:00'}, {t:75, label:'9:00'}, {t:86, label:'BR'}
+    ],
+    phases: [
+      {name:'Wind-up', short:'Wind-up', start:0, end:20, color:'#2F6F63',
+       from:'The ball first moves', to:'Hand reaches 6:00 (arm pointing straight down)',
+       bos:'Double support. The drive foot is on the pitching plate.',
+       purpose:'Set the rhythm and load the drive leg.',
+       actions:['The hands separate. Many pitchers swing the arm back a little first (a backswing).','Weight rocks back, then forward onto the drive leg.','The arm comes down to point at the ground (6:00).'],
+       load:'Low.'},
+      {name:'6:00 → 3:00', short:'6→3', start:20, end:42, color:'#3A5B8C',
+       from:'6:00', to:'3:00 (arm points at the batter)',
+       bos:'Drive leg. The stride leg lifts and reaches forward as the stride begins.',
+       purpose:'Start the arm circle and the stride together.',
+       actions:['The arm rises forward until it points at the batter.','The drive leg pushes off toward home plate.','Supraspinatus activity peaks here. It helps keep the humeral head centered in the socket (Maffet 1997).'],
+       load:'The drive leg is pushing off. The shoulder muscles are mostly positioning the arm, not yet producing speed.'},
+      {name:'3:00 → 12:00', short:'3→12', start:42, end:60, color:'#7A5C8A',
+       from:'3:00', to:'12:00 (arm straight overhead)',
+       bos:'Drive leg, then double support when the stride foot lands (around 12:00).',
+       purpose:'Lift the arm overhead while the stride finishes and the hips open.',
+       actions:['The arm rises to straight overhead.','Posterior deltoid and teres minor activity peaks. They elevate and externally rotate the arm (Maffet 1997).','The hips and shoulders open, so the chest turns toward the side.'],
+       load:'The stride leg takes the landing. In youth pitchers, stride foot vertical and braking forces exceeded body weight (Werner 2005).'},
+      {name:'12:00 → 9:00', short:'12→9', start:60, end:75, color:'#B8622A',
+       from:'12:00', to:'9:00 (arm points back toward second base)',
+       bos:'Double support: stride foot planted, drive foot on or dragging along the ground.',
+       purpose:'Bring the arm down behind the body and build speed.',
+       actions:['The arm comes down behind the body.','Pectoralis major starts accelerating the arm from 12:00 on (Maffet 1997).','Serratus anterior keeps the scapula positioned under the moving arm (Maffet 1997).'],
+       load:'Building in the shoulder as the arm speeds up.'},
+      {name:'9:00 → ball release', short:'9→BR', start:75, end:86, color:'#E8B23D', dark:true,
+       from:'9:00', to:'Ball release (BR), near the hip',
+       bos:'Double support, with the stride leg braced.',
+       purpose:'Whip the arm down past the hip and release the ball.',
+       actions:['The arm accelerates down. The forearm brushes past the hip and thigh.','The ball is released near the hip.','Pectoralis major keeps accelerating the arm. Subscapularis acts as an internal rotator and helps protect the front of the shoulder capsule (Maffet 1997).'],
+       load:'The shoulder and elbow have to keep the fast-moving arm from being pulled away from the body. During the delivery, peak compressive forces at the elbow and shoulder were 70–98% of body weight, and shoulder extension and abduction torques were 9–10% of body weight × height (Barrentine 1998). In youth pitchers, shoulder distraction stress averaged 94% of body weight (Werner 2005).'},
+      {name:'Follow-through', short:'Follow', start:86, end:100, color:'#8A938B',
+       from:'Ball release', to:'Balanced fielding position',
+       bos:'Stride leg, then both feet as the drive leg comes forward.',
+       purpose:'Slow the arm and finish ready to field.',
+       actions:['The arm keeps moving forward and up while the elbow bends.','The hips turn back toward the batter.','The drive foot comes forward next to the stride foot.'],
+       load:'Falling.'}
+    ],
+    keys: [
+      {t:0,   hip:[-0.05,0.96], tr:89, pr:90, sr:90, RA:[0.02,0.08,0],  LA:[-0.22,0.08,0], R:{hand:[0.13,1.02],side:-1}, G:{hand:[0.14,1.03],side:-1}},
+      {t:10,  hip:[-0.10,0.96], tr:94, pr:85, sr:85, RA:[0.02,0.08,0],  LA:[-0.22,0.08,0], R:{u:-130,f:-125}, G:{hand:[0.08,1.05],side:-1}},
+      {t:20,  hip:[0.05,0.88],  tr:76, pr:85, sr:85, RA:[0.04,0.08,0],  LA:[-0.02,0.22,-20],R:{u:-92,f:-88},  G:{u:-45,f:-10}},
+      {t:31,  hip:[0.28,0.84],  tr:73, pr:70, sr:75, RA:[0.08,0.10,-15],LA:[0.55,0.38,-20], R:{u:-45,f:-40},  G:{u:-10,f:5}},
+      {t:42,  hip:[0.55,0.82],  tr:78, pr:50, sr:55, RA:[0.12,0.12,-30],LA:[1.00,0.30,-10], R:{u:0,f:3},     G:{u:15,f:22}},
+      {t:52,  hip:[0.80,0.78],  tr:84, pr:20, sr:25, RA:[0.22,0.13,-30],LA:[1.30,0.14,-6],  R:{u:60,f:62},   G:{u:15,f:20}},
+      {t:56,  hip:[0.88,0.78],  tr:87, pr:10, sr:15, RA:[0.28,0.13,-30],LA:[1.40,0.08,0],   R:{u:80,f:82},   G:{u:10,f:15}},
+      {t:60,  hip:[0.92,0.79],  tr:89, pr:5,  sr:8,  RA:[0.31,0.13,-30],LA:[1.40,0.08,0],   R:{u:90,f:92},   G:{u:0,f:5}},
+      {t:75,  hip:[1.00,0.81],  tr:91, pr:0,  sr:0,  RA:[0.42,0.13,-32],LA:[1.40,0.08,0],   R:{u:180,f:182}, G:{u:-20,f:-10}},
+      {t:82,  hip:[1.04,0.83],  tr:91, pr:10, sr:5,  RA:[0.50,0.13,-32],LA:[1.40,0.08,0],   R:{u:235,f:240}, G:{u:-70,f:-60}},
+      {t:86,  hip:[1.07,0.86],  tr:90, pr:30, sr:20, RA:[0.56,0.13,-32],LA:[1.40,0.08,0],   R:{u:265,f:282}, G:{u:-105,f:-80}},
+      {t:92,  hip:[1.12,0.88],  tr:86, pr:50, sr:45, RA:[0.70,0.12,-30],LA:[1.40,0.08,0],   R:{u:310,f:345}, G:{u:-100,f:-50}},
+      {t:96,  hip:[1.16,0.89],  tr:83, pr:62, sr:58, RA:[1.00,0.26,-20],LA:[1.40,0.08,0],   R:{u:335,f:395}, G:{u:-90,f:-20}},
+      {t:100, hip:[1.20,0.90],  tr:82, pr:70, sr:65, RA:[1.30,0.08,0],  LA:[1.40,0.08,0],   R:{u:345,f:420}, G:{u:-80,f:0}}
+    ]
+  }
+};
+
+// ===================== Pose model =====================
+const LEN = {thigh:0.47, shank:0.46, trunk:0.55, neck:0.08, head:0.11, ua:0.30, fa:0.28, hipW:0.09, shW:0.17};
+const PX = 125, X0 = 95, GY = 292, VBW = 480, VBH = 320;
+const PARAMS = ['hx','hy','tr','pr','sr','rax','ray','raf','lax','lay','laf','ru','rf','rus','rfs','lu','lf','lus','lfs','hd'];
+const ANGLES = ['ru','rf','lu','lf'];
+
+function dir(a){ const r=a*Math.PI/180; return [Math.cos(r), Math.sin(r)]; }
+function add(p,v,k){ return [p[0]+v[0]*k, p[1]+v[1]*k]; }
+function toDeg(r){ return r*180/Math.PI; }
+function ik2(P, T, a, b, side){
+  const dx=T[0]-P[0], dy=T[1]-P[1];
+  let d=Math.hypot(dx,dy);
+  d=Math.min(Math.max(d, Math.abs(a-b)+1e-4), a+b-1e-4);
+  const base=toDeg(Math.atan2(dy,dx));
+  const c=(a*a+d*d-b*b)/(2*a*d);
+  const al=toDeg(Math.acos(Math.max(-1,Math.min(1,c))));
+  const a1=base+side*al;
+  const J=add(P, dir(a1), a);
+  const a2=toDeg(Math.atan2(T[1]-J[1], T[0]-J[0]));
+  return [a1,a2];
+}
+function bodyFrame(p){
+  const hipC=[p.hx,p.hy];
+  const cp=Math.cos(p.pr*Math.PI/180), cs=Math.cos(p.sr*Math.PI/180);
+  const hipR=[p.hx-cp*LEN.hipW, p.hy], hipL=[p.hx+cp*LEN.hipW, p.hy];
+  const neck=add(hipC, dir(p.tr), LEN.trunk);
+  const nF=dir(p.tr-90);
+  const shR=add(neck, nF, -cs*LEN.shW), shL=add(neck, nF, cs*LEN.shW);
+  return {hipC,hipR,hipL,neck,shR,shL};
+}
+function armParams(p, s, A, sh){
+  if(A.hand){
+    const ang=ik2(sh, A.hand, LEN.ua, LEN.fa, A.side);
+    p[s+'u']=ang[0]; p[s+'f']=ang[1]; p[s+'us']=1; p[s+'fs']=1;
+  } else {
+    p[s+'u']=A.u; p[s+'f']=A.f;
+    p[s+'us']=(A.us!==undefined)?A.us:1; p[s+'fs']=(A.fs!==undefined)?A.fs:1;
+  }
+}
+// Monotone cubic (PCHIP) interpolation: smooth, no overshoot, zero slope at the ends.
+function pchip(xs, ys){
+  const n=xs.length, h=[], dl=[], m=new Array(n).fill(0);
+  for(let i=0;i<n-1;i++){ h[i]=xs[i+1]-xs[i]; dl[i]=(ys[i+1]-ys[i])/h[i]; }
+  for(let i=1;i<n-1;i++){
+    if(dl[i-1]*dl[i]<=0) m[i]=0;
+    else { const w1=2*h[i]+h[i-1], w2=h[i]+2*h[i-1]; m[i]=(w1+w2)/(w1/dl[i-1]+w2/dl[i]); }
+  }
+  return function(x){
+    if(x<=xs[0]) return ys[0];
+    if(x>=xs[n-1]) return ys[n-1];
+    let i=0; while(x>xs[i+1]) i++;
+    const t=(x-xs[i])/h[i], t2=t*t, t3=t2*t;
+    return (2*t3-3*t2+1)*ys[i] + (t3-2*t2+t)*h[i]*m[i] + (-2*t3+3*t2)*ys[i+1] + (t3-t2)*h[i]*m[i+1];
+  };
+}
+function prepSport(sp){
+  const ks=sp.keys.map(k=>{
+    const p={hx:k.hip[0], hy:k.hip[1], tr:k.tr, pr:k.pr, sr:k.sr,
+      rax:k.RA[0], ray:k.RA[1], raf:k.RA[2]||0, lax:k.LA[0], lay:k.LA[1], laf:k.LA[2]||0};
+    const F=bodyFrame(p);
+    armParams(p,'r',k.R,F.shR);
+    armParams(p,'l',k.G,F.shL);
+    p.hd=(k.hd!==undefined)?k.hd:90-(90-k.tr)*0.45;
+    return {t:k.t, p};
+  });
+  ANGLES.forEach(n=>{
+    for(let i=1;i<ks.length;i++){
+      let v=ks[i].p[n]; const prev=ks[i-1].p[n];
+      while(v-prev>180) v-=360;
+      while(v-prev<-180) v+=360;
+      ks[i].p[n]=v;
+    }
+  });
+  const xs=ks.map(k=>k.t);
+  sp.interp={};
+  PARAMS.forEach(n=>{ sp.interp[n]=pchip(xs, ks.map(k=>k.p[n])); });
+  sp.trail=[];
+  for(let t=0;t<=100.001;t+=0.5){ sp.trail.push([t, skeleton(sp,t).handR]); }
+  sp.releasePt=skeleton(sp, sp.release).ballAt;
+}
+function poseParams(sp,t){ const p={}; PARAMS.forEach(n=>p[n]=sp.interp[n](t)); return p; }
+function footPts(ankle, ang){
+  const rot=(x,y)=>{ const c=Math.cos(ang*Math.PI/180), s=Math.sin(ang*Math.PI/180); return [ankle[0]+x*c-y*s, ankle[1]+x*s+y*c]; };
+  return {heel:rot(-0.05,-0.07), toe:rot(0.16,-0.06)};
+}
+function skeleton(sp,t){
+  const p=poseParams(sp,t);
+  const F=bodyFrame(p);
+  const elbowR=add(F.shR, dir(p.ru), LEN.ua*p.rus);
+  const handR=add(elbowR, dir(p.rf), LEN.fa*p.rfs);
+  const elbowL=add(F.shL, dir(p.lu), LEN.ua*p.lus);
+  const handL=add(elbowL, dir(p.lf), LEN.fa*p.lfs);
+  const legR=ik2(F.hipR, [p.rax,p.ray], LEN.thigh, LEN.shank, 1);
+  const kneeR=add(F.hipR, dir(legR[0]), LEN.thigh), ankleR=add(kneeR, dir(legR[1]), LEN.shank);
+  const legL=ik2(F.hipL, [p.lax,p.lay], LEN.thigh, LEN.shank, 1);
+  const kneeL=add(F.hipL, dir(legL[0]), LEN.thigh), ankleL=add(kneeL, dir(legL[1]), LEN.shank);
+  const footR=footPts(ankleR,p.raf), footL=footPts(ankleL,p.laf);
+  const head=add(F.neck, dir(p.hd), LEN.neck+LEN.head);
+  const ballAt=add(handR, dir(p.rf), 0.035);
+  return Object.assign({}, F, {elbowR,handR,elbowL,handL,kneeR,ankleR,kneeL,ankleL,footR,footL,head,ballAt,p});
+}
+
+// ===================== Figure drawing =====================
+const sx=x=>(X0+x*PX).toFixed(1), sy=y=>(GY-y*PX).toFixed(1);
+function seg(a,b,color,w,op){ return `<line x1="${sx(a[0])}" y1="${sy(a[1])}" x2="${sx(b[0])}" y2="${sy(b[1])}" stroke="${color}" stroke-width="${w}" stroke-linecap="round"${op?` opacity="${op}"`:''}/>`; }
+function foot(ankle,f,color){ return `<path d="M${sx(ankle[0])} ${sy(ankle[1])} L${sx(f.heel[0])} ${sy(f.heel[1])} L${sx(f.toe[0])} ${sy(f.toe[1])} Z" fill="${color}" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>`; }
+function onGround(f){ return Math.min(f.heel[1], f.toe[1]) < 0.03; }
+function contactMark(f){
+  const x=(Math.min(f.heel[0],f.toe[0])+Math.max(f.heel[0],f.toe[0]))/2;
+  return `<ellipse cx="${sx(x)}" cy="${GY+3}" rx="15" ry="4" fill="#2F6F63" opacity="0.45"/>`;
+}
+function phaseAt(sp,t){
+  const tt=Math.max(0,Math.min(t,99.999));
+  return sp.phases.findIndex(ph=>tt>=ph.start && tt<ph.end);
+}
+function figureSVG(key, t, opts){
+  const sp=SPORTS[key], k=skeleton(sp,t);
+  const ph=sp.phases[phaseAt(sp,t)];
+  let s='';
+  // ground, plate, labels
+  s+=`<rect x="0" y="${GY}" width="${VBW}" height="${VBH-GY}" fill="#EEF1EC"/>`;
+  s+=`<line x1="0" y1="${GY}" x2="${VBW}" y2="${GY}" stroke="#C9CEC9" stroke-width="3"/>`;
+  s+=`<rect x="${sx(-0.2)}" y="${GY-3}" width="${(0.3*PX).toFixed(1)}" height="5" rx="1.5" fill="#fff" stroke="#9AA39B" stroke-width="1.2"/>`;
+  s+=`<text x="${VBW-12}" y="${VBH-9}" text-anchor="end" class="stage-small">toward home plate &#8594;</text>`;
+  s+=`<text x="12" y="${VBH-9}" class="stage-small">${sp.plate}</text>`;
+  s+=`<text x="14" y="30" class="stage-phase" fill="${ph.dark?'#9A7416':ph.color}">${ph.name}</text>`;
+  s+=`<text x="14" y="50" class="stage-sport">${opts.showSport?sp.name+' · ':''}${t.toFixed(0)}%</text>`;
+  // hand path
+  if(opts.trail){
+    const all=sp.trail.map(q=>`${sx(q[1][0])},${sy(q[1][1])}`).join(' ');
+    const done=sp.trail.filter(q=>q[0]<=t).map(q=>`${sx(q[1][0])},${sy(q[1][1])}`).join(' ');
+    s+=`<polyline points="${all}" fill="none" stroke="#E8B23D" stroke-width="2" stroke-dasharray="3,4" opacity="0.55"/>`;
+    if(done.split(' ').length>1) s+=`<polyline points="${done}" fill="none" stroke="#E8B23D" stroke-width="3" opacity="0.95" stroke-linejoin="round"/>`;
+    const rel=sp.trail.reduce((a,q)=>Math.abs(q[0]-sp.release)<Math.abs(a[0]-sp.release)?q:a);
+    s+=`<circle cx="${sx(rel[1][0])}" cy="${sy(rel[1][1])}" r="4" fill="#fff" stroke="#B8622A" stroke-width="2"/>`;
+  }
+  // contact markers
+  if(onGround(k.footL)) s+=contactMark(k.footL);
+  if(onGround(k.footR)) s+=contactMark(k.footR);
+  // far side: glove arm, stride leg
+  s+=seg(k.shL,k.elbowL,'#9AA39B',7)+seg(k.elbowL,k.handL,'#9AA39B',7);
+  s+=`<ellipse cx="${sx(k.handL[0])}" cy="${sy(k.handL[1])}" rx="9" ry="8" fill="#5A4A3C"/>`;
+  s+=seg(k.hipL,k.kneeL,'#2F6F63',8)+seg(k.kneeL,k.ankleL,'#2F6F63',8)+foot(k.ankleL,k.footL,'#2F6F63');
+  // trunk, pelvis, shoulders, head
+  s+=seg(k.hipC,k.neck,'#1B2420',11);
+  s+=seg(k.hipR,k.hipL,'#3A5B8C',6);
+  s+=seg(k.shR,k.shL,'#7A5C8A',6);
+  s+=seg(k.neck, add(k.neck, dir(k.p.hd), LEN.neck), '#1B2420', 7);
+  s+=`<circle cx="${sx(k.head[0])}" cy="${sy(k.head[1])}" r="${(LEN.head*PX).toFixed(1)}" fill="#1B2420"/>`;
+  // near side: drive leg, throwing arm
+  s+=seg(k.hipR,k.kneeR,'#1B2420',8)+seg(k.kneeR,k.ankleR,'#1B2420',8)+foot(k.ankleR,k.footR,'#1B2420');
+  s+=seg(k.shR,k.elbowR,'#B8622A',7)+seg(k.elbowR,k.handR,'#B8622A',7);
+  s+=`<circle cx="${sx(k.handR[0])}" cy="${sy(k.handR[1])}" r="4.5" fill="#B8622A"/>`;
+  // ball
+  let b;
+  if(t<sp.release) b=k.ballAt;
+  else b=add(sp.releasePt, dir(sp.ballDir), (t-sp.release)*sp.ballSpeed);
+  if(t<sp.release && (key==='baseball' && t<52 || key==='softball' && t<4)) { /* ball hidden in glove */ }
+  else s+=`<circle cx="${sx(b[0])}" cy="${sy(b[1])}" r="5.5" fill="#fff" stroke="#1B2420" stroke-width="1.6"/>`;
+  return s;
+}
+
+// ===================== Curves =====================
+function curveFn(pts){ return pchip(pts.map(q=>q[0]), pts.map(q=>q[1])); }
+const CURVES = {
+  baseball: [
+    {title:'Shoulder external rotation angle (°)', yMin:0, yMax:195, ticks:[0,45,90,135,180],
+     series:[{color:'#7A5C8A', fn:curveFn([[0,40],[45,40],[55,35],[63,55],[70,90],[78,138],[83,168],[86,178],[89,98],[91,62],[94,32],[97,36],[100,40]])}],
+     ann:[{t:86, v:178, color:'#7A5C8A', label:'MER ≈175–180°', lt:76, lv:182},
+          {type:'bracket', t0:86, t1:89, v:12, color:'#7A5C8A', label:'acceleration ≈0.03 s'}]},
+    {title:'Torque (N·m)', yMin:0, yMax:90, ticks:[0,30,60,90],
+     series:[{color:'#B8622A', fn:curveFn([[0,0],[66,0],[70,8],[78,36],[84,64],[86,56],[89,12],[92,4],[100,0]])},
+             {color:'#3A5B8C', dash:true, fn:curveFn([[0,0],[66,0],[70,10],[78,40],[84,67],[86,60],[89,16],[92,5],[100,0]])}],
+     ann:[{t:84, v:67, color:'#3A5B8C', label:'≈67 N·m shoulder IR', lt:76, lv:83},
+          {t:84, v:64, color:'#B8622A', label:'≈64 N·m elbow varus', lt:74, lv:66}]}
+  ],
+  softball: [
+    {title:'Arm position on the circle', yMin:-60, yMax:460, ticks:[0,90,180,270,360,450], tickLabels:['6:00','3:00','12:00','9:00','6:00','3:00'],
+     series:[{color:'#7A5C8A', fn:null /* set from the animation */}], ann:[{t:86, vFromSeries:true, color:'#7A5C8A', label:'release near the hip', lt:70, lv:400}]},
+    {title:'Shoulder distraction-resisting force (% BW)', yMin:0, yMax:110, ticks:[0,25,50,75,100],
+     band:{v0:70, v1:98, label:'70–98% BW peak range'},
+     series:[{color:'#B8622A', fn:curveFn([[0,0],[20,3],[42,7],[60,14],[75,28],[80,55],[84,94],[87,62],[90,26],[95,8],[100,3]])}],
+     ann:[{t:84, v:94, color:'#B8622A', label:'≈94% BW (youth)', lt:72, lv:58}]}
+  ]
+};
+
+function chartSVG(key, t, W){
+  const sp=SPORTS[key], panels=CURVES[key];
+  const narrow=W<480;
+  const padL=narrow?40:48, padR=12, panelH=narrow?118:130, gap=40, top=24;
+  const H=top+panelH*2+gap+30;
+  const plotW=W-padL-padR;
+  const xP=x=>padL+(x/100)*plotW;
+  let s='';
+  panels.forEach((pn,pi)=>{
+    const y0=top+pi*(panelH+gap);
+    const yP=v=>y0+(1-(v-pn.yMin)/(pn.yMax-pn.yMin))*panelH;
+    // phase bands
+    sp.phases.forEach((ph,i)=>{
+      s+=`<rect x="${xP(ph.start).toFixed(1)}" y="${y0}" width="${(xP(ph.end)-xP(ph.start)).toFixed(1)}" height="${panelH}" fill="${ph.color}" opacity="${i%2?0.10:0.05}"/>`;
+    });
+    s+=`<text x="${padL}" y="${y0-8}" class="panel-title">${pn.title}</text>`;
+    pn.ticks.forEach((v,i)=>{
+      const y=yP(v);
+      s+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#E3E7E2" stroke-width="1"/>`;
+      s+=`<text x="${padL-6}" y="${(y+4).toFixed(1)}" text-anchor="end" class="axis-label">${pn.tickLabels?pn.tickLabels[i]:v}</text>`;
+    });
+    s+=`<line x1="${padL}" y1="${y0}" x2="${padL}" y2="${y0+panelH}" stroke="#D8DED7" stroke-width="1.5"/>`;
+    s+=`<line x1="${padL}" y1="${y0+panelH}" x2="${W-padR}" y2="${y0+panelH}" stroke="#D8DED7" stroke-width="1.5"/>`;
+    if(pn.band){
+      s+=`<rect x="${padL}" y="${yP(pn.band.v1).toFixed(1)}" width="${plotW}" height="${(yP(pn.band.v0)-yP(pn.band.v1)).toFixed(1)}" fill="#B8622A" opacity="0.10"/>`;
+      s+=`<text x="${padL+6}" y="${(yP(pn.band.v1)+13).toFixed(1)}" class="axis-label" fill="#8A4A20">${pn.band.label} (Barrentine 1998)</text>`;
+    }
+    pn.series.forEach(se=>{
+      let d='';
+      for(let x=0;x<=100;x+=0.5){ d+=(x===0?'M':'L')+xP(x).toFixed(1)+' '+yP(se.fn(x)).toFixed(1)+' '; }
+      s+=`<path d="${d}" fill="none" stroke="${se.color}" stroke-width="2.6"${se.dash?' stroke-dasharray="6,4"':''} stroke-linejoin="round"/>`;
+    });
+    pn.ann.forEach(a=>{
+      if(a.type==='bracket'){
+        const y=yP(a.v);
+        s+=`<path d="M${xP(a.t0).toFixed(1)} ${(y-4).toFixed(1)} V${y.toFixed(1)} H${xP(a.t1).toFixed(1)} V${(y-4).toFixed(1)}" fill="none" stroke="${a.color}" stroke-width="1.5"/>`;
+        s+=`<text x="${(xP(a.t0)-5).toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="end" class="ann" fill="${a.color}">${a.label}</text>`;
+        return;
+      }
+      const v=a.vFromSeries?pn.series[0].fn(a.t):a.v;
+      const x=xP(a.t), y=yP(v);
+      s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5" fill="${a.color}" stroke="#fff" stroke-width="1.8"/>`;
+      if(a.lv!==undefined){ // label placed at a fixed spot with a leader line
+        const lx=xP(a.lt), ly=yP(a.lv);
+        s+=`<line x1="${(lx+3).toFixed(1)}" y1="${(ly-4).toFixed(1)}" x2="${(x-4).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${a.color}" stroke-width="1"/>`;
+        s+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="end" class="ann" fill="${a.color}">${a.label}</text>`;
+      } else {
+        s+=`<text x="${(x-8).toFixed(1)}" y="${(y-2).toFixed(1)}" text-anchor="end" class="ann" fill="${a.color}">${a.label}</text>`;
+      }
+    });
+    // cursor dots
+    pn.series.forEach(se=>{
+      s+=`<circle cx="${xP(t).toFixed(1)}" cy="${yP(se.fn(t)).toFixed(1)}" r="5" fill="${se.color}" stroke="#fff" stroke-width="2"/>`;
+    });
+  });
+  // x axis labels
+  const yb=top+panelH*2+gap;
+  [0,25,50,75,100].forEach(v=>{ s+=`<text x="${xP(v).toFixed(1)}" y="${yb+16}" text-anchor="middle" class="axis-label">${v}%</text>`; });
+  s+=`<text x="${W-padR}" y="${yb+28}" text-anchor="end" class="axis-label">% of delivery</text>`;
+  // event lines
+  sp.events.forEach(ev=>{
+    s+=`<line x1="${xP(ev.t).toFixed(1)}" y1="${top}" x2="${xP(ev.t).toFixed(1)}" y2="${yb}" stroke="#9AA39B" stroke-width="1" stroke-dasharray="2,3"/>`;
+  });
+  s+=`<line x1="${xP(t).toFixed(1)}" y1="${top-4}" x2="${xP(t).toFixed(1)}" y2="${yb}" stroke="#E8B23D" stroke-width="2"/>`;
+  return {svg:s, H};
+}
+
+// ===================== Quiz =====================
+const QUIZ = [
+  {q:'Which event ends the arm cocking phase of the baseball pitch?',
+   opts:['Stride foot contact','Maximum shoulder external rotation (MER)','Ball release','Peak knee height'], a:1,
+   fb:'Arm cocking runs from stride foot contact to MER, when the shoulder reaches about 175–180° of combined external rotation, scapular motion, and trunk extension. Stride foot contact starts the phase; ball release ends the next one.'},
+  {q:'In which phase is the valgus load on the elbow greatest?',
+   opts:['Stride','Late arm cocking, just before MER','Arm deceleration','Follow-through'], a:1,
+   fb:'Shortly before MER the elbow produces about 64 N·m of varus torque to resist valgus loading of its medial side (Fleisig 1995). That is why the UCL is at risk in late cocking.'},
+  {q:'Which phase lasts only about 0.03 s?',
+   opts:['Wind-up','Stride','Arm acceleration','Follow-through'], a:2,
+   fb:'Arm acceleration, from MER to ball release. The shoulder internally rotates about 80° in that time, peaking near 7,000°/s (Dillman 1993).'},
+  {q:'After stride foot contact, which segment starts rotating toward home plate first?',
+   opts:['Upper torso','Pelvis','Shoulder (internal rotation)','Wrist'], a:1,
+   fb:'The sequence runs stride → pelvis rotation → upper torso rotation → elbow extension → shoulder internal rotation → wrist flexion (Fleisig 1996). In the animation, the blue pelvis bar shortens before the purple shoulder bar.'},
+  {q:'Where does the windmill softball pitch release relative to the trunk?',
+   opts:['Above and in front of the head','At shoulder height, in front of the chest','Near the hip, as the arm brushes past the thigh','Behind the body at 9:00'], a:2,
+   fb:'The arm accelerates from 9:00 down past the hip and releases the ball near the hip. Pectoralis major drives this acceleration, and subscapularis helps protect the front of the shoulder (Maffet 1997).'},
+  {q:'Why can\'t softball pitchers "save" the arm the way baseball pitch counts try to?',
+   opts:['The underhand motion puts almost no load on the shoulder, so there is nothing to save','Shoulder and elbow loads are similar to baseball, but softball has no widely adopted pitch-count limits comparable to baseball\'s Pitch Smart guidelines','Softball already uses stricter pitch counts than baseball','Softball pitchers throw from farther away, so each pitch is easier'], a:1,
+   fb:'In youth windmill pitchers, shoulder distraction stress averaged 94% of body weight, and elbow and shoulder loads were similar to baseball (Werner 2005). Softball has no widely adopted pitch-count limits comparable to baseball\'s Pitch Smart guidelines. The pitching distance is also shorter: 43 ft vs. 60 ft 6 in.'}
+];
+let quizRight=0, quizDone=0;
+function buildQuiz(){
+  const el=document.getElementById('quiz');
+  QUIZ.forEach((item,qi)=>{
+    const d=document.createElement('div'); d.className='q';
+    d.innerHTML=`<div class="q-text">${qi+1}. ${item.q}</div><div class="q-opts"></div><div class="feat-explain"></div>`;
+    const opts=d.querySelector('.q-opts'), fb=d.querySelector('.feat-explain');
+    item.opts.forEach((o,oi)=>{
+      const b=document.createElement('button'); b.className='q-opt'; b.textContent=o;
+      b.addEventListener('click',()=>{
+        const first=!d.classList.contains('answered');
+        d.classList.add('answered');
+        opts.querySelectorAll('.q-opt').forEach(x=>x.classList.remove('right','wrong'));
+        if(oi===item.a){ b.classList.add('right'); fb.innerHTML='<b>Correct.</b> '+item.fb; }
+        else { b.classList.add('wrong'); opts.children[item.a].classList.add('right'); fb.innerHTML='<b>Not quite.</b> '+item.fb; }
+        if(first){ quizDone++; if(oi===item.a) quizRight++; updateScore(); }
+      });
+      opts.appendChild(b);
+    });
+    el.appendChild(d);
+  });
+  updateScore();
+}
+function updateScore(){ document.getElementById('score').textContent = quizDone? `First-try score: ${quizRight} of ${quizDone} answered (${QUIZ.length} total).` : ''; }
+
+// ===================== UI state =====================
+let mode='baseball', t=0, playing=false, speed=0.5, trail=false, lastTs=null, holdUntil=0;
+const LOOP_S=5; // seconds per delivery at 1x
+const scrub=document.getElementById('scrub');
+const KEYS=['baseball','softball'];
+function visible(){ return mode==='both'?KEYS:[mode]; }
+
+function buildTimeline(key){
+  const sp=SPORTS[key];
+  const bar=document.getElementById('seg-'+key), ev=document.getElementById('tlev-'+key), chips=document.getElementById('chips-'+key);
+  sp.phases.forEach((ph,i)=>{
+    const d=document.createElement('div');
+    d.className='seg'+(ph.dark?' dark-text':'');
+    d.style.width=(ph.end-ph.start)+'%'; d.style.background=ph.color;
+    d.title=ph.name; d.dataset.i=i;
+    bar.appendChild(d);
+    const c=document.createElement('button');
+    c.className='chip'; c.innerHTML=`<span class="dot" style="background:${ph.color};"></span>${i+1}. ${ph.name}`;
+    c.addEventListener('click',()=>jumpTo(key,i));
+    chips.appendChild(c);
+  });
+  bar.addEventListener('click',e=>{
+    const r=bar.getBoundingClientRect();
+    const pct=(e.clientX-r.left)/r.width*100;
+    const i=phaseAt(sp,Math.max(0,Math.min(99.9,pct)));
+    if(i>=0) jumpTo(key,i);
+  });
+  let lastRow0=-99;
+  sp.events.forEach(e=>{
+    const d=document.createElement('div');
+    let row=0;
+    if(e.t-lastRow0<7.5) row=1; else lastRow0=e.t;
+    d.className='tl-ev'+(row?' r1':''); d.style.left=e.t+'%'; d.textContent=e.label;
+    ev.appendChild(d);
+  });
+}
+function labelTimeline(key){
+  const sp=SPORTS[key], bar=document.getElementById('seg-'+key);
+  const w=bar.clientWidth;
+  [...bar.children].forEach((d,i)=>{
+    const ph=sp.phases[i], px=w*(ph.end-ph.start)/100;
+    d.textContent = px>=ph.short.length*6.6+10 ? ph.short : (px>=11 ? String(i+1) : '');
+  });
+}
+function jumpTo(key,i){
+  setPlaying(false);
+  const ph=SPORTS[key].phases[i];
+  t=ph.start + Math.min(0.6,(ph.end-ph.start)*0.25);
+  if(i===0) t=0;
+  render();
+}
+function step(dirn){
+  const key=visible()[0], sp=SPORTS[key];
+  const i=phaseAt(sp,t), n=sp.phases.length;
+  jumpTo(key, (i+dirn+n)%n);
+}
+function infoHTML(key, i){
+  const sp=SPORTS[key], ph=sp.phases[i];
+  return `<h3>Current phase${mode==='both'?' · '+sp.name:''}</h3>
+    <div class="phase-title" style="color:${ph.dark?'#9A7416':ph.color};">${i+1}. ${ph.name}</div>
+    <dl class="meta">
+      <dt>Starts</dt><dd>${ph.from}</dd>
+      <dt>Ends</dt><dd>${ph.to}</dd>
+      <dt>Base of support</dt><dd>${ph.bos}</dd>
+    </dl>
+    <p class="purpose"><b>Purpose:</b> ${ph.purpose}</p>
+    <ul class="actions">${ph.actions.map(a=>`<li>${a}</li>`).join('')}</ul>
+    <div class="feat-explain"><b>Where the load is:</b> ${ph.load}</div>`;
+}
+let lastInfo={};
+function render(){
+  scrub.value=Math.round(t*10);
+  document.getElementById('pctOut').textContent=t.toFixed(0)+'%';
+  const vis=visible();
+  document.getElementById('phaseOut').innerHTML=vis.map(k=>{ const ph=SPORTS[k].phases[phaseAt(SPORTS[k],t)]; return (mode==='both'?SPORTS[k].name.split(' ')[0]+': ':'')+'<b>'+ph.name+'</b>'; }).join(' &nbsp;·&nbsp; ');
+  vis.forEach(k=>{
+    const sp=SPORTS[k], i=phaseAt(sp,t);
+    document.getElementById('fig-'+k).innerHTML=figureSVG(k,t,{trail, showSport:mode==='both'});
+    document.getElementById('mark-'+k).style.left=t+'%';
+    [...document.getElementById('seg-'+k).children].forEach((d,j)=>d.classList.toggle('active',j===i));
+    [...document.getElementById('chips-'+k).children].forEach((d,j)=>d.classList.toggle('active',j===i));
+    const sig=mode+i;
+    if(lastInfo[k]!==sig){ document.getElementById('info-'+k).innerHTML=infoHTML(k,i); lastInfo[k]=sig; }
+    const svg=document.getElementById('chart-'+k);
+    const W=Math.max(300, Math.min(760, Math.round(svg.parentElement.clientWidth||640)));
+    const c=chartSVG(k,t,W);
+    svg.setAttribute('viewBox',`0 0 ${W} ${c.H}`);
+    svg.innerHTML=c.svg;
+  });
+}
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('#sportGroup .axis-mode-btn').forEach(b=>{ const on=b.dataset.mode===m; b.classList.toggle('active',on); b.setAttribute('aria-pressed',on); });
+  const both=m==='both';
+  KEYS.forEach(k=>{
+    const show=both||m===k;
+    ['stage-','tlblock-','info-','chartblock-'].forEach(pre=>document.getElementById(pre+k).hidden=!show);
+    ['tlname-','charttitle-'].forEach(pre=>document.getElementById(pre+k).hidden=!both);
+  });
+  document.getElementById('stageGrid').classList.toggle('both',both);
+  document.getElementById('infoRow').classList.toggle('both',both);
+  document.getElementById('bothNote').hidden=!both;
+  lastInfo={};
+  render();
+  KEYS.forEach(labelTimeline);
+}
+function setPlaying(on){
+  playing=on;
+  document.getElementById('playBtn').textContent=on?'Pause':'Play';
+  lastTs=null;
+  if(on){ if(t>=100) t=0; requestAnimationFrame(tick); }
+}
+function tick(ts){
+  if(!playing) return;
+  if(lastTs===null) lastTs=ts;
+  const dt=Math.max(0,Math.min(0.1,(ts-lastTs)/1000)); lastTs=ts;
+  if(holdUntil){
+    if(ts>=holdUntil){ holdUntil=0; t=0; }
+  } else {
+    t+=dt*speed*100/LOOP_S;
+    if(t>=100){ t=100; holdUntil=ts+700; }
+  }
+  render();
+  requestAnimationFrame(tick);
+}
+
+// ===================== Wire up =====================
+KEYS.forEach(k=>{ prepSport(SPORTS[k]); buildTimeline(k); });
+CURVES.softball[0].series[0].fn = x=>SPORTS.softball.interp.ru(x)+90;
+buildQuiz();
+
+document.getElementById('sportGroup').addEventListener('click',e=>{ const b=e.target.closest('.axis-mode-btn'); if(b) setMode(b.dataset.mode); });
+document.getElementById('speedGroup').addEventListener('click',e=>{
+  const b=e.target.closest('.axis-mode-btn'); if(!b) return;
+  speed=Number(b.dataset.speed);
+  document.querySelectorAll('#speedGroup .axis-mode-btn').forEach(x=>x.classList.toggle('active',x===b));
+});
+document.getElementById('playBtn').addEventListener('click',()=>setPlaying(!playing));
+document.getElementById('backBtn').addEventListener('click',()=>step(-1));
+document.getElementById('fwdBtn').addEventListener('click',()=>step(1));
+document.getElementById('trailBtn').addEventListener('click',e=>{
+  trail=!trail; const b=e.currentTarget; b.classList.toggle('active',trail); b.setAttribute('aria-pressed',trail); render();
+});
+scrub.addEventListener('input',()=>{ setPlaying(false); holdUntil=0; t=Number(scrub.value)/10; render(); });
+let rzTimer=null;
+window.addEventListener('resize',()=>{ clearTimeout(rzTimer); rzTimer=setTimeout(()=>{ render(); KEYS.forEach(labelTimeline); },120); });
+
+// Optional link parameters, e.g. ?sport=softball&t=80&trail=1
+(function(){
+  const q=new URLSearchParams(location.search);
+  const sp=q.get('sport'); const tq=parseFloat(q.get('t'));
+  if(!isNaN(tq)) t=Math.max(0,Math.min(100,tq));
+  if(q.get('trail')==='1'){ trail=true; document.getElementById('trailBtn').classList.add('active'); }
+  setMode(sp==='softball'||sp==='both'?sp:'baseball');
+})();
+</script>
+</body>
+</html>
