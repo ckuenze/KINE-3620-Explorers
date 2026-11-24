@@ -4,6 +4,12 @@ Interactive tools for **KINE 3620: Biomechanics and Motor Control of Human Movem
 
 Each tool is a single HTML file that runs in any modern web browser. There's nothing to install and no account to create. Videos you load into the video tools stay on your own device and are never uploaded.
 
+## Unit 1: Linear and Angular Kinematics
+
+| Tool | Topic | Use |
+|---|---|---|
+| [Kinematics Graph Linker](kinematics-graph-linker/) | Position, velocity, and acceleration graphs (linear and angular), tangents, and average vs. instantaneous rates, with Usain Bolt's 100 m splits | Pre-class |
+
 ## Unit 2: Introduction to Human Movement
 
 | Tool | Topic | Use |

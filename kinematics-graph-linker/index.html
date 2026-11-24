@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinematics Graph Linker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158;
+    --stance:#2F6F63; --rust:#B8622A; --amber:#E8B23D; --line-blue:#3A5B8C; --purple:#7A5C8A; --line:#D8DED7; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:28px 18px 60px;}
+  .wrap{max-width:1040px;margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 20px;max-width:720px;line-height:1.5;}
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);margin-bottom:16px;min-width:0;}
+  h2.window-title{margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;}
+  .window-sub{color:var(--ink-soft);font-size:13.5px;margin:0 0 16px;line-height:1.5;}
+  h3{margin:0 0 10px;font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:var(--ink-soft);}
+  .note{font-size:12.5px;line-height:1.6;color:#33392f;}
+  button{font-family:'Inter',sans-serif;}
+  [hidden]{display:none !important;}
+  @media (max-width:480px){ body{padding:22px 12px 48px;} .card{padding:16px 14px;} }
+
+  /* segmented toggles */
+  .axis-mode-row{display:flex;align-items:center;gap:8px 10px;margin-bottom:14px;flex-wrap:wrap;}
+  .axis-mode-label{font-size:12.5px;font-weight:700;color:var(--ink-soft);}
+  .axis-mode-group{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:9px;flex-wrap:wrap;}
+  .axis-mode-btn{border:none;background:transparent;padding:6px 13px;border-radius:7px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--ink-soft);}
+  .axis-mode-btn.active{background:var(--ink);color:#fff;}
+
+  .controls{display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap;}
+  .btn{font-weight:600;font-size:14px;border:none;border-radius:9px;padding:9px 16px;cursor:pointer;transition:transform 0.08s ease;}
+  .btn:active{transform:scale(0.96);}
+  #playBtn{background:var(--ink);color:#fff;min-width:78px;}
+  .toggles{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px;}
+  .toggle-btn{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;font-weight:700;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:7px;color:var(--ink-soft);}
+  .toggle-btn .sw{opacity:0.35;}
+  .toggle-btn.active{border-color:var(--amber);color:var(--ink);}
+  .toggle-btn.active .sw{opacity:1;}
+
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--line);border-radius:4px;outline:none;margin:16px 0 4px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;margin-top:-8px;}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
+  .readout{display:flex;justify-content:space-between;gap:6px 12px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft);}
+  .readout b{font-family:'Space Grotesk',sans-serif;color:var(--ink);}
+
+  .control{margin-bottom:4px;}
+  .control-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .control-label{font-weight:700;font-size:13.5px;}
+  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:var(--ink);white-space:nowrap;}
+  .control input[type=range]{margin:12px 0 8px;}
+  .sliders{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 22px;background:#FBFCFA;border:1px solid var(--line);border-radius:12px;padding:12px 14px 6px;margin-bottom:14px;}
+  @media (max-width:640px){ .sliders{grid-template-columns:1fr;} }
+  .sliders .chips{grid-column:1/-1;margin:0 0 8px;}
+
+  .legend{display:flex;gap:8px 16px;justify-content:center;margin-top:12px;font-size:12px;font-weight:600;color:var(--ink-soft);flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .sw{width:14px;height:5px;border-radius:3px;display:inline-block;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+  .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--ink-soft);cursor:pointer;}
+  .chip:hover{color:var(--ink);border-color:var(--ink-soft);}
+
+  .feat-explain{margin-top:10px;font-size:13.5px;line-height:1.55;color:#33392f;background:#F1F4F0;border-radius:10px;padding:11px 13px;min-height:20px;}
+  .tag{display:inline-block;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--ink);color:#fff;margin-right:6px;}
+  .est{color:var(--ink-soft);font-style:italic;}
+
+  /* motion strip + graphs */
+  .stage{background:#FBFCFA;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .stage svg{width:100%;display:block;}
+  .gblock{margin-top:14px;}
+  .ghead{display:flex;justify-content:space-between;align-items:baseline;gap:2px 10px;flex-wrap:wrap;font-size:13px;margin-bottom:2px;}
+  .gt{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;}
+  .gt small{font-family:'Inter',sans-serif;font-weight:600;font-size:12px;color:var(--ink-soft);}
+  .gval{font-size:12.5px;color:var(--ink-soft);}
+  .gval b{font-family:'Space Grotesk',sans-serif;font-size:14px;}
+  .gslope{font-size:12.5px;color:#33392f;margin:4px 0 0;line-height:1.45;}
+  .gslope b{font-family:'Space Grotesk',sans-serif;}
+  svg.graph{width:100%;display:block;touch-action:pan-y;cursor:crosshair;-webkit-user-select:none;user-select:none;}
+  .axis-label{font-size:11px;fill:var(--ink-soft);font-family:'Inter',sans-serif;}
+  .ann{font-size:11px;font-weight:700;font-family:'Inter',sans-serif;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;}
+
+  /* average vs instantaneous */
+  .avg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 22px;}
+  @media (max-width:640px){ .avg-grid{grid-template-columns:1fr;} }
+  .calc{font-size:13.5px;line-height:1.6;margin:8px 0 0;}
+  .calc .row{padding:8px 0;border-top:1px solid var(--line);}
+  .calc .row:first-child{border-top:none;}
+  .calc b{font-family:'Space Grotesk',sans-serif;}
+
+  /* quiz */
+  .q{border-top:1px solid var(--line);padding:14px 0 4px;}
+  .q:first-of-type{border-top:none;padding-top:4px;}
+  .q-text{font-weight:700;font-size:14.5px;line-height:1.45;margin-bottom:8px;}
+  .q-opts{display:flex;flex-direction:column;gap:6px;}
+  .q-opt{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;font-weight:600;font-size:13px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.4;}
+  .q-opt:hover{border-color:var(--ink-soft);}
+  .q-opt.right{border-color:var(--stance);background:#E4EEEA;}
+  .q-opt.wrong{border-color:var(--rust);background:#F5E7DC;}
+  .q .feat-explain{display:none;}
+  .q.answered .feat-explain{display:block;}
+  .score{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:var(--ink-soft);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Kinematics Graph Linker</h1>
+  <p class="subtitle">Three graphs, one motion. The <b>slope</b> of each graph is the <b>value</b> of the graph below it. Move the time cursor and check.</p>
+
+  <!-- ============ Motion + graphs ============ -->
+  <div class="card">
+    <div class="axis-mode-row">
+      <span class="axis-mode-label">Scenario:</span>
+      <div class="axis-mode-group" id="scenGroup">
+        <button class="axis-mode-btn active" data-scen="bolt" aria-pressed="true">Bolt 100 m (real data)</button>
+        <button class="axis-mode-btn" data-scen="curl" aria-pressed="false">Elbow curl</button>
+        <button class="axis-mode-btn" data-scen="const" aria-pressed="false">Build your own</button>
+      </div>
+    </div>
+    <h2 class="window-title" id="scenTitle"></h2>
+    <p class="window-sub" id="scenDesc"></p>
+
+    <div class="sliders" id="constSliders" hidden>
+      <div class="control">
+        <div class="control-head"><span class="control-label">Starting position x₀</span><span class="control-val" id="x0Val"></span></div>
+        <input type="range" id="x0" min="-20" max="20" step="1" value="0" aria-label="Starting position">
+      </div>
+      <div class="control">
+        <div class="control-head"><span class="control-label">Starting velocity v₀</span><span class="control-val" id="v0Val"></span></div>
+        <input type="range" id="v0" min="-10" max="10" step="0.5" value="8" aria-label="Starting velocity">
+      </div>
+      <div class="control">
+        <div class="control-head"><span class="control-label">Acceleration a</span><span class="control-val" id="aVal"></span></div>
+        <input type="range" id="acc" min="-5" max="5" step="0.25" value="-2" aria-label="Acceleration">
+      </div>
+      <div class="chips" id="constPresets">
+        <button class="chip" data-x0="0" data-v0="2" data-a="2">Speeding up</button>
+        <button class="chip" data-x0="0" data-v0="8" data-a="-2">Slowing down, still moving forward</button>
+      </div>
+    </div>
+
+    <div class="axis-mode-row" id="unitRow" hidden>
+      <span class="axis-mode-label">Angle units:</span>
+      <div class="axis-mode-group" id="unitGroup">
+        <button class="axis-mode-btn active" data-unit="rad" aria-pressed="true">Radians</button>
+        <button class="axis-mode-btn" data-unit="deg" aria-pressed="false">Degrees</button>
+      </div>
+    </div>
+
+    <div class="stage"><svg id="strip" role="img" aria-label="Animation of the motion"></svg></div>
+
+    <div class="controls">
+      <button class="btn" id="playBtn">Play</button>
+    </div>
+    <input type="range" id="scrub" min="0" max="1000" value="500" aria-label="Time cursor">
+    <div class="readout"><span>Time: <b id="tOut">0.00 s</b></span><span>Drag the slider, or drag on any graph.</span></div>
+
+    <div class="toggles">
+      <button class="toggle-btn active" id="tanBtn" aria-pressed="true"><span class="sw" style="background:var(--line-blue);"></span>Tangent lines</button>
+      <button class="toggle-btn" id="secBtn" aria-pressed="false"><span class="sw" style="background:var(--purple);"></span>Average (secant)</button>
+      <button class="toggle-btn" id="segBtn" aria-pressed="false"><span class="sw" style="background:var(--ink);"></span>Segment averages</button>
+    </div>
+
+    <div id="graphs">
+      <div class="gblock"><div class="ghead" id="h0"></div><svg class="graph" id="g0"></svg><p class="gslope" id="s0"></p></div>
+      <div class="gblock"><div class="ghead" id="h1"></div><svg class="graph" id="g1"></svg><p class="gslope" id="s1"></p></div>
+      <div class="gblock"><div class="ghead" id="h2"></div><svg class="graph" id="g2"></svg></div>
+    </div>
+    <div class="legend" id="legend"></div>
+
+    <h3 style="margin:18px 0 0;">Read the graph</h3>
+    <div class="feat-explain" id="readBox" aria-live="polite"></div>
+    <p class="note" id="scenNote" style="margin-top:12px;"></p>
+  </div>
+
+  <!-- ============ Average vs instantaneous ============ -->
+  <div class="card" id="avgCard" hidden>
+    <h2 class="window-title">Average vs. instantaneous</h2>
+    <p class="window-sub">The purple <b>secant</b> joins two points on the top graph. Its slope is the <b>average</b> between t₁ and t₂. The tangent's slope is the value at <b>one instant</b>. Drag the purple handles on the top graph, or use these sliders.</p>
+    <div class="avg-grid">
+      <div class="control">
+        <div class="control-head"><span class="control-label">t₁</span><span class="control-val" id="t1Val"></span></div>
+        <input type="range" id="t1" min="0" max="1000" value="0" aria-label="Secant start time">
+      </div>
+      <div class="control">
+        <div class="control-head"><span class="control-label">t₂</span><span class="control-val" id="t2Val"></span></div>
+        <input type="range" id="t2" min="0" max="1000" value="1000" aria-label="Secant end time">
+      </div>
+    </div>
+    <div class="calc" id="avgOut"></div>
+  </div>
+
+  <!-- ============ Quiz ============ -->
+  <div class="card">
+    <h2 class="window-title">Quick check</h2>
+    <p class="window-sub">Pick an answer to see feedback. <span class="score" id="score"></span></p>
+    <div id="quiz"></div>
+  </div>
+
+  <!-- ============ Footer ============ -->
+  <div class="card">
+    <p class="note" style="margin:0;"><b>Data source.</b> Bolt 100 m: official 20 m splits and reaction time from the 9.58 s world record (Berlin, 16 August 2009), as reported by <i>Track &amp; Field News</i> (November 2009) from the official biomechanical analysis. Only the splits are measured. The smooth curve is a model fitted to them (within 0.02 s), so its velocity and acceleration are estimates.</p>
+    <p class="note" style="margin:8px 0 0;">Curl and constant-acceleration scenarios are idealized models.</p>
+  </div>
+</div>
+
+<script>
+'use strict';
+const PI = Math.PI;
+const C = {ink:'#1B2420', soft:'#586158', stance:'#2F6F63', rust:'#B8622A', amber:'#E8B23D', blue:'#3A5B8C', purple:'#7A5C8A', line:'#D8DED7', grid:'#EDEFEC'};
+const GRAPH_COLORS = [C.stance, C.blue, C.rust];
+
+// ===================== Models =====================
+// Bolt smooth-start sprint model, fitted to the official split times (within 0.02 s).
+// t' = t - 0.146 s reaction time; v = vmax(1 - e^(-t'/tau1))(1 - e^(-t'/tau2))^2.
+// Both a and da/dt are 0 at t' = 0, so acceleration leaves zero smoothly (no corner).
+const BOLT_RT = 0.146, BOLT_VMAX = 12.2046, BOLT_T1 = 1.1970, BOLT_T2 = 0.18;
+const BOLT_TC = 1/(1/BOLT_T1 + 1/BOLT_T2), BOLT_TD = 1/(1/BOLT_T1 + 2/BOLT_T2);
+function boltModel(t){
+  const tp = t - BOLT_RT;
+  if(tp<=0) return [0,0,0];
+  const F = c => c*(1-Math.exp(-tp/c));
+  const e1=Math.exp(-tp/BOLT_T1), e2=Math.exp(-tp/BOLT_T2), A=1-e1, B=1-e2;
+  const x = BOLT_VMAX*(tp - 2*F(BOLT_T2) + F(BOLT_T2/2) - F(BOLT_T1) + 2*F(BOLT_TC) - F(BOLT_TD));
+  const v = BOLT_VMAX*A*B*B;
+  const a = BOLT_VMAX*((e1/BOLT_T1)*B*B + 2*A*B*(e2/BOLT_T2));   // analytic dv/dt
+  return [x,v,a];
+}
+function minJerk(th0, dth, T){
+  return function(t){
+    if(t<=0) return [th0,0,0];
+    if(t>=T) return [th0+dth,0,0];
+    const s=t/T, s2=s*s, s3=s2*s, s4=s3*s, s5=s4*s;
+    return [th0+dth*(10*s3-15*s4+6*s5), dth/T*(30*s2-60*s3+30*s4), dth/(T*T)*(60*s-180*s2+120*s3)];
+  };
+}
+
+// Bolt: official cumulative splits (Track & Field News, Nov 2009; Berlin 2009 biomechanical analysis)
+const SPLIT_T = [0, 2.89, 4.64, 6.31, 7.92, 9.58];   // gun, then 20/40/60/80/100 m
+const SPLIT_X = [0, 20, 40, 60, 80, 100];
+const SEG_AVG = [6.92, 11.43, 11.98, 12.42, 12.05];  // 20 m / segment time (m/s)
+
+const curlFn = minJerk(-PI/6, PI/3, 3);
+const CP = {x0:0, v0:8, a:-2};
+function constFn(t){ return [CP.x0 + CP.v0*t + 0.5*CP.a*t*t, CP.v0 + CP.a*t, CP.a]; }
+
+const SCEN = {
+  bolt:{ title:'Usain Bolt, 100 m world record (9.58 s)', kind:'linear', tMax:9.58, tStep:1, t0:1.5,
+    desc:'Berlin, 2009. The clock starts at the gun. Bolt reacts at 0.146 s. The dots are his official 20 m split times.',
+    fwd:'moving forward', back:'moving backward', estimated:true,
+    note:'Dots: official splits. Smooth model fitted to the official splits (within 0.02 s). Velocity and acceleration are model estimates. The segment averages show a small slowdown over the last 20 m that this simple model leaves out.',
+    fn:boltModel, secDefault:[2.89, 4.64] },
+  curl:{ title:'Elbow curl', kind:'angular', tMax:3, tStep:0.5, t0:0.75,
+    desc:'The forearm curls from −30° to +30° (−π/6 to +π/6 rad) in 3 s. It starts and ends at rest. θ is the forearm angle above horizontal, so positive ω means the elbow is flexing.',
+    fwd:'curling up', back:'lowering',
+    note:'Idealized model. Average ω for the whole curl = Δθ/Δt = (π/3 rad)/(3 s) = π/9 ≈ 0.35 rad/s.',
+    fn:curlFn, secDefault:[0,3] },
+  const:{ title:'Build your own: constant acceleration', kind:'linear', tMax:5, tStep:1, t0:1,
+    desc:'x = x₀ + v₀t + ½at² and v = v₀ + at. Try a negative a with a positive v₀.',
+    fwd:'moving in the + direction', back:'moving in the − direction',
+    note:'Idealized model. With constant a, the velocity graph is a straight line, so its slope is the same everywhere.',
+    fn:constFn, secDefault:[1,3] }
+};
+
+// ===================== State =====================
+let cur='bolt', units='rad', t=1.5, t1=0, t2=1, playing=false, lastTs=null;
+let showTan=true, showSec=false, showSeg=false;
+const G = [];
+let W = 600, maxV=1, maxA=1, epsV=1e-9, epsA=1e-9;
+
+const $ = id => document.getElementById(id);
+const svgs = [$('g0'),$('g1'),$('g2')];
+const heads = [$('h0'),$('h1'),$('h2')];
+const slopes = [$('s0'),$('s1')];
+const strip = $('strip');
+
+function sc(){ return SCEN[cur]; }
+function U(){ return (sc().kind==='angular' && units==='deg') ? 180/PI : 1; }
+function unitStrs(){
+  if(sc().kind==='linear') return ['m','m/s','m/s²'];
+  return units==='deg' ? ['°','°/s','°/s²'] : ['rad','rad/s','rad/s²'];
+}
+function labels(){
+  return sc().kind==='linear'
+    ? {names:['Position','Velocity','Acceleration'], sym:['x','v','a'], pos:'position', V:'Velocity', A:'acceleration'}
+    : {names:['Angle','Angular velocity','Angular acceleration'], sym:['θ','ω','α'], pos:'angle', V:'ω', A:'α'};
+}
+function fmt(v){
+  if(!isFinite(v)) return '–';
+  const a=Math.abs(v), dp = a>=1000?0:(a>=100?1:2);
+  let s=v.toFixed(dp);
+  if(parseFloat(s)===0) s=(0).toFixed(dp);
+  return s.replace('-','−');
+}
+function fu(v,u){ return fmt(v)+(u.charAt(0)==='°'?u:' '+u); }
+function fmtTick(v, step){
+  let dp=0; while(dp<3 && Math.abs(step*Math.pow(10,dp)-Math.round(step*Math.pow(10,dp)))>1e-6) dp++;
+  let s=v.toFixed(dp); if(parseFloat(s)===0) s=(0).toFixed(dp);
+  return s.replace('-','−');
+}
+function fmtT(x){ return x.toFixed(2)+' s'; }
+
+// ===================== Geometry =====================
+function niceStep(r, n){
+  const raw=r/n, p=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/p;
+  return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;
+}
+// dense sample times (at least 400 points, more on wide screens)
+function sampleTimes(n){ const T=sc().tMax, out=[]; for(let i=0;i<=n;i++) out.push(T*i/n); return out; }
+function computeGeometry(){
+  const S=sc(), u=U();
+  W = Math.max(260, Math.round($('graphs').clientWidth));
+  const narrow = W<520;
+  const H = narrow?150:175, padL = narrow?46:58, padR=14, padT=10, padB=24;
+  const ts = sampleTimes(800), rows = ts.map(tt=>S.fn(tt));
+  maxV=0; maxA=0; rows.forEach(r=>{ maxV=Math.max(maxV,Math.abs(r[1])); maxA=Math.max(maxA,Math.abs(r[2])); });
+  epsV=Math.max(maxV*0.02,1e-9); epsA=Math.max(maxA*0.02,1e-9);
+  for(let k=0;k<3;k++){
+    let lo=0, hi=0;
+    rows.forEach(r=>{ const v=r[k]*u; if(v<lo) lo=v; if(v>hi) hi=v; });
+    if(cur==='bolt' && k===0) hi=Math.min(hi,100);
+    if(cur==='bolt' && k===1) hi=Math.max(hi,13);
+    if(hi-lo<1e-9){ lo-=1; hi+=1; }
+    const step=niceStep(hi-lo, narrow?3:4);
+    const lo2=Math.floor(lo/step+1e-9)*step, hi2=Math.ceil(hi/step-1e-9)*step;
+    const ticks=[]; for(let v=lo2; v<=hi2+step*1e-6; v+=step) ticks.push(Math.abs(v)<step*1e-6?0:v);
+    const plotW=W-padL-padR, plotH=H-padT-padB;
+    G[k]={W,H,padL,padR,padT,padB,plotW,plotH,lo:lo2,hi:hi2,ticks,step,
+      x:tt=>padL+tt/S.tMax*plotW, y:v=>padT+(1-(v-lo2)/(hi2-lo2))*plotH,
+      ky:plotH/(hi2-lo2), kx:plotW/S.tMax};
+  }
+}
+
+// ===================== Static layer =====================
+function renderBase(){
+  computeGeometry();
+  const S=sc(), u=U(), L=labels();
+  const n = Math.max(400, Math.round(G[0].plotW*2));
+  const ts = sampleTimes(n), rows = ts.map(tt=>S.fn(tt));
+  for(let k=0;k<3;k++){
+    const g=G[k]; let h='';
+    h+=`<defs><clipPath id="clip${k}"><rect x="${g.padL}" y="${g.padT-2}" width="${g.plotW}" height="${g.plotH+4}"/></clipPath></defs>`;
+    g.ticks.forEach(v=>{
+      const y=g.y(v);
+      h+=`<line x1="${g.padL}" y1="${y}" x2="${g.W-g.padR}" y2="${y}" stroke="${v===0?'#B9C1B8':C.grid}" stroke-width="${v===0?1.4:1}"/>`;
+      h+=`<text x="${g.padL-6}" y="${y+4}" text-anchor="end" class="axis-label">${fmtTick(v,g.step)}</text>`;
+    });
+    h+=`<line x1="${g.padL}" y1="${g.padT}" x2="${g.padL}" y2="${g.H-g.padB}" stroke="${C.line}" stroke-width="1.5"/>`;
+    h+=`<line x1="${g.padL}" y1="${g.H-g.padB}" x2="${g.W-g.padR}" y2="${g.H-g.padB}" stroke="${C.line}" stroke-width="1.5"/>`;
+    const tickEvery = (g.plotW/(S.tMax/S.tStep) < 34) ? 2 : 1;
+    let i=0;
+    for(let tt=0; tt<=S.tMax+1e-9; tt+=S.tStep, i++){
+      const x=g.x(tt);
+      h+=`<line x1="${x}" y1="${g.H-g.padB}" x2="${x}" y2="${g.H-g.padB+4}" stroke="${C.line}"/>`;
+      if(i%tickEvery===0) h+=`<text x="${x}" y="${g.H-g.padB+16}" text-anchor="middle" class="axis-label">${+tt.toFixed(2)}</text>`;
+    }
+    if(k===2) h+=`<text x="${g.W-g.padR}" y="${g.H-g.padB-6}" text-anchor="end" class="axis-label">time (s)</text>`;
+    if(cur==='bolt' && k===1 && showSeg){
+      SEG_AVG.forEach((v,j)=>{
+        const xa=g.x(SPLIT_T[j]), xb=g.x(SPLIT_T[j+1]), y=g.y(v);
+        h+=`<line x1="${xa}" y1="${y}" x2="${xb}" y2="${y}" stroke="${C.ink}" stroke-opacity="0.55" stroke-width="2.5"/>`;
+        if(j<SEG_AVG.length-1){ const yn=g.y(SEG_AVG[j+1]); h+=`<line x1="${xb}" y1="${y}" x2="${xb}" y2="${yn}" stroke="${C.ink}" stroke-opacity="0.3" stroke-width="1.2"/>`; }
+        if(g.plotW>330 || j%2===0) h+=`<text x="${(xa+xb)/2}" y="${y+15}" text-anchor="middle" class="ann" fill="${C.ink}" fill-opacity="0.75">${v.toFixed(2)}</text>`;
+      });
+    }
+    const pts = rows.map((r,j)=>g.x(ts[j]).toFixed(2)+','+g.y(r[k]*u).toFixed(2)).join(' ');
+    h+=`<polyline points="${pts}" fill="none" stroke="${GRAPH_COLORS[k]}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#clip${k})"/>`;
+    if(cur==='bolt' && k===0){
+      SPLIT_T.forEach((tt,j)=>{ if(j===0) return; h+=`<circle cx="${g.x(tt)}" cy="${g.y(SPLIT_X[j])}" r="4" fill="#fff" stroke="${C.ink}" stroke-width="2"/>`; });
+    }
+    h+=`<g class="over"></g>`;
+    svgs[k].setAttribute('viewBox',`0 0 ${g.W} ${g.H}`);
+    svgs[k].setAttribute('height', g.H);
+    svgs[k].innerHTML=h;
+    svgs[k].setAttribute('aria-label', `${L.names[k]} vs. time graph`);
+  }
+  renderLegend();
+  renderOver();
+}
+
+function renderLegend(){
+  let h=`<span><span class="sw" style="background:${C.amber};"></span>Time cursor</span>`;
+  if(showTan) h+=`<span><span class="sw" style="height:0;border-radius:0;border-top:3px dashed ${C.soft};"></span>Tangent (slope = value on the graph below)</span>`;
+  if(showSec) h+=`<span><span class="sw" style="background:${C.purple};"></span>Secant (average from t₁ to t₂)</span>`;
+  if(cur==='bolt') h+=`<span><span class="dot" style="background:#fff;border:2px solid ${C.ink};"></span>Official split</span>`;
+  if(cur==='bolt' && showSeg) h+=`<span><span class="sw" style="background:${C.ink};opacity:.55;"></span>20 m segment average</span>`;
+  $('legend').innerHTML=h;
+}
+
+// ===================== Dynamic layer =====================
+function arrowPath(x1,y1,x2,y2,col,w){
+  const dx=x2-x1, dy=y2-y1, len=Math.hypot(dx,dy); if(len<3) return '';
+  const ux=dx/len, uy=dy/len, hs=Math.min(8,len*0.6);
+  const bx=x2-ux*hs, by=y2-uy*hs;
+  return `<line x1="${x1}" y1="${y1}" x2="${bx}" y2="${by}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`+
+    `<path d="M${x2} ${y2} L${bx-uy*hs*0.55} ${by+ux*hs*0.55} L${bx+uy*hs*0.55} ${by-ux*hs*0.55} Z" fill="${col}"/>`;
+}
+
+function renderOver(){
+  const S=sc(), u=U(), L=labels(), us=unitStrs();
+  const r = S.fn(t);
+  for(let k=0;k<3;k++){
+    const g=G[k]; let h='';
+    const xc=g.x(t);
+    h+=`<line x1="${xc}" y1="${g.padT}" x2="${xc}" y2="${g.H-g.padB}" stroke="${C.amber}" stroke-width="2"/>`;
+    if(showSec && k<2){
+      const p1=S.fn(t1)[0]*u, p2=S.fn(t2)[0]*u, dt=t2-t1;
+      if(k===0){
+        const x1=g.x(t1), x2=g.x(t2), y1=g.y(p1), y2=g.y(p2);
+        if(Math.abs(dt)>1e-9){
+          const ext=0.06*S.tMax, m=(p2-p1)/dt, ta=Math.min(t1,t2)-ext, tb=Math.max(t1,t2)+ext;
+          h+=`<line x1="${g.x(ta)}" y1="${g.y(p1+m*(ta-t1))}" x2="${g.x(tb)}" y2="${g.y(p1+m*(tb-t1))}" stroke="${C.purple}" stroke-width="2.5" clip-path="url(#clip0)"/>`;
+        }
+        [[x1,y1,'1'],[x2,y2,'2']].forEach(([x,y,lab])=>{
+          h+=`<line x1="${x}" y1="${y}" x2="${x}" y2="${g.H-g.padB}" stroke="${C.purple}" stroke-width="1.2" stroke-dasharray="3,3"/>`;
+          h+=`<circle cx="${x}" cy="${y}" r="6.5" fill="${C.purple}" stroke="#fff" stroke-width="2" style="cursor:ew-resize"/>`;
+          h+=`<rect x="${x-11}" y="${g.H-g.padB-17}" width="22" height="15" rx="4" fill="${C.purple}" style="cursor:ew-resize"/>`;
+          h+=`<text x="${x}" y="${g.H-g.padB-6}" text-anchor="middle" class="ann" fill="#fff" style="pointer-events:none;stroke:none">t<tspan font-size="8.5" dy="2">${lab}</tspan></text>`;
+        });
+      } else if(Math.abs(dt)>1e-9){
+        const avg=(p2-p1)/dt, y=g.y(avg);
+        if(avg>=g.lo && avg<=g.hi){
+          const xe=g.x(Math.max(t1,t2)), nearR = xe>g.W-70;
+          h+=`<line x1="${g.x(Math.min(t1,t2))}" y1="${y}" x2="${xe}" y2="${y}" stroke="${C.purple}" stroke-width="2.5" stroke-dasharray="6,4"/>`;
+          h+=`<text x="${nearR?xe-4:xe+4}" y="${nearR?y-6:y+4}" text-anchor="${nearR?'end':'start'}" class="ann" fill="${C.purple}">avg</text>`;
+        }
+      }
+    }
+    if(showTan && k<2){
+      const y0=r[k]*u, m=r[k+1]*u;
+      const dyp=-m*g.ky/g.kx, len=Math.hypot(1,dyp), half=Math.min(70, g.plotW*0.2);
+      const ux=1/len*half, uy=dyp/len*half;
+      h+=`<line x1="${xc-ux}" y1="${g.y(y0)-uy}" x2="${xc+ux}" y2="${g.y(y0)+uy}" stroke="${GRAPH_COLORS[k+1]}" stroke-width="2.5" stroke-dasharray="7,4" clip-path="url(#clip${k})"/>`;
+    }
+    const v=r[k]*u;
+    if(v>=g.lo-1e-9 && v<=g.hi+1e-9) h+=`<circle cx="${xc}" cy="${g.y(v)}" r="5.5" fill="${GRAPH_COLORS[k]}" stroke="#fff" stroke-width="2"/>`;
+    svgs[k].querySelector('.over').innerHTML=h;
+
+    const est = S.estimated && k>0 ? ' <small>(model estimate)</small>' : '';
+    heads[k].innerHTML=`<span class="gt">${L.names[k]} ${L.sym[k]} <small>(${us[k]})</small>${est}</span><span class="gval">${L.sym[k]} = <b style="color:${GRAPH_COLORS[k]}">${fu(r[k]*u, us[k])}</b></span>`;
+    if(k<2){
+      slopes[k].innerHTML = showTan
+        ? `Slope of the tangent = <b style="color:${GRAPH_COLORS[k+1]}">${fu(r[k+1]*u,us[k+1])}</b> = ${L.sym[k+1]} on the graph below.`
+        : '';
+    }
+  }
+  $('tOut').textContent=fmtT(t);
+  $('scrub').value=Math.round(t/S.tMax*1000);
+  renderStrip(r);
+  renderRead(r);
+  if(showSec) renderAvg(r);
+}
+
+// ===================== Motion strip =====================
+function renderStrip(r){
+  const S=sc(), w=W; let h='';
+  if(S.kind==='linear'){
+    const H=96, Lx=22, Rx=w-22, ty=58;
+    let lo, hi, ticks, step;
+    if(cur==='bolt'){ lo=0; hi=100; ticks=SPLIT_X; step=20; }
+    else { lo=G[0].lo; hi=G[0].hi; ticks=G[0].ticks; step=G[0].step; }
+    const X=p=>Lx+(p-lo)/(hi-lo)*(Rx-Lx);
+    h+=`<rect x="${Lx-6}" y="${ty-9}" width="${Rx-Lx+12}" height="18" rx="9" fill="#E9EDE8"/>`;
+    h+=`<line x1="${Lx}" y1="${ty}" x2="${Rx}" y2="${ty}" stroke="#fff" stroke-width="2" stroke-dasharray="6,6"/>`;
+    ticks.forEach((p,i)=>{
+      const x=X(p), edge = p===0||(cur==='bolt'&&p===100);
+      h+=`<line x1="${x}" y1="${ty-9}" x2="${x}" y2="${ty+9}" stroke="${edge?C.ink:'#B9C1B8'}" stroke-width="${edge?2:1.2}"/>`;
+      if(w>420 || i%2===0 || p===100) h+=`<text x="${x}" y="${ty+24}" text-anchor="middle" class="axis-label">${fmtTick(p,step)} m</text>`;
+    });
+    const xr=X(r[0]);
+    [[maxV>0?r[1]*70/maxV:0,16,C.blue,'v'],[maxA>0?r[2]*50/maxA:0,34,C.rust,'a']].forEach(([len,y,col,lab])=>{
+      if(Math.abs(len)<3) return;
+      let x0=xr; const room=16;
+      if(x0+len>w-room) x0=w-room-len;
+      if(x0+len<room) x0=room-len;
+      h+=arrowPath(x0,y,x0+len,y,col,3.5);
+      h+=`<text x="${x0+len+(len>0?-2:2)}" y="${y-6}" text-anchor="${len>0?'end':'start'}" class="ann" fill="${col}">${lab}</text>`;
+    });
+    h+=`<circle cx="${xr}" cy="${ty}" r="8.5" fill="${C.stance}" stroke="#fff" stroke-width="2.5"/>`;
+    strip.setAttribute('viewBox',`0 0 ${w} ${H}`); strip.setAttribute('height',H);
+  } else {
+    const H=230, cx=Math.round(w*0.34), cy=124, Lf=Math.min(140, w*0.48);
+    h+=`<line x1="${cx}" y1="${cy}" x2="${cx+Lf+14}" y2="${cy}" stroke="#B9C1B8" stroke-width="1.2" stroke-dasharray="4,4"/>`;
+    h+=`<line x1="${cx}" y1="${cy}" x2="${cx-14}" y2="${cy-96}" stroke="${C.ink}" stroke-width="9" stroke-linecap="round"/>`;
+    h+=`<circle cx="${cx-14}" cy="${cy-96}" r="7" fill="${C.ink}"/>`;
+    const th=r[0], hx=cx+Lf*Math.cos(th), hy=cy-Lf*Math.sin(th);
+    const ra=42;
+    if(Math.abs(th)>0.01) h+=`<path d="M${cx+ra} ${cy} A${ra} ${ra} 0 0 ${th>0?0:1} ${cx+ra*Math.cos(th)} ${cy-ra*Math.sin(th)}" fill="none" stroke="${C.stance}" stroke-width="2"/>`;
+    h+=`<text x="${cx+ra+6}" y="${cy+(th>0?14:-6)}" class="ann" fill="${C.stance}">θ</text>`;
+    h+=`<line x1="${cx}" y1="${cy}" x2="${hx}" y2="${hy}" stroke="${C.rust}" stroke-width="9" stroke-linecap="round"/>`;
+    h+=`<circle cx="${hx}" cy="${hy}" r="9" fill="${C.rust}"/>`;
+    h+=`<circle cx="${cx}" cy="${cy}" r="6" fill="#fff" stroke="${C.ink}" stroke-width="3"/>`;
+    const omLen = r[1]/(maxV||1)*0.25;
+    if(Math.abs(omLen)>0.03){
+      const R=Lf+18, a1=th+omLen;
+      const p0=[cx+R*Math.cos(th), cy-R*Math.sin(th)], p1=[cx+R*Math.cos(a1), cy-R*Math.sin(a1)];
+      h+=`<path d="M${p0[0]} ${p0[1]} A${R} ${R} 0 0 ${omLen>0?0:1} ${p1[0]} ${p1[1]}" fill="none" stroke="${C.blue}" stroke-width="3"/>`;
+      const sg=omLen>0?1:-1, tx=-Math.sin(a1)*sg, tyy=-Math.cos(a1)*sg;
+      h+=arrowPath(p1[0]-tx*6, p1[1]-tyy*6, p1[0]+tx*3, p1[1]+tyy*3, C.blue, 3);
+      h+=`<text x="${p1[0]+6}" y="${p1[1]-6}" class="ann" fill="${C.blue}">ω</text>`;
+    }
+    h+=`<text x="10" y="${H-10}" class="axis-label">θ = ${fu(th*U(), unitStrs()[0])}${units==='deg'?'':' ('+fmt(th*180/PI)+'°)'}</text>`;
+    strip.setAttribute('viewBox',`0 0 ${w} ${H}`); strip.setAttribute('height',H);
+  }
+  strip.innerHTML=h;
+}
+
+// ===================== Read the graph =====================
+function renderRead(r){
+  const S=sc(), L=labels();
+  const v=r[1], a=r[2];
+  const sv = Math.abs(v)<=epsV?0:Math.sign(v), sa=Math.abs(a)<=epsA?0:Math.sign(a);
+  let tag, txt;
+  if(cur==='bolt' && t<=BOLT_RT){ tag='In the blocks'; txt='Bolt has not reacted to the gun yet. Position, velocity, and acceleration are all zero.'; }
+  else if(sv===0 && sa===0){ tag='At rest'; txt=`${L.V} is zero and ${L.A} is zero. Nothing is moving.`; }
+  else if(sv===0){ tag='Stopped for an instant'; txt=`${L.V} is zero: the ${L.pos} graph is flat. But ${L.A} is ${sa>0?'positive':'negative'}, so it is about to move ${sa>0?'in the + direction':'in the − direction'}.`; }
+  else if(sa===0){
+    if(cur==='curl'){ tag='Fastest point'; txt=`${L.V} is at its peak, so its graph is flat here. That makes ${L.A} zero.`; }
+    else { tag='Steady'; txt=`${L.V} is ${sv>0?'positive':'negative'} and ${cur==='const'?'constant':'almost constant'}, so ${L.A} is ${cur==='const'?'zero':'near zero'}.`; }
+  }
+  else if(sv>0 && sa>0){ tag='Speeding up'; txt=`${L.V} is positive and growing, so ${L.A} is positive.`; }
+  else if(sv>0 && sa<0){ tag='Slowing down'; txt=`${L.V} is positive but shrinking, so ${L.A} is negative. Still ${S.fwd}.`; }
+  else if(sv<0 && sa<0){ tag='Speeding up'; txt=`${L.V} is negative and getting more negative, so ${L.A} is negative. Getting faster while ${S.back}.`; }
+  else { tag='Slowing down'; txt=`${L.V} is negative but moving toward zero, so ${L.A} is positive. Still ${S.back}.`; }
+  if(cur==='bolt' && t>=SPLIT_T[4]) txt+=` <span class="est">The official splits show he slowed slightly over the last 20 m.</span>`;
+  $('readBox').innerHTML=`<span class="tag">${tag}</span>${txt}`;
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+// ===================== Average vs instantaneous =====================
+function renderAvg(r){
+  const S=sc(), u=U(), L=labels(), us=unitStrs();
+  $('t1Val').textContent=fmtT(t1); $('t2Val').textContent=fmtT(t2);
+  $('t1').value=Math.round(t1/S.tMax*1000); $('t2').value=Math.round(t2/S.tMax*1000);
+  const dt=t2-t1;
+  if(Math.abs(dt)<1e-9){ $('avgOut').innerHTML='<div class="row">t₁ and t₂ are at the same time. Spread them apart.</div>'; return; }
+  const p1=S.fn(t1)[0]*u, p2=S.fn(t2)[0]*u, avg=(p2-p1)/dt;
+  let h=`<div class="row">Average ${L.sym[1]} = Δ${L.sym[0]}/Δt = (${fu(p2,us[0])} − ${fu(p1,us[0])}) / (${t2.toFixed(2)} − ${t1.toFixed(2)} s) = <b style="color:${C.purple}">${fu(avg,us[1])}</b><br>`+
+    `${L.sym[1]} at the cursor (t = ${fmtT(t)}) = <b style="color:${C.blue}">${fu(r[1]*u,us[1])}</b></div>`;
+  if(cur==='bolt'){
+    const j=SPLIT_T.findIndex((v,i)=>i<SPLIT_T.length-1 && Math.abs(v-Math.min(t1,t2))<0.006 && Math.abs(SPLIT_T[i+1]-Math.max(t1,t2))<0.006);
+    if(j>=0) h+=`<div class="row note">Official split times: 20 m ÷ ${(SPLIT_T[j+1]-SPLIT_T[j]).toFixed(2)} s = ${SEG_AVG[j].toFixed(2)} m/s.</div>`;
+  }
+  $('avgOut').innerHTML=h;
+}
+
+// ===================== Interaction =====================
+function setGroupActive(groupId, attr, val){
+  document.querySelectorAll(`#${groupId} .axis-mode-btn`).forEach(b=>{ const on=b.dataset[attr]===String(val); b.classList.toggle('active',on); b.setAttribute('aria-pressed',on); });
+}
+function setToggle(id,on){ const b=$(id); b.classList.toggle('active',on); b.setAttribute('aria-pressed',on); }
+
+function setScenario(key){
+  cur=key; const S=sc();
+  setGroupActive('scenGroup','scen',key);
+  $('scenTitle').textContent=S.title; $('scenDesc').textContent=S.desc; $('scenNote').textContent=S.note;
+  $('constSliders').hidden = key!=='const';
+  $('unitRow').hidden = S.kind!=='angular';
+  $('segBtn').hidden = key!=='bolt';
+  t=S.t0; t1=S.secDefault[0]; t2=S.secDefault[1];
+  pause();
+  renderBase();
+}
+document.querySelectorAll('#scenGroup .axis-mode-btn').forEach(b=>b.addEventListener('click',()=>setScenario(b.dataset.scen)));
+document.querySelectorAll('#unitGroup .axis-mode-btn').forEach(b=>b.addEventListener('click',()=>{ units=b.dataset.unit; setGroupActive('unitGroup','unit',units); renderBase(); }));
+$('tanBtn').addEventListener('click',()=>{ showTan=!showTan; setToggle('tanBtn',showTan); renderLegend(); renderOver(); });
+$('secBtn').addEventListener('click',()=>{ showSec=!showSec; setToggle('secBtn',showSec); $('avgCard').hidden=!showSec; renderLegend(); renderOver(); });
+$('segBtn').addEventListener('click',()=>{ showSeg=!showSeg; setToggle('segBtn',showSeg); renderBase(); });
+
+$('scrub').addEventListener('input',e=>{ pause(); t=e.target.value/1000*sc().tMax; renderOver(); });
+$('t1').addEventListener('input',e=>{ t1=e.target.value/1000*sc().tMax; renderOver(); });
+$('t2').addEventListener('input',e=>{ t2=e.target.value/1000*sc().tMax; renderOver(); });
+
+function updConstLabels(){ $('x0Val').textContent=fmtTick(CP.x0,1)+' m'; $('v0Val').textContent=fmtTick(CP.v0,0.5)+' m/s'; $('aVal').textContent=fmtTick(CP.a,0.25)+' m/s²'; }
+['x0','v0','acc'].forEach(id=>$(id).addEventListener('input',()=>{ CP.x0=+$('x0').value; CP.v0=+$('v0').value; CP.a=+$('acc').value; updConstLabels(); renderBase(); }));
+document.querySelectorAll('#constPresets .chip').forEach(b=>b.addEventListener('click',()=>{
+  CP.x0=+b.dataset.x0; CP.v0=+b.dataset.v0; CP.a=+b.dataset.a;
+  $('x0').value=CP.x0; $('v0').value=CP.v0; $('acc').value=CP.a; updConstLabels(); renderBase();
+}));
+
+// click / drag on graphs (purple handles on the top graph move t1 / t2)
+let drag=null;
+function localX(e, el){ const r=el.getBoundingClientRect(); return (e.clientX-r.left)*(G[0].W/r.width); }
+function tFromX(px){ const g=G[0]; return Math.min(sc().tMax, Math.max(0,(px-g.padL)/g.plotW*sc().tMax)); }
+svgs.forEach((el,k)=>{
+  el.addEventListener('pointerdown',e=>{
+    const px=localX(e,el); let target='cursor';
+    if(k===0 && showSec){
+      const d1=Math.abs(px-G[0].x(t1)), d2=Math.abs(px-G[0].x(t2));
+      if(Math.min(d1,d2)<16) target = d1<=d2 ? 't1' : 't2';
+    }
+    drag={target,id:e.pointerId};
+    try{ el.setPointerCapture(e.pointerId); }catch(_){}
+    pause(); applyDrag(px);
+  });
+  el.addEventListener('pointermove',e=>{ if(drag && drag.id===e.pointerId) applyDrag(localX(e,el)); });
+  const end=e=>{ if(drag && drag.id===e.pointerId) drag=null; };
+  el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end);
+});
+function applyDrag(px){
+  const tt=tFromX(px);
+  if(drag.target==='t1') t1=tt; else if(drag.target==='t2') t2=tt; else t=tt;
+  renderOver();
+}
+
+// playback (real time)
+function pause(){ playing=false; $('playBtn').textContent='Play'; lastTs=null; }
+$('playBtn').addEventListener('click',()=>{
+  if(playing){ pause(); return; }
+  if(t>=sc().tMax-1e-6) t=0;
+  playing=true; $('playBtn').textContent='Pause'; lastTs=null; requestAnimationFrame(tick);
+});
+function tick(ts){
+  if(!playing) return;
+  if(lastTs!==null){
+    t += (ts-lastTs)/1000;
+    if(t>=sc().tMax){ t=sc().tMax; renderOver(); pause(); return; }
+    renderOver();
+  }
+  lastTs=ts; requestAnimationFrame(tick);
+}
+
+let rzTimer=null;
+window.addEventListener('resize',()=>{ clearTimeout(rzTimer); rzTimer=setTimeout(()=>{ if(Math.round($('graphs').clientWidth)!==W) renderBase(); },80); });
+
+// ===================== Quiz =====================
+const QUIZ=[
+  {q:'On a position–time graph, what does a steeper slope mean?',
+   opts:['The object is farther from where it started','The object is moving faster','The object has a larger acceleration','The object is moving uphill'], a:1,
+   fb:'The slope of position is velocity. Steeper means more meters per second. How far away the object is shows up as the <i>height</i> of the graph, not its slope.'},
+  {q:'Bolt\'s position graph gets steeper during the first 3 seconds. What does that tell you?',
+   opts:['Velocity is increasing, so acceleration is positive','Velocity is constant, so acceleration is zero','Velocity is decreasing, so acceleration is negative','Position is increasing, so acceleration must be zero'], a:0,
+   fb:'A steeper position graph means a larger velocity. Velocity going up means acceleration is positive. Check the velocity graph: it rises fast at the start.'},
+  {q:'During the elbow curl, ω is positive and α is negative. What is the elbow doing?',
+   opts:['Extending (lowering the forearm)','Still flexing, but slowing down','Flexing faster and faster','Stopped'], a:1,
+   fb:'The sign of ω gives the direction (positive = flexing here). A negative α means ω is shrinking. So the elbow is still flexing, but more slowly. That is the second half of the curl.'},
+  {q:'In Build your own, the velocity graph crosses zero. What does the position graph look like at that moment?',
+   opts:['It also crosses zero','It is flat: its tangent is horizontal','It is at its steepest','It drops straight down'], a:1,
+   fb:'Velocity is the slope of position. Zero velocity means a flat position graph. The object is stopped for an instant, but its acceleration is not zero. Try the <b>Slowing down, still moving forward</b> preset: velocity reaches zero at 4 s.'}
+];
+let quizRight=0, quizDone=0;
+function buildQuiz(){
+  const el=$('quiz');
+  QUIZ.forEach((item,qi)=>{
+    const d=document.createElement('div'); d.className='q';
+    d.innerHTML=`<div class="q-text">${qi+1}. ${item.q}</div><div class="q-opts"></div><div class="feat-explain"></div>`;
+    const opts=d.querySelector('.q-opts'), fb=d.querySelector('.feat-explain');
+    item.opts.forEach((o,oi)=>{
+      const b=document.createElement('button'); b.className='q-opt'; b.textContent=o;
+      b.addEventListener('click',()=>{
+        const first=!d.classList.contains('answered');
+        d.classList.add('answered');
+        opts.querySelectorAll('.q-opt').forEach(x=>x.classList.remove('right','wrong'));
+        if(oi===item.a){ b.classList.add('right'); fb.innerHTML='<b>Correct.</b> '+item.fb; }
+        else { b.classList.add('wrong'); opts.children[item.a].classList.add('right'); fb.innerHTML='<b>Not quite.</b> '+item.fb; }
+        if(first){ quizDone++; if(oi===item.a) quizRight++; updateScore(); }
+      });
+      opts.appendChild(b);
+    });
+    el.appendChild(d);
+  });
+  updateScore();
+}
+function updateScore(){ $('score').textContent = quizDone? `First-try score: ${quizRight} of ${quizDone} answered (${QUIZ.length} total).` : ''; }
+
+// ===================== Self-test (console only) =====================
+function selfTest(){
+  const results=[];
+  const check=(name,ok,detail)=>results.push({name,ok:!!ok,detail});
+  // Bolt: model reaches each split within 0.02 s
+  const tAt=X=>{ let lo=BOLT_RT, hi=20; for(let i=0;i<200;i++){ const mid=(lo+hi)/2; if(boltModel(mid)[0]<X) lo=mid; else hi=mid; } return (lo+hi)/2; };
+  for(let j=1;j<SPLIT_T.length;j++){ const res=tAt(SPLIT_X[j])-SPLIT_T[j]; check(`Bolt model reaches ${SPLIT_X[j]} m within 0.02 s of ${SPLIT_T[j]} s (residual ${res>=0?'+':''}${res.toFixed(4)} s)`, Math.abs(res)<0.02, res); }
+  check('Bolt: x, v, a = 0 up to the 0.146 s reaction time', [0,0.05,0.1,0.146].every(tt=>boltModel(tt).every(q=>Math.abs(q)<1e-12)));
+  check('Bolt: a(0.146) = 0', Math.abs(boltModel(BOLT_RT)[2])<1e-12 && Math.abs(boltModel(BOLT_RT+1e-9)[2])<1e-6);
+  let vMono=true, aNonNeg=true, aCont=true, prev=boltModel(0), peakA=0, peakT=0;
+  const N=95800;
+  for(let i=1;i<=N;i++){ const tt=9.58*i/N, r=boltModel(tt); if(r[1]<prev[1]-1e-12) vMono=false; if(r[2]<-1e-12) aNonNeg=false; if(Math.abs(r[2]-prev[2])>0.02) aCont=false; if(r[2]>peakA){peakA=r[2]; peakT=tt;} prev=r; }
+  check('Bolt: velocity is monotone (never decreases)', vMono);
+  check('Bolt: acceleration is never negative', aNonNeg);
+  check('Bolt: acceleration is continuous (no jumps on a 0.1 ms grid)', aCont);
+  check(`Bolt: acceleration peaks smoothly (${peakA.toFixed(2)} m/s² at ${peakT.toFixed(2)} s)`, peakA>9.5 && peakA<10.3 && peakT>0.35 && peakT<0.6, [peakA,peakT]);
+  const hA=1e-4, slopeA=(boltModel(BOLT_RT+hA)[2]-boltModel(BOLT_RT)[2])/hA;
+  check(`Bolt: slope of a just after 0.146 s ≈ 0 (no corner; ${slopeA.toFixed(3)} m/s³)`, Math.abs(slopeA)<0.5, slopeA);
+  check(`Bolt: v(5 s) ≈ 11.99 m/s (${boltModel(5)[1].toFixed(3)})`, Math.abs(boltModel(5)[1]-11.99)<0.01);
+  let dOK=true; for(let i=1;i<200;i++){ const tt=0.2+i*0.046, hh=1e-5, r=boltModel(tt); const nv=(boltModel(tt+hh)[0]-boltModel(tt-hh)[0])/(2*hh), na=(boltModel(tt+hh)[1]-boltModel(tt-hh)[1])/(2*hh); if(Math.abs(nv-r[1])>1e-5||Math.abs(na-r[2])>1e-4) dOK=false; }
+  check('Bolt: v and a match numerical derivatives of x', dOK);
+  for(let j=0;j<5;j++){
+    const dt=SPLIT_T[j+1]-SPLIT_T[j], avg=(SPLIT_X[j+1]-SPLIT_X[j])/dt;
+    check(`Official segment ${SPLIT_X[j]}-${SPLIT_X[j+1]} m average = 20/${dt.toFixed(2)} = ${SEG_AVG[j]}`, Math.abs(avg-20/dt)<1e-9 && Math.abs(avg-SEG_AVG[j])<0.005, avg);
+  }
+  // Curl (minimum jerk)
+  let integ=0; const M=6000; for(let i=0;i<M;i++){ const a=3*i/M, b=3*(i+1)/M; integ+=(curlFn(a)[1]+curlFn(b)[1])/2*(b-a); }
+  check('Curl: ∫ω dt = Δθ = π/3', Math.abs(integ-PI/3)<1e-6, integ);
+  check('Curl: average ω = π/9 ≈ 0.349 rad/s', Math.abs(integ/3-PI/9)<1e-6, integ/3);
+  check('Curl: θ(0) = −π/6 and θ(3) = +π/6', Math.abs(curlFn(0)[0]+PI/6)<1e-12 && Math.abs(curlFn(3)[0]-PI/6)<1e-12);
+  let mjOK=true; for(let i=1;i<50;i++){ const tt=3*i/50, hh=3e-6, r=curlFn(tt); const nw=(curlFn(tt+hh)[0]-curlFn(tt-hh)[0])/(2*hh), na=(curlFn(tt+hh)[1]-curlFn(tt-hh)[1])/(2*hh); if(Math.abs(nw-r[1])>1e-5||Math.abs(na-r[2])>1e-4) mjOK=false; }
+  check('Curl: ω and α match numerical derivatives', mjOK);
+  // Constant acceleration
+  const save={...CP}; let caOK=true;
+  [[0,8,-2],[5,-3,1.5],[-10,0,4],[0,5,0]].forEach(([x0,v0,a])=>{ CP.x0=x0; CP.v0=v0; CP.a=a; for(let i=1;i<50;i++){ const tt=5*i/50, hh=1e-5, r=constFn(tt); const nv=(constFn(tt+hh)[0]-constFn(tt-hh)[0])/(2*hh), na=(constFn(tt+hh)[1]-constFn(tt-hh)[1])/(2*hh); if(Math.abs(nv-r[1])>1e-6||Math.abs(na-r[2])>1e-6) caOK=false; } });
+  Object.assign(CP,save);
+  check('Constant acceleration: dx/dt ≈ v and dv/dt ≈ a', caOK);
+  const pass=results.filter(r=>r.ok).length;
+  results.filter(r=>!r.ok).forEach(r=>console.warn('Self-test FAILED:', r.name, r.detail));
+  console.log(`Kinematics Graph Linker self-test: ${pass}/${results.length} passed`);
+  return {pass,total:results.length,results};
+}
+
+// ===================== Init =====================
+updConstLabels();
+buildQuiz();
+setScenario('bolt');
+window.__selfTest = selfTest();
+</script>
+</body>
+</html>
