@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 1 Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158; --line:#D8DED7;
+    --blue:#1F6B9E; --orange:#B34B0B; --green:#2E7D32; --red:#B71C1C; --amber:#E8B23D; --bone:#C9B99A; --muscle:#C96A6A;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:24px 18px 60px;}
+  .wrap{max-width:1060px;margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 16px;line-height:1.5;}
+  .tabs{display:flex;gap:4px;flex-wrap:wrap;background:#E9ECE8;padding:4px;border-radius:11px;margin-bottom:16px;}
+  .tab{border:none;background:transparent;padding:9px 14px;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer;color:var(--ink-soft);font-family:'Inter',sans-serif;}
+  .tab .n{display:inline-block;font-size:11px;font-weight:700;opacity:.7;margin-right:5px;}
+  .tab.active{background:var(--ink);color:#fff;}
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06),0 8px 24px rgba(27,36,32,0.05);margin-bottom:16px;min-width:0;}
+  h2{margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:19px;}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0 0 14px;line-height:1.5;}
+  .grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;}
+  @media (max-width:760px){ .grid2{grid-template-columns:1fr;} }
+  canvas{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);border-radius:12px;}
+  .control{margin-bottom:6px;}
+  .control-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .control-label{font-weight:700;font-size:13.5px;}
+  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;white-space:nowrap;}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--line);border-radius:4px;outline:none;margin:12px 0 8px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
+  select{font:inherit;font-size:14px;padding:8px 10px;border:1.5px solid var(--line);border-radius:9px;background:#fff;width:100%;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+  .row > *{flex:1 1 180px;}
+  .btn{font-weight:700;font-size:13.5px;border:none;border-radius:9px;padding:9px 14px;cursor:pointer;background:var(--ink);color:#fff;font-family:'Inter',sans-serif;}
+  .btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px;}
+  .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px;}
+  .stat div{background:#FBFCFA;border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+  .stat .k{font-size:12px;color:var(--ink-soft);font-weight:700;}
+  .stat .v{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;margin-top:2px;}
+  .big{font-size:15px;line-height:1.6;}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-weight:700;font-size:13px;}
+  .pos{background:#DCEBF5;color:var(--blue);} .neg{background:#FBE6D3;color:var(--orange);}
+  .note{font-size:12.5px;color:var(--ink-soft);line-height:1.55;margin-top:10px;}
+  .explain{background:#FBFCFA;border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  table{border-collapse:collapse;width:100%;font-size:14px;}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);}
+  th{font-size:12.5px;color:var(--ink-soft);}
+  iframe{width:100%;height:1500px;border:0;border-radius:12px;background:#fff;}
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Unit 1 Explorer</h1>
+  <p class="subtitle">KINE 3620 · One tab per lecture. Signs follow our class system: +x right, +y anterior, +z superior, and the right-hand rule. Angles are in radians.</p>
+  <div class="tabs" id="tabs" role="tablist">
+    <button class="tab active" data-tab="signs"><span class="n">L1</span>Signs</button>
+    <button class="tab" data-tab="linear"><span class="n">L2</span>Linear</button>
+    <button class="tab" data-tab="angular"><span class="n">L3</span>Angular</button>
+    <button class="tab" data-tab="plate"><span class="n">L4–5</span>Force plate</button>
+    <button class="tab" data-tab="torque"><span class="n">L6</span>Torque</button>
+    <button class="tab" data-tab="pull"><span class="n">L7</span>Angle of pull</button>
+  </div>
+
+  <!-- L1 SIGNS -->
+  <section id="tab-signs" class="card">
+    <h2>What sign does this motion get?</h2>
+    <p class="sub">Pick a joint motion and a side. Then point your right thumb along the + end of the axis and check the curl.</p>
+    <div class="row">
+      <label><div class="control-label">Motion</div><select id="sMotion"></select></label>
+      <label><div class="control-label">Side</div><select id="sSide"><option value="R">Right side</option><option value="L">Left side</option></select></label>
+    </div>
+    <div class="explain big" id="sOut"></div>
+    <h2 style="margin-top:20px;">Quick check</h2>
+    <p class="sub">Is it positive or negative? Answer, then check.</p>
+    <div class="explain big" id="qPrompt"></div>
+    <div class="chips"><button class="btn" id="qPos">Positive (+)</button><button class="btn" id="qNeg">Negative (−)</button><button class="btn ghost" id="qNext">New question</button></div>
+    <div class="big" id="qFeedback"></div>
+  </section>
+
+  <!-- L2 / L3 GRAPH LINKER -->
+  <section id="tab-linear" class="card" hidden>
+    <h2>Position, velocity, and acceleration: Bolt’s 100 m</h2>
+    <p class="sub">The Kinematics Graph Linker, opened on the sprint. Velocity is the slope of position; acceleration is the slope of velocity. <a href="../kinematics-graph-linker/?scen=bolt" target="_blank" rel="noopener">Open it in its own window</a>.</p>
+    <iframe data-src="../kinematics-graph-linker/?scen=bolt" title="Kinematics Graph Linker, sprint"></iframe>
+  </section>
+  <section id="tab-angular" class="card" hidden>
+    <h2>θ, ω, and α: an elbow curl</h2>
+    <p class="sub">The Kinematics Graph Linker, opened on the elbow curl. Keep the units in radians. <a href="../kinematics-graph-linker/?scen=curl" target="_blank" rel="noopener">Open it in its own window</a>.</p>
+    <iframe data-src="../kinematics-graph-linker/?scen=curl" title="Kinematics Graph Linker, elbow curl"></iframe>
+  </section>
+
+  <!-- L4–5 FORCE PLATE -->
+  <section id="tab-plate" class="card" hidden>
+    <h2>A squat on a force plate</h2>
+    <p class="sub">vGRF = m·(g + a). Up is +. Scrub through the squat and watch the COM’s velocity and acceleration decide whether vGRF is above or below body weight.</p>
+    <div class="grid2">
+      <div><canvas id="pCanvas" width="640" height="520"></canvas></div>
+      <div>
+        <div class="control"><div class="control-head"><span class="control-label">Body mass</span><span class="control-val" id="pMv"></span></div><input type="range" id="pM" min="40" max="120" step="1" value="70"></div>
+        <div class="control"><div class="control-head"><span class="control-label">Squat depth (COM drop)</span><span class="control-val" id="pDv"></span></div><input type="range" id="pD" min="0.10" max="0.60" step="0.01" value="0.40"></div>
+        <div class="control"><div class="control-head"><span class="control-label">Squat time (down and up)</span><span class="control-val" id="pTv"></span></div><input type="range" id="pT" min="0.8" max="4.0" step="0.1" value="2.0"></div>
+        <div class="control"><div class="control-head"><span class="control-label">Time</span><span class="control-val" id="ptv"></span></div><input type="range" id="pt" min="0" max="1000" step="1" value="0"></div>
+        <div class="chips"><button class="btn" id="pPlay">Play</button></div>
+        <div class="stat">
+          <div><div class="k">Phase</div><div class="v" id="pPhase" style="font-size:16px;"></div></div>
+          <div><div class="k">COM velocity</div><div class="v" id="pV"></div></div>
+          <div><div class="k">COM acceleration</div><div class="v" id="pA"></div></div>
+          <div><div class="k">vGRF</div><div class="v" id="pF"></div></div>
+          <div><div class="k">vGRF ÷ body weight</div><div class="v" id="pBW"></div></div>
+        </div>
+        <p class="note">Model: the COM moves down and back up along a smooth path (an idealized squat with no pause at the bottom). Real force-plate curves are noisier, but the pattern is the same.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- L6 TORQUE -->
+  <section id="tab-torque" class="card" hidden>
+    <h2>Levers and net torque</h2>
+    <p class="sub">The fulcrum sits at 0. The effort pushes up and the load pulls down. τ = force × perpendicular distance; counterclockwise (as drawn) is +.</p>
+    <div class="chips">
+      <button class="btn ghost" data-preset="elbow">Elbow curl (class III)</button>
+      <button class="btn ghost" data-preset="p4">Practice problem 4</button>
+      <button class="btn ghost" data-preset="seesaw">Seesaw (class I)</button>
+      <button class="btn ghost" data-preset="calf">Calf raise (class II)</button>
+    </div>
+    <div class="grid2">
+      <div><canvas id="tCanvas" width="640" height="380"></canvas></div>
+      <div>
+        <div class="control"><div class="control-head"><span class="control-label">Effort position</span><span class="control-val" id="tXev"></span></div><input type="range" id="tXe" min="-0.60" max="0.60" step="0.01" value="0.05"></div>
+        <div class="control"><div class="control-head"><span class="control-label">Effort force (up)</span><span class="control-val" id="tEv"></span></div><input type="range" id="tE" min="0" max="1500" step="5" value="200"></div>
+        <div class="control"><div class="control-head"><span class="control-label">Load position</span><span class="control-val" id="tXlv"></span></div><input type="range" id="tXl" min="-0.60" max="0.60" step="0.01" value="0.30"></div>
+        <div class="control"><div class="control-head"><span class="control-label">Load (down)</span><span class="control-val" id="tLv"></span></div><input type="range" id="tL" min="0" max="500" step="1" value="50"></div>
+      </div>
+    </div>
+    <div class="stat">
+      <div><div class="k">Lever class</div><div class="v" id="tClass"></div></div>
+      <div><div class="k">TMA (effort arm ÷ load arm)</div><div class="v" id="tTMA"></div></div>
+      <div><div class="k">Effort torque</div><div class="v" id="tTe"></div></div>
+      <div><div class="k">Load torque</div><div class="v" id="tTl"></div></div>
+      <div><div class="k">Net torque</div><div class="v" id="tTn"></div></div>
+    </div>
+    <p class="big" id="tOut" style="margin-top:12px;"></p>
+  </section>
+
+  <!-- L7 ANGLE OF PULL -->
+  <section id="tab-pull" class="card" hidden>
+    <h2>Angle of pull: measure from the segment</h2>
+    <p class="sub">Simplified biceps: origin 0.30 m up the humerus, insertion 0.05 m along the forearm. Change the elbow angle and watch θ change. Raise the whole arm and watch θ stay put while the dumbbell’s moment arm changes.</p>
+    <div class="grid2">
+      <div><canvas id="aCanvas" width="640" height="560"></canvas></div>
+      <div>
+        <div class="control"><div class="control-head"><span class="control-label">Elbow flexion</span><span class="control-val" id="aFv"></span></div><input type="range" id="aF" min="0.05" max="2.50" step="0.01" value="1.57"></div>
+        <div class="control"><div class="control-head"><span class="control-label">Shoulder flexion</span><span class="control-val" id="aSv"></span></div><input type="range" id="aS" min="0" max="2.10" step="0.01" value="0"></div>
+        <div class="control"><div class="control-head"><span class="control-label">Biceps force</span><span class="control-val" id="aMv"></span></div><input type="range" id="aM" min="0" max="1200" step="10" value="600"></div>
+        <div class="control"><div class="control-head"><span class="control-label">Dumbbell (0.30 m from elbow)</span><span class="control-val" id="aWv"></span></div><input type="range" id="aW" min="0" max="100" step="1" value="50"></div>
+        <div class="stat">
+          <div><div class="k">Angle of pull θ</div><div class="v" id="aTh"></div></div>
+          <div><div class="k">Rotary F·sin θ</div><div class="v" id="aRot"></div></div>
+          <div><div class="k">Parallel F·cos θ</div><div class="v" id="aPar" style="font-size:15px;"></div></div>
+          <div><div class="k">Muscle torque</div><div class="v" id="aTm"></div></div>
+          <div><div class="k">Dumbbell torque</div><div class="v" id="aTw"></div></div>
+          <div><div class="k">Force needed to hold still</div><div class="v" id="aNeed"></div></div>
+        </div>
+        <p class="note">Elbow flexion is + in our system. The person faces right. Ignores the forearm’s own weight. The tool doesn’t round θ, so its answers can differ from the slides (which round θ to 2 decimals first) in the last digit.</p>
+      </div>
+    </div>
+  </section>
+  <p class="note">KINE 3620 · Unit 1. Idealized models for learning; not patient data.</p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const f2 = x => (Math.abs(x) < 0.005 ? 0 : x).toFixed(2);
+const sgn = x => (x > 0.005 ? '+' : x < -0.005 ? '−' : '') + Math.abs(x).toFixed(2);
+const INK = '#1B2420', SOFT = '#586158', LINE = '#D8DED7', BLUE = '#1F6B9E', ORANGE = '#B34B0B', GREEN = '#2E7D32', RED = '#B71C1C', BONE = '#C9B99A', MUSCLE = '#C96A6A';
+
+/* ---------- tabs ---------- */
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('section[id^="tab-"]').forEach(s => s.hidden = s.id !== 'tab-' + name);
+  const fr = document.querySelector(`#tab-${name} iframe`);
+  if (fr && !fr.src) {
+    const scen = new URLSearchParams(fr.dataset.src.split('?')[1] || '').get('scen');
+    fr.addEventListener('load', () => { try { fr.contentWindow.setScenario(scen); } catch (e) { /* opened from disk: pick the scenario by hand */ } });
+    fr.src = fr.dataset.src;
+  }
+  history.replaceState(null, '', '#' + name);
+  draw();
+}
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+/* ---------- L1 signs ---------- */
+// plane, axis, + on right, + on left, the moving segment's direction, explanation of the curl
+const MOTIONS = [
+  ['Hip flexion / extension', 'Sagittal', 'x (mediolateral)', 'Flexion', 'Flexion', 'Thumb points right (+x). Below the thumb, the curl swings forward, so the thigh (pointing down) swinging forward is +.'],
+  ['Knee flexion / extension', 'Sagittal', 'x (mediolateral)', 'Extension', 'Extension', 'Thumb points right (+x). The curl swings the shank forward, which is extension. Knee flexion is −.'],
+  ['Ankle dorsiflexion / plantarflexion', 'Sagittal', 'x (mediolateral)', 'Dorsiflexion', 'Dorsiflexion', 'Thumb points right (+x). In front of the thumb, the curl swings up, so the foot (pointing forward) lifting the toes is +.'],
+  ['Shoulder flexion / extension', 'Sagittal', 'x (mediolateral)', 'Flexion', 'Flexion', 'Thumb points right (+x). The arm points down, and the curl swings it forward: flexion is +.'],
+  ['Elbow flexion / extension', 'Sagittal', 'x (mediolateral)', 'Flexion', 'Flexion', 'Thumb points right (+x). The forearm points down, and the curl swings it forward and up: flexion is +.'],
+  ['Trunk (L5) flexion / extension', 'Sagittal', 'x (mediolateral)', 'Extension', 'Extension', 'Thumb points right (+x). Above the thumb, the curl swings backward. The trunk points UP from L5, so extension is + and flexion is −.'],
+  ['Hip abduction / adduction', 'Frontal', 'y (anteroposterior)', 'Adduction', 'Abduction', 'Thumb points forward (+y). Below the thumb, the curl swings toward the LEFT. That is toward the midline for the right leg and away from it for the left leg.'],
+  ['Shoulder abduction / adduction', 'Frontal', 'y (anteroposterior)', 'Adduction', 'Abduction', 'Thumb points forward (+y). The arm points down and the curl swings it toward the left: adduction on the right, abduction on the left.'],
+  ['Knee varus / valgus', 'Frontal', 'y (anteroposterior)', 'Varus', 'Valgus', 'Thumb points forward (+y). The curl swings the distal shank toward the left: medial (varus) on the right, lateral (valgus) on the left.'],
+  ['Wrist ulnar / radial deviation', 'Frontal', 'y (anteroposterior)', 'Ulnar deviation', 'Radial deviation', 'Anatomical position, palms forward. The curl swings the hand toward the left: toward the ulnar side on the right hand, the radial side on the left.'],
+  ['Hip internal / external rotation', 'Transverse', 'z (longitudinal)', 'Internal rotation', 'External rotation', 'Thumb points up (+z). The curl turns the front of the limb toward the LEFT: inward on the right, outward on the left.'],
+  ['Shoulder internal / external rotation', 'Transverse', 'z (longitudinal)', 'Internal rotation', 'External rotation', 'Thumb points up (+z). The curl turns the front of the arm toward the left: inward on the right, outward on the left.'],
+  ['Trunk or head (C2) rotation', 'Transverse', 'z (longitudinal)', 'Rotation to the left', 'Rotation to the left', 'Thumb points up (+z). The curl turns the nose toward the left. Midline segments have no side, so turning left is + for everyone.'],
+];
+const MIDLINE = new Set([5, 12]);
+MOTIONS.forEach((m, i) => { const o = document.createElement('option'); o.value = i; o.textContent = m[0]; $('sMotion').appendChild(o); });
+function renderSigns() {
+  const i = +$('sMotion').value, side = $('sSide').value, m = MOTIONS[i];
+  const pos = side === 'R' ? m[3] : m[4];
+  const flip = m[3] !== m[4] ? ' This plane flips between sides.' : (MIDLINE.has(i) ? ' Midline motion: the same for everyone.' : ' Same sign on both sides.');
+  $('sOut').innerHTML = `<b>${m[1]} plane</b>, about the <b>${m[2]}</b> axis.<br><span class="pill pos">+ ${pos}</span> on the ${side === 'R' ? 'right' : 'left'} side.${flip}<br><span style="color:var(--ink-soft)">${m[5]}</span>`;
+}
+$('sMotion').addEventListener('change', renderSigns); $('sSide').addEventListener('change', renderSigns);
+let quiz = null;
+function newQuiz() {
+  const i = Math.floor(Math.random() * MOTIONS.length), m = MOTIONS[i];
+  const side = MIDLINE.has(i) ? 'R' : (Math.random() < 0.5 ? 'R' : 'L');
+  const pos = side === 'R' ? m[3] : m[4];
+  // pick one of the two directions named in the motion
+  const names = m[0].split(' / ').map((s, k) => k === 0 ? s.split(' ').slice(-1)[0] : s.split(' ')[0]);
+  let dir = Math.random() < 0.5 ? 'pos' : 'neg';
+  const label = dir === 'pos' ? pos : opposite(pos);
+  quiz = { i, side, dir, label };
+  $('qPrompt').innerHTML = MIDLINE.has(i) ? `<b>${cap(label)}</b> (${m[0].split(' ')[0].toLowerCase()})` : `<b>${side === 'R' ? 'Right' : 'Left'} ${m[0].split(' ')[0].toLowerCase()}</b>: ${label.toLowerCase()}`;
+  $('qFeedback').textContent = '';
+}
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function opposite(p) {
+  const O = { 'Flexion': 'Flexion'.replace('Flexion', 'Extension'), 'Extension': 'Flexion', 'Dorsiflexion': 'Plantarflexion', 'Adduction': 'Abduction', 'Abduction': 'Adduction',
+    'Varus': 'Valgus', 'Valgus': 'Varus', 'Ulnar deviation': 'Radial deviation', 'Radial deviation': 'Ulnar deviation', 'Internal rotation': 'External rotation',
+    'External rotation': 'Internal rotation', 'Rotation to the left': 'Rotation to the right' };
+  return O[p] || p;
+}
+function answer(guess) {
+  if (!quiz) return; const m = MOTIONS[quiz.i];
+  const ok = guess === quiz.dir;
+  $('qFeedback').innerHTML = (ok ? '<span class="pill pos">Correct</span> ' : '<span class="pill neg">Not quite</span> ') +
+    `${cap(quiz.label)} is <b>${quiz.dir === 'pos' ? 'positive' : 'negative'}</b>. ${m[1]} plane, ${m[2]} axis. ${m[5]}`;
+}
+$('qPos').addEventListener('click', () => answer('pos')); $('qNeg').addEventListener('click', () => answer('neg')); $('qNext').addEventListener('click', newQuiz);
+
+/* ---------- canvas helpers ---------- */
+function ctxOf(id) { const c = $(id); return [c, c.getContext('2d')]; }
+function arrow(g, x0, y0, x1, y1, color, w = 4, head = 12) {
+  const ang = Math.atan2(y1 - y0, x1 - x0), len = Math.hypot(x1 - x0, y1 - y0);
+  if (len < 2) return;
+  g.strokeStyle = color; g.fillStyle = color; g.lineWidth = w; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1 - Math.cos(ang) * head * 0.8, y1 - Math.sin(ang) * head * 0.8); g.stroke();
+  g.beginPath(); g.moveTo(x1, y1); g.lineTo(x1 - head * Math.cos(ang - 0.4), y1 - head * Math.sin(ang - 0.4));
+  g.lineTo(x1 - head * Math.cos(ang + 0.4), y1 - head * Math.sin(ang + 0.4)); g.closePath(); g.fill();
+}
+function text(g, s, x, y, color = INK, size = 15, align = 'left', weight = 600) {
+  g.fillStyle = color; g.font = `${weight} ${size}px Inter, Arial, sans-serif`; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(s, x, y);
+}
+
+/* ---------- L4–5 force plate ---------- */
+const G = 9.81, PAD = 0.5;
+let pt = 0, pPlaying = false, pLast = 0;
+function plateState(t) {
+  const D = +$('pD').value, T = +$('pT').value;
+  const u = t - PAD;
+  if (u < 0 || u > T) return { y: 0, v: 0, a: 0 };
+  const k = Math.PI / T, s = Math.sin(k * u), c = Math.cos(k * u);   // y = −D·sin⁴(πu/T): smooth start, stop, and reversal
+  return { y: -D * s ** 4, v: -D * 4 * s ** 3 * c * k, a: -D * (12 * s * s * c * c - 4 * s ** 4) * k * k };
+}
+function phaseOf(s, t) {
+  const T = +$('pT').value, u = t - PAD;
+  if (u <= 0 || u >= T) return 'Standing still';
+  if (Math.abs(s.v) < 0.02 && s.a > 0) return 'Bottom';
+  if (s.v < 0) return s.a < 0 ? 'Early descent' : 'Late descent (braking)';
+  return s.a > 0 ? 'Ascent push' : 'Near the top';
+}
+function drawPlate() {
+  const [c, g] = ctxOf('pCanvas'); const W = c.width, H = c.height; g.clearRect(0, 0, W, H);
+  const m = +$('pM').value, T = +$('pT').value, tMax = T + 2 * PAD, BW = m * G;
+  $('pMv').textContent = m + ' kg'; $('pDv').textContent = (+$('pD').value).toFixed(2) + ' m'; $('pTv').textContent = T.toFixed(1) + ' s';
+  const t = pt * tMax; $('ptv').textContent = t.toFixed(2) + ' s';
+  const s = plateState(t), F = m * (G + s.a);
+  $('pPhase').textContent = phaseOf(s, t); $('pV').textContent = sgn(s.v) + ' m/s'; $('pA').textContent = sgn(s.a) + ' m/s²';
+  $('pF').textContent = f2(F) + ' N'; $('pBW').textContent = f2(F / BW) + ' BW';
+  // stick figure (left) and three plots (right)
+  const fx = 90, ground = H - 40, drop = s.y * 260;
+  g.fillStyle = '#E9ECE8'; g.fillRect(20, ground, 140, 14); text(g, 'force plate', 90, ground + 26, SOFT, 12, 'center', 600);
+  const hip = [fx, ground - 190 - drop * 1.0 + 0], knee = [fx + 28 + (-drop) * 0.12, ground - 95 - drop * 0.35];
+  g.strokeStyle = BONE; g.lineWidth = 11; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(fx, ground - 4); g.lineTo(knee[0], knee[1]); g.lineTo(hip[0], hip[1]); g.lineTo(hip[0] - 4, hip[1] - 105); g.stroke();
+  g.beginPath(); g.arc(hip[0] - 4, hip[1] - 125, 16, 0, 2 * Math.PI); g.fillStyle = BONE; g.fill();
+  g.beginPath(); g.moveTo(hip[0] - 4, hip[1] - 90); g.lineTo(hip[0] + 55, hip[1] - 85); g.stroke();
+  g.beginPath(); g.arc(hip[0], hip[1] - 20, 6, 0, 2 * Math.PI); g.fillStyle = INK; g.fill(); text(g, 'COM', hip[0] - 12, hip[1] - 20, INK, 12, 'right', 700);
+  const sc = 130 / BW;
+  arrow(g, fx + 50, ground, fx + 50, ground - F * sc, BLUE, 5, 14); text(g, 'vGRF', fx + 58, ground - F * sc - 2, BLUE, 13, 'left', 700);
+  arrow(g, fx - 45, hip[1] - 20, fx - 45, hip[1] - 20 + BW * sc, RED, 5, 14); text(g, 'W', fx - 56, hip[1] - 20 + BW * sc / 2, RED, 13, 'right', 700);
+  const px = 200, pw = W - px - 16, ph = (H - 60) / 3;
+  const plots = [['COM velocity (m/s)', tt => plateState(tt).v, 1.2, GREEN], ['COM acceleration (m/s²)', tt => plateState(tt).a, 6, ORANGE], ['vGRF (× body weight)', tt => 1 + plateState(tt).a / G, 0, BLUE]];
+  plots.forEach(([lab, fn, lim, col], k) => {
+    const y0 = 14 + k * (ph + 14), h = ph - 8;
+    let lo, hi;
+    if (k < 2) { let mx = 0; for (let i = 0; i <= 200; i++) mx = Math.max(mx, Math.abs(fn(i / 200 * tMax))); mx = Math.max(mx * 1.15, 0.05); lo = -mx; hi = mx; }
+    else { lo = 0.4; hi = 1.6; for (let i = 0; i <= 200; i++) { const v = fn(i / 200 * tMax); lo = Math.min(lo, v - 0.1); hi = Math.max(hi, v + 0.1); } }
+    const Y = v => y0 + h - (v - lo) / (hi - lo) * h, X = tt => px + tt / tMax * pw;
+    g.strokeStyle = LINE; g.lineWidth = 1; g.strokeRect(px, y0, pw, h);
+    const ref = k < 2 ? 0 : 1; g.setLineDash([5, 4]); g.beginPath(); g.moveTo(px, Y(ref)); g.lineTo(px + pw, Y(ref)); g.stroke(); g.setLineDash([]);
+    text(g, k < 2 ? '0' : '1 BW', px + 4, Y(ref) - 9, SOFT, 11, 'left', 600);
+    g.strokeStyle = col; g.lineWidth = 3; g.beginPath();
+    for (let i = 0; i <= 300; i++) { const tt = i / 300 * tMax; const yy = Y(fn(tt)); i ? g.lineTo(X(tt), yy) : g.moveTo(X(tt), yy); } g.stroke();
+    text(g, lab, px + 8, y0 + 12, INK, 13, 'left', 700);
+    g.strokeStyle = INK; g.lineWidth = 1.5; g.beginPath(); g.moveTo(X(t), y0); g.lineTo(X(t), y0 + h); g.stroke();
+    g.beginPath(); g.arc(X(t), Y(fn(t)), 5, 0, 2 * Math.PI); g.fillStyle = col; g.fill();
+  });
+  text(g, 'time →', W - 20, H - 14, SOFT, 12, 'right', 600);
+}
+function playLoop(ts) {
+  if (!pPlaying) return;
+  const tMax = +$('pT').value + 2 * PAD;
+  if (pLast) pt += (ts - pLast) / 1000 / tMax / 1.5;   // 1.5× slow motion
+  pLast = ts; if (pt >= 1) { pt = 1; pPlaying = false; $('pPlay').textContent = 'Play'; }
+  $('pt').value = Math.round(pt * 1000); drawPlate();
+  if (pPlaying) requestAnimationFrame(playLoop);
+}
+$('pPlay').addEventListener('click', () => { pPlaying = !pPlaying; $('pPlay').textContent = pPlaying ? 'Pause' : 'Play'; if (pPlaying) { if (pt >= 1) pt = 0; pLast = 0; requestAnimationFrame(playLoop); } });
+$('pt').addEventListener('input', e => { pt = e.target.value / 1000; pPlaying = false; $('pPlay').textContent = 'Play'; drawPlate(); });
+['pM', 'pD', 'pT'].forEach(id => $(id).addEventListener('input', drawPlate));
+
+/* ---------- L6 torque / levers ---------- */
+const PRESETS = { elbow: [0.05, 200, 0.30, 50], p4: [0.13, 700, 0.34, 271], seesaw: [-0.50, 300, 0.40, 300], calf: [0.40, 200, 0.15, 500] };
+document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
+  const [xe, E, xl, L] = PRESETS[b.dataset.preset]; $('tXe').value = xe; $('tE').value = E; $('tXl').value = xl; $('tL').value = L; drawTorque();
+}));
+function drawTorque() {
+  const xe = +$('tXe').value, E = +$('tE').value, xl = +$('tXl').value, L = +$('tL').value;
+  $('tXev').textContent = f2(xe) + ' m'; $('tEv').textContent = E + ' N'; $('tXlv').textContent = f2(xl) + ' m'; $('tLv').textContent = L + ' N';
+  const te = xe * E, tl = xl * (-L), tn = te + tl;
+  const ae = Math.abs(xe), al = Math.abs(xl);
+  let cls = '—';
+  if (ae > 0.001 && al > 0.001) cls = (xe * xl < 0) ? 'Class I' : (al < ae ? 'Class II' : (ae < al ? 'Class III' : 'Same spot'));
+  $('tClass').textContent = cls; $('tTMA').textContent = al > 0.001 ? f2(ae / al) : '—';
+  $('tTe').textContent = sgn(te) + ' N·m'; $('tTl').textContent = sgn(tl) + ' N·m'; $('tTn').textContent = sgn(tn) + ' N·m';
+  $('tOut').innerHTML = Math.abs(tn) < 0.005 ? '<span class="pill pos">Balanced</span> Net torque is zero, so the lever stays still (or keeps turning at a constant rate).'
+    : (tn > 0 ? '<span class="pill pos">Counterclockwise (+)</span> The effort side wins.' : '<span class="pill neg">Clockwise (−)</span> The load side wins.') +
+      (Math.abs(tl) > 0 && Math.abs(xe) > 0.001 ? ` To balance, the effort would need ${f2(Math.abs(tl / xe))} N.` : '');
+  const [c, g] = ctxOf('tCanvas'); const W = c.width, H = c.height; g.clearRect(0, 0, W, H);
+  const cx = W / 2, by = H * 0.52, S = (W / 2 - 40) / 0.6;
+  g.strokeStyle = INK; g.lineWidth = 8; g.lineCap = 'butt'; g.beginPath(); g.moveTo(cx - 0.6 * S, by); g.lineTo(cx + 0.6 * S, by); g.stroke();
+  for (let m = -0.6; m <= 0.601; m += 0.1) { g.strokeStyle = SOFT; g.lineWidth = 1; g.beginPath(); g.moveTo(cx + m * S, by + 6); g.lineTo(cx + m * S, by + 12); g.stroke(); }
+  const fs = 120 / Math.max(E, L, 1);
+  if (E > 0) arrow(g, cx + xe * S, by - 4, cx + xe * S, by - 4 - E * fs, GREEN, 5, 14);
+  if (L > 0) arrow(g, cx + xl * S, by - 4 - L * fs, cx + xl * S, by - 4, ORANGE, 5, 14);
+  g.fillStyle = BLUE; g.beginPath(); g.moveTo(cx, by + 4); g.lineTo(cx - 20, by + 40); g.lineTo(cx + 20, by + 40); g.closePath(); g.fill();
+  text(g, 'fulcrum', cx, by + 56, BLUE, 13, 'center', 700);
+  text(g, `Effort ${E} N`, cx + xe * S, by - E * fs - 22, GREEN, 14, 'center', 700);
+  text(g, `Load ${L} N`, cx + xl * S, by - L * fs - 22, ORANGE, 14, 'center', 700);
+  [[xe, GREEN, 'effort arm'], [xl, ORANGE, 'load arm']].forEach(([x, col, lab], k) => {
+    const yy = by + 96 + k * 30; g.strokeStyle = col; g.lineWidth = 2; g.setLineDash([6, 4]);
+    g.beginPath(); g.moveTo(cx, yy); g.lineTo(cx + x * S, yy); g.stroke(); g.setLineDash([]);
+    text(g, `${lab} ${f2(Math.abs(x))} m`, cx + x * S / 2, yy - 10, col, 12, 'center', 700);
+  });
+}
+['tXe', 'tE', 'tXl', 'tL'].forEach(id => $(id).addEventListener('input', drawTorque));
+
+/* ---------- L7 angle of pull ---------- */
+const A = 0.30, Dm = 0.05, HAND = 0.30;
+function pullModel(flex, shoulder) {
+  const hum = Math.PI / 2 + shoulder;                // direction from elbow to shoulder
+  const fdir = hum + Math.PI + flex;                  // forearm direction (person faces right)
+  const hu = [Math.cos(hum), Math.sin(hum)], fu = [Math.cos(fdir), Math.sin(fdir)];
+  const origin = [A * hu[0], A * hu[1]], ins = [Dm * fu[0], Dm * fu[1]], hand = [HAND * fu[0], HAND * fu[1]];
+  const mv = [origin[0] - ins[0], origin[1] - ins[1]], ml = Math.hypot(...mv), mu = [mv[0] / ml, mv[1] / ml];
+  const tj = [-fu[0], -fu[1]];
+  const th = Math.acos(Math.max(-1, Math.min(1, mu[0] * tj[0] + mu[1] * tj[1])));
+  return { hu, fu, origin, ins, hand, mu, tj, th };
+}
+function drawPull() {
+  const flex = +$('aF').value, sh = +$('aS').value, F = +$('aM').value, Wt = +$('aW').value;
+  $('aFv').textContent = flex.toFixed(2) + ' rad'; $('aSv').textContent = sh.toFixed(2) + ' rad'; $('aMv').textContent = F + ' N'; $('aWv').textContent = Wt + ' N';
+  const M = pullModel(flex, sh);
+  const rot = F * Math.sin(M.th), par = F * Math.cos(M.th);
+  const tm = M.ins[0] * (F * M.mu[1]) - M.ins[1] * (F * M.mu[0]);   // r × F, counterclockwise + (flexion +)
+  const tw = M.hand[0] * (-Wt);
+  const need = Math.sin(M.th) > 0.01 ? -tw / (Math.sin(M.th) * Dm) : NaN;
+  $('aTh').textContent = M.th.toFixed(2) + ' rad'; $('aRot').textContent = f2(rot) + ' N';
+  $('aPar').textContent = f2(Math.abs(par)) + ' N ' + (par > 0.5 ? 'toward elbow' : par < -0.5 ? 'away from elbow' : '');
+  $('aTm').textContent = sgn(tm) + ' N·m'; $('aTw').textContent = sgn(tw) + ' N·m';
+  $('aNeed').textContent = isNaN(need) ? '—' : (need < 0 ? 'none (load helps flex)' : f2(need) + ' N');
+  const [c, g] = ctxOf('aCanvas'); const W = c.width, H = c.height; g.clearRect(0, 0, W, H);
+  const S = 900, ox = W * 0.42, oy = H * 0.52, P = p => [ox + p[0] * S, oy - p[1] * S];
+  const e = P([0, 0]), o = P(M.origin), i = P(M.ins), hnd = P(M.hand), shp = P([A * 1.05 * M.hu[0], A * 1.05 * M.hu[1]]);
+  g.lineCap = 'round';
+  g.strokeStyle = BONE; g.lineWidth = 16; g.beginPath(); g.moveTo(shp[0], shp[1]); g.lineTo(e[0], e[1]); g.lineTo(hnd[0], hnd[1]); g.stroke();
+  g.strokeStyle = MUSCLE; g.lineWidth = 7; g.beginPath(); g.moveTo(o[0], o[1]); g.lineTo(i[0], i[1]); g.stroke();
+  g.fillStyle = INK; g.beginPath(); g.arc(e[0], e[1], 7, 0, 2 * Math.PI); g.fill();
+  // components at the insertion
+  const k = 0.16 / Math.max(F, 1) * S;
+  const rd = [-M.fu[1], M.fu[0]], sgnr = (M.mu[0] * rd[0] + M.mu[1] * rd[1]) >= 0 ? 1 : -1;
+  arrow(g, i[0], i[1], i[0] + M.mu[0] * F * k, i[1] - M.mu[1] * F * k, BLUE, 5, 14);
+  arrow(g, i[0], i[1], i[0] + sgnr * rd[0] * rot * k, i[1] - sgnr * rd[1] * rot * k, ORANGE, 4, 12);
+  arrow(g, i[0], i[1], i[0] + M.tj[0] * par * k, i[1] - M.tj[1] * par * k, GREEN, 4, 12);
+  text(g, 'F', i[0] + M.mu[0] * F * k + 8, i[1] - M.mu[1] * F * k, BLUE, 15, 'left', 700);
+  text(g, `θ = ${M.th.toFixed(2)} rad`, i[0] + 14, i[1] + 22, INK, 15, 'left', 700);
+  // dumbbell, gravity, and its moment arm
+  g.fillStyle = SOFT; g.beginPath(); g.arc(hnd[0], hnd[1], 11, 0, 2 * Math.PI); g.fill();
+  if (Wt > 0) arrow(g, hnd[0], hnd[1] + 12, hnd[0], hnd[1] + 12 + 1.6 * Wt, INK, 4, 12);
+  const yb = Math.max(e[1], hnd[1]) + 1.6 * Wt + 50;
+  g.strokeStyle = BLUE; g.lineWidth = 3; g.beginPath(); g.moveTo(e[0], yb); g.lineTo(hnd[0], yb); g.stroke();
+  g.setLineDash([4, 4]); g.lineWidth = 1; g.beginPath(); g.moveTo(e[0], e[1]); g.lineTo(e[0], yb); g.moveTo(hnd[0], hnd[1]); g.lineTo(hnd[0], yb); g.stroke(); g.setLineDash([]);
+  text(g, `dumbbell moment arm ${Math.abs(M.hand[0]).toFixed(2)} m`, (e[0] + hnd[0]) / 2, yb + 16, BLUE, 13, 'center', 700);
+  text(g, 'Blue = muscle force   Orange = rotary   Green = parallel', 16, H - 16, SOFT, 12, 'left', 600);
+}
+['aF', 'aS', 'aM', 'aW'].forEach(id => $(id).addEventListener('input', drawPull));
+
+/* ---------- start ---------- */
+function draw() { renderSigns(); drawPlate(); drawTorque(); drawPull(); }
+newQuiz();
+window.addEventListener('hashchange', () => { const h = location.hash.replace('#', ''); if ($('tab-' + h)) showTab(h); });
+const start = location.hash.replace('#', '');
+showTab(['signs', 'linear', 'angular', 'plate', 'torque', 'pull'].includes(start) ? start : 'signs');
+</script>
+</body>
+</html>
