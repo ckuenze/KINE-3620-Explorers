@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muscle Architecture Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158; --line:#D8DED7; --track:#7A847B;
+    --stance:#2F6F63; --rust:#9A4F1E; --blue:#3A5B8C; --amber:#E8B23D; --angle:#8A5A2E; --muscle:#B5524A;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:28px 16px 60px;}
+  .wrap{max-width:1000px;margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 16px;max-width:700px;line-height:1.5;}
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06),0 8px 24px rgba(27,36,32,0.05);margin-bottom:16px;min-width:0;}
+  h2.window-title{margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;}
+  .window-sub{color:var(--ink-soft);font-size:14px;margin:0 0 14px;line-height:1.5;}
+  .grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start;}
+  @media (max-width:760px){ .grid2{grid-template-columns:1fr;} }
+  svg.stage{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);border-radius:12px;}
+  .control{margin-bottom:14px;}
+  .control-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .control-label{font-weight:700;font-size:14px;}
+  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;white-space:nowrap;color:var(--angle);}
+  .control-sub{font-size:12.5px;color:var(--ink-soft);margin:2px 0 0;}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--track);border-radius:4px;margin:12px 0 4px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--amber);border:2px solid #1B2420;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--amber);border:2px solid #1B2420;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
+  .calc{font-size:14.5px;background:#F1F4F0;border-radius:10px;padding:12px 16px;line-height:1.85;color:var(--ink-soft);margin-top:6px;}
+  .calc b{color:var(--ink);font-family:'Space Grotesk',sans-serif;}
+  .calc .big{font-size:17px;}
+  .btn{font:inherit;font-weight:700;font-size:14px;border:1.5px solid var(--ink);border-radius:9px;padding:8px 14px;cursor:pointer;background:var(--ink);color:#fff;}
+  .note{font-size:13.5px;line-height:1.6;color:#33392f;margin:12px 0 0;}
+  .svg-label{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;fill:var(--ink-soft);}
+  .svg-strong{font-family:'Inter',sans-serif;font-size:14px;font-weight:700;}
+  /* Pre-class / In-class mode (shared spec) */
+  .mode-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 14px;}
+  .mode-btns{display:inline-flex;gap:4px;background:#E9ECE8;padding:4px;border-radius:11px;}
+  .mode-btn{font:inherit;font-weight:700;font-size:14px;border:0;background:transparent;color:#586158;padding:8px 14px;border-radius:8px;cursor:pointer;}
+  .mode-btn[aria-pressed="true"]{background:#1B2420;color:#fff;}
+  .mode-help{margin:0;font-size:14px;color:#586158;flex:1 1 260px;line-height:1.45;}
+  .guide{background:#fff;border:1px solid #D8DED7;border-left:4px solid #2F6F63;border-radius:12px;padding:14px 18px;margin:0 0 16px;}
+  .guide[data-show="in"]{border-left-color:#9A4F1E;}
+  .guide h2{font-size:17px;margin:0 0 6px;} .guide h3{font-size:15px;margin:12px 0 4px;}
+  .guide ol,.guide ul{margin:4px 0 0;padding-left:22px;line-height:1.55;font-size:14.5px;}
+  .guide details{margin:4px 0;font-size:14.5px;} .guide summary{cursor:pointer;font-weight:600;}
+  .guide details p{margin:4px 0 8px 18px;color:#33392f;}
+  [hidden]{display:none !important;}
+  :focus-visible{outline:3px solid #1F6B9E;outline-offset:3px;}
+  input[type=range]:focus-visible{outline:3px solid #1F6B9E;outline-offset:4px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+  html.embed .mode-btns{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Muscle Architecture Explorer</h1>
+  <p class="subtitle">Two design choices in a muscle: how steeply the fibers sit (pennation angle α) and how long the fascicles are. α is measured from the tendon’s line of action, not from the bone. Angles are in radians.</p>
+
+  <div class="mode-bar">
+    <div class="mode-btns" role="group" aria-label="Activity mode">
+      <button type="button" class="mode-btn" data-mode="pre" aria-pressed="true">Pre-class</button>
+      <button type="button" class="mode-btn" data-mode="in" aria-pressed="false">In-class</button>
+    </div>
+    <p class="mode-help" data-show="pre"><b>Pre-class:</b> work alone through the guided steps, then answer the check questions for the reading's "Before class" list.</p>
+    <p class="mode-help" data-show="in"><b>In-class:</b> partner activity. Predict first, test it with the tool, then talk through the discussion questions.</p>
+  </div>
+
+  <section class="guide" data-show="pre" aria-labelledby="preHead">
+    <h2 id="preHead">Pre-class: guided steps</h2>
+    <ol>
+      <li>Set α to 0 rad. All of the fiber force acts along the tendon.</li>
+      <li>Raise α to 0.26 rad, then to 0.70 rad. Watch how much of the fiber force reaches the tendon, and read <b>Lost to angle</b>.</li>
+      <li>In Window 2, press <b>Play</b>. Fascicle A is 0.10 m and fascicle B is 0.05 m, with sarcomeres shortening at the same rate. Which fascicle shortens faster in m/s?</li>
+    </ol>
+    <h3>Check yourself</h3>
+    <details><summary>A fiber pulls with 1000 N at α = 0.26 rad. What force acts along the tendon?</summary><p>F·cos α = 1000 N × 0.96639 = 966.39 N. This is the same “parallel component” idea as angle of pull in Lecture 7, but α is measured from the tendon line.</p></details>
+    <details><summary>If cos α is less than 1, how can a more pennate muscle still be stronger?</summary><p>Angled fibers pack more fibers side by side in the same volume, so physiologic cross-sectional area (PCSA) goes up. More fibers in parallel means more total force, even though each one loses a little to cos α. Past some angle, the loss is no longer made up.</p></details>
+    <details><summary>Which muscle is built more for speed, vastus lateralis or medial gastrocnemius?</summary><p>Vastus lateralis. Its fascicles are longer (more sarcomeres in series), so the fascicle can shorten faster in m/s. The medial gastrocnemius is more pennate with shorter fascicles, which favors force over speed.</p></details>
+  </section>
+
+  <section class="guide" data-show="in" aria-labelledby="inHead">
+    <h2 id="inHead">In-class: partner challenge</h2>
+    <ol>
+      <li><b>Predict:</b> at what α does the tendon get only 90% of the fiber force? <b>Then test:</b> find it with the slider (watch “lost to angle”).</li>
+      <li><b>Predict:</b> fascicle A (0.10 m) is twice as long as B (0.05 m). How much faster does A shorten? <b>Then test:</b> press Play, then drag B up to 0.10 m (A stays 0.10 m).</li>
+      <li><b>Predict:</b> to match B’s speed in m/s, how slowly must A’s sarcomeres shorten? <b>Then test:</b> change the sarcomere rate and compare.</li>
+    </ol>
+    <h3>Discuss</h3>
+    <ul>
+      <li>Pennation trades a little force per fiber for many more fibers. Where would that trade stop paying off?</li>
+      <li>For the same fascicle speed, why does a longer fascicle sit higher on the force–velocity curve?</li>
+      <li>Which architecture would you want in a muscle used for sprinting? For holding a heavy load?</li>
+    </ul>
+  </section>
+
+  <!-- WINDOW 1: PENNATION -->
+  <section class="card" aria-labelledby="w1Title">
+    <h2 class="window-title" id="w1Title">Window 1 · Pennation angle and tendon force</h2>
+    <p class="window-sub">The fiber pulls along its own line. Only the part along the tendon, F·cos α, moves the tendon.</p>
+    <div class="grid2">
+      <div>
+        <svg class="stage" id="penSvg" viewBox="0 0 560 304" role="img" aria-labelledby="penTitle penDesc">
+          <title id="penTitle">Pennation diagram</title>
+          <desc id="penDesc">Fiber at 0.26 radians from the tendon line.</desc>
+          <g id="penG"></g>
+        </svg>
+      </div>
+      <div>
+        <div class="control">
+          <div class="control-head"><label class="control-label" for="aSlider">Pennation angle α</label><span class="control-val" id="aVal"></span></div>
+          <input type="range" id="aSlider" min="0" max="0.70" step="0.01" value="0.26" aria-describedby="aSub">
+          <p class="control-sub" id="aSub">0 to 0.70 rad (0° to 40°)</p>
+        </div>
+        <div class="control">
+          <div class="control-head"><label class="control-label" for="fSlider">Fiber force F</label><span class="control-val" id="fVal"></span></div>
+          <input type="range" id="fSlider" min="200" max="1500" step="10" value="1000">
+        </div>
+        <div class="calc" id="penCalc"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WINDOW 2: FASCICLE LENGTH -->
+  <section class="card" aria-labelledby="w2Title">
+    <h2 class="window-title" id="w2Title">Window 2 · Fascicle length and shortening velocity</h2>
+    <p class="window-sub">Sarcomeres sit in series along a fascicle. If every sarcomere shortens at the same rate, a longer fascicle (more sarcomeres) shortens faster in m/s: v = L × rate.</p>
+    <div class="grid2">
+      <div>
+        <svg class="stage" id="fasSvg" viewBox="0 0 560 230" role="img" aria-labelledby="fasTitle fasDesc">
+          <title id="fasTitle">Two fascicles shortening</title>
+          <desc id="fasDesc">Fascicle A 0.10 m and fascicle B 0.05 m.</desc>
+          <g id="fasG"></g>
+        </svg>
+        <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button type="button" class="btn" id="playBtn">Play 0.25 s</button>
+          <span class="control-sub" id="tVal">t = 0.00 s</span>
+        </div>
+      </div>
+      <div>
+        <div class="control">
+          <div class="control-head"><label class="control-label" for="rSlider">Sarcomere shortening rate</label><span class="control-val" id="rVal"></span></div>
+          <input type="range" id="rSlider" min="0.20" max="2.00" step="0.05" value="0.80" aria-describedby="rSub">
+          <p class="control-sub" id="rSub">Fraction of its own length each sarcomere shortens per second (same for A and B)</p>
+        </div>
+        <div class="control" data-show="in">
+          <div class="control-head"><label class="control-label" for="lSlider">Fascicle B length</label><span class="control-val" id="lVal"></span></div>
+          <input type="range" id="lSlider" min="0.04" max="0.15" step="0.01" value="0.05">
+          <p class="control-sub">Fascicle A stays at 0.10 m</p>
+        </div>
+        <div class="calc" id="fasCalc"></div>
+      </div>
+    </div>
+    <p class="note">Speeds are shown to 3 decimals so small values stay visible. Force capacity depends mainly on how many fibers sit in parallel (PCSA), not on fascicle length. Longer fascicles raise shortening velocity and power. Numbers are illustrative, not measured from a specific muscle.</p>
+  </section>
+
+  <p id="live" class="sr-only" aria-live="polite"></p>
+  <p class="note">KINE 3620 · Unit 2, Lecture 8. Idealized models for learning; not patient data.</p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const SVGNS = 'http://www.w3.org/2000/svg';
+const C = { ink:'#1B2420', soft:'#586158', line:'#D8DED7', ref:'#6F786F', stance:'#2F6F63', rust:'#9A4F1E', blue:'#3A5B8C', angle:'#8A5A2E', muscle:'#B5524A', tendon:'#C9B99A' };
+const LA = 0.10, LB0 = 0.05, TMAX = 0.25;
+let t = 0, playing = false, last = 0, liveTimer = null;
+
+function el(tag, attrs, parent, txt) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (txt != null) e.textContent = txt;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function arrow(g, x0, y0, x1, y1, color, w, dash) {
+  const len = Math.hypot(x1 - x0, y1 - y0); if (len < 3) return;
+  const a = Math.atan2(y1 - y0, x1 - x0), h = 12;
+  el('line', { x1: x0, y1: y0, x2: x1 - Math.cos(a) * h * 0.8, y2: y1 - Math.sin(a) * h * 0.8, stroke: color, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-dasharray': dash || 'none' }, g);
+  el('polygon', { points: `${x1},${y1} ${x1 - h * Math.cos(a - 0.42)},${y1 - h * Math.sin(a - 0.42)} ${x1 - h * Math.cos(a + 0.42)},${y1 - h * Math.sin(a + 0.42)}`, fill: color }, g);
+}
+function announce(msg) { clearTimeout(liveTimer); liveTimer = setTimeout(() => { $('live').textContent = msg; }, 600); }
+
+/* ---------- Window 1 ---------- */
+function drawPen() {
+  const a = +$('aSlider').value, F = +$('fSlider').value;
+  const deg = a * 180 / Math.PI;
+  const cosA = +Math.cos(a).toFixed(5), sinA = +Math.sin(a).toFixed(5);
+  const Ft = F * cosA, Fp = F * sinA, lost = (1 - cosA) * 100;
+  $('aVal').textContent = `${a.toFixed(2)} rad (${deg.toFixed(0)}°)`;
+  $('fVal').textContent = `${F} N`;
+  $('aSlider').setAttribute('aria-valuetext', `${a.toFixed(2)} radians (${deg.toFixed(0)} degrees)`);
+  $('fSlider').setAttribute('aria-valuetext', `${F} newtons`);
+
+  const g = $('penG'); g.innerHTML = '';
+  const P = [250, 190], fibLen = 230;
+  // tendon (left of insertion) and its line of action extended (dashed)
+  el('line', { x1: 30, y1: P[1], x2: P[0], y2: P[1], stroke: C.tendon, 'stroke-width': 12, 'stroke-linecap': 'round' }, g);
+  el('text', { x: 40, y: P[1] - 16, class: 'svg-label' }, g, 'tendon (to bone)');
+  el('line', { x1: P[0], y1: P[1], x2: 540, y2: P[1], stroke: C.ref, 'stroke-width': 1.5, 'stroke-dasharray': '6 5' }, g);
+  el('text', { x: 535, y: P[1] + 20, class: 'svg-label', 'text-anchor': 'end' }, g, 'tendon line of action');
+  // background fibers (parallel, faded) for a pennate look
+  for (let k = 1; k <= 3; k++) {
+    const ox = P[0] + k * 50;
+    el('line', { x1: ox, y1: P[1], x2: ox + fibLen * 0.6 * Math.cos(a), y2: P[1] - fibLen * 0.6 * Math.sin(a) - (a < 0.03 ? 10 * k : 0), stroke: C.muscle, 'stroke-width': 9, 'stroke-linecap': 'round', opacity: 0.25 }, g);
+  }
+  // main fiber
+  const E = [P[0] + fibLen * Math.cos(a), P[1] - fibLen * Math.sin(a)];
+  el('line', { x1: P[0], y1: P[1], x2: E[0], y2: E[1], stroke: C.muscle, 'stroke-width': 14, 'stroke-linecap': 'round', opacity: 0.45 }, g);
+  el('text', { x: E[0] - 6, y: E[1] - 14, class: 'svg-label', 'text-anchor': 'end' }, g, 'fiber');
+  // angle arc
+  if (a > 0.02) {
+    const r = 70, ax = P[0] + r * Math.cos(a), ay = P[1] - r * Math.sin(a);
+    el('path', { d: `M ${P[0] + r} ${P[1]} A ${r} ${r} 0 0 0 ${ax} ${ay}`, fill: 'none', stroke: C.angle, 'stroke-width': 2.5 }, g);
+    
+  } else {
+    
+  }
+  el('text', { x: P[0] + 12, y: P[1] + 20, class: 'svg-strong', fill: C.angle }, g, `α = ${a.toFixed(2)} rad (${deg.toFixed(0)}°)`);
+  // force arrows (scale: 1500 N -> 190 px)
+  const s = 190 / 1500, L = F * s;
+  arrow(g, P[0], P[1], P[0] + L * Math.cos(a), P[1] - L * Math.sin(a), C.ink, 4);
+  arrow(g, P[0], P[1] + 40, P[0] + L * cosA, P[1] + 40, C.blue, 5);
+  if (Fp * s > 4) arrow(g, P[0], P[1], P[0], P[1] - Fp * s, C.rust, 3, '6 4');
+  el('text', { x: P[0] + L * cosA, y: P[1] + 66, class: 'svg-strong', fill: C.blue, 'text-anchor': 'end' }, g, `along tendon F·cos α = ${Ft.toFixed(2)} N`);
+  if (Fp * s > 4) el('text', { x: P[0] - 8, y: P[1] - Fp * s + 4, class: 'svg-strong', fill: C.rust, 'text-anchor': 'end' }, g, `F·sin α`);
+  el('circle', { cx: P[0], cy: P[1], r: 6, fill: C.ink }, g);
+  el('text', { x: 20, y: 292, class: 'svg-label' }, g, 'Black = fiber force F   Blue = along tendon   Rust dashed = across tendon');
+
+  $('penDesc').textContent = `Fiber at ${a.toFixed(2)} radians from the tendon line pulling with ${F} newtons. ${Ft.toFixed(2)} newtons act along the tendon; ${lost.toFixed(2)} percent of the fiber force is lost to the angle.`;
+  $('penCalc').innerHTML =
+    `cos α = cos(${a.toFixed(2)} rad) = <b>${cosA.toFixed(5)}</b><br>` +
+    `<span class="big">F<sub>tendon</sub> = F·cos α = ${F} N × ${cosA.toFixed(5)} = <b>${Ft.toFixed(2)} N</b></span><br>` +
+    `Lost to angle: (1 − cos α) × 100 = (1 − ${cosA.toFixed(5)}) × 100 = <b>${lost.toFixed(2)}%</b><br>` +
+    `<span data-show="in"${document.documentElement.dataset.mode === 'in' ? '' : ' hidden'}>Across the tendon: F·sin α = ${F} N × ${sinA.toFixed(5)} = <b>${Fp.toFixed(2)} N</b></span>`;
+  announce(`Tendon force ${Ft.toFixed(2)} newtons at alpha ${a.toFixed(2)} radians; ${lost.toFixed(2)} percent lost to the angle.`);
+}
+
+/* ---------- Window 2 ---------- */
+function lenB() { return document.documentElement.dataset.mode === 'in' ? +$('lSlider').value : LB0; }
+function drawFas() {
+  const r = +$('rSlider').value, LB = lenB();
+  const vA = LA * r, vB = LB * r;
+  $('rVal').textContent = `${r.toFixed(2)} /s`;
+  $('lVal').textContent = `${LB.toFixed(2)} m`;
+  $('rSlider').setAttribute('aria-valuetext', `${r.toFixed(2)} of its length per second`);
+  $('lSlider').setAttribute('aria-valuetext', `${LB.toFixed(2)} meters`);
+  $('tVal').textContent = `t = ${t.toFixed(2)} s`;
+
+  const g = $('fasG'); g.innerHTML = '';
+  const S = 3000; // px per m (0.15 m -> 450 px)
+  const x0 = 70;
+  [['A', LA, vA, 70], ['B', LB, vB, 160]].forEach(([name, L0, v, y]) => {
+    const Lnow = L0 - v * t;   // shorten from the right end toward a fixed origin
+    const nS = Math.round(L0 / 0.05 * 8);           // illustrative: 8 drawn sarcomeres per 0.05 m
+    const w = Lnow * S / nS;
+    el('text', { x: 14, y: y + 5, class: 'svg-strong', fill: C.ink }, g, name);
+    el('rect', { x: x0 - 12, y: y - 22, width: 10, height: 44, fill: C.tendon, rx: 2 }, g);
+    for (let i = 0; i < nS; i++) {
+      el('rect', { x: x0 + i * w, y: y - 14, width: Math.max(w - 2, 1), height: 28, rx: 3, fill: C.muscle, opacity: i % 2 ? 0.55 : 0.8 }, g);
+    }
+    // start-length ghost and shortening distance
+    el('line', { x1: x0 + L0 * S, y1: y - 24, x2: x0 + L0 * S, y2: y + 24, stroke: C.ref, 'stroke-width': 1.5, 'stroke-dasharray': '4 4' }, g);
+    el('text', { x: x0, y: y + 38, class: 'svg-label' }, g, `${nS} sarcomeres drawn · start ${L0.toFixed(2)} m · now ${Lnow.toFixed(3)} m`);
+    if (t > 0) arrow(g, x0 + L0 * S + 4, y - 30, x0 + Lnow * S, y - 30, C.blue, 3);
+    el('text', { x: 545, y: y + 5, class: 'svg-strong', fill: C.blue, 'text-anchor': 'end' }, g, `${v.toFixed(3)} m/s`);
+  });
+  el('text', { x: 14, y: 220, class: 'svg-label' }, g, 'Dashed line = starting length. Blue arrow = distance shortened so far.');
+
+  $('fasDesc').textContent = `Fascicle A ${LA.toFixed(2)} meters shortens at ${vA.toFixed(3)} meters per second; fascicle B ${LB.toFixed(2)} meters shortens at ${vB.toFixed(3)} meters per second, with every sarcomere at ${r.toFixed(2)} of its length per second.`;
+  $('fasCalc').innerHTML =
+    `v<sub>A</sub> = ${LA.toFixed(2)} m × ${r.toFixed(2)} /s = <b>${vA.toFixed(3)} m/s</b><br>` +
+    `v<sub>B</sub> = ${LB.toFixed(2)} m × ${r.toFixed(2)} /s = <b>${vB.toFixed(3)} m/s</b><br>` +
+    (LB === LA ? `Same length, same speed (at the same sarcomere rate)` : `${LB > LA ? 'B ÷ A' : 'A ÷ B'} = ${(Math.max(LA, LB) / Math.min(LA, LB)).toFixed(2)}: the longer fascicle shortens ${(Math.max(LA, LB) / Math.min(LA, LB)).toFixed(2)}× faster, at the same sarcomere rate`);
+  if (!playing) announce(`Fascicle A ${vA.toFixed(3)} meters per second, fascicle B ${vB.toFixed(3)} meters per second.`);
+}
+
+function step(ts) {
+  if (!playing) return;
+  if (last) t += (ts - last) / 1000 / 8;   // 8× slow motion
+  last = ts;
+  if (t >= TMAX) { t = TMAX; playing = false; $('playBtn').textContent = 'Replay 0.25 s'; }
+  drawFas();
+  if (playing) requestAnimationFrame(step); else announce(`After ${TMAX.toFixed(2)} seconds, fascicle A shortened ${(LA * +$('rSlider').value * TMAX).toFixed(3)} meters and fascicle B ${(lenB() * +$('rSlider').value * TMAX).toFixed(3)} meters.`);
+}
+$('playBtn').addEventListener('click', () => {
+  if (playing) { playing = false; $('playBtn').textContent = 'Play 0.25 s'; return; }
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  t = 0; last = 0;
+  if (reduce) { t = TMAX; drawFas(); $('playBtn').textContent = 'Replay 0.25 s'; return; }
+  playing = true; $('playBtn').textContent = 'Pause'; requestAnimationFrame(step);
+});
+['aSlider', 'fSlider'].forEach(id => $(id).addEventListener('input', drawPen));
+['rSlider', 'lSlider'].forEach(id => $(id).addEventListener('input', () => { if (!playing) { t = 0; $('playBtn').textContent = 'Play 0.25 s'; } drawFas(); }));
+
+/* ---------- Pre-class / In-class mode ---------- */
+window.onModeChange = function () { t = 0; playing = false; $('playBtn').textContent = 'Play 0.25 s'; drawPen(); drawFas(); };
+(function () {
+  const params = new URLSearchParams(location.search);
+  if (params.get('embed') === '1') {
+    document.documentElement.classList.add('embed');
+    // Tell the Unit 2 Explorer how tall this page is (postMessage works from file:// too). Sizing only; no state.
+    if (window.parent !== window) {
+      const sendHeight = () => {
+        const cs = getComputedStyle(document.body);
+        const h = Math.ceil(document.body.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom));
+        try { window.parent.postMessage({ unit2Height: h }, '*'); } catch (e) { /* no parent */ }
+      };
+      window.addEventListener('load', () => { sendHeight(); setTimeout(sendHeight, 800); });
+      if (window.ResizeObserver) new ResizeObserver(sendHeight).observe(document.body);
+    }
+  }
+  function setMode(m) {
+    document.querySelectorAll('.mode-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    document.querySelectorAll('[data-show]').forEach(el => { el.hidden = el.dataset.show !== m; });
+    document.documentElement.setAttribute('data-mode', m);
+    try { const u = new URL(location.href); u.searchParams.set('mode', m); history.replaceState(history.state, '', u.href); } catch (e) { /* file:// in some browsers */ }
+    if (typeof window.onModeChange === 'function') window.onModeChange(m);
+  }
+  document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  setMode(params.get('mode') === 'in' ? 'in' : 'pre');
+})();
+</script>
+</body>
+</html>
