@@ -3,450 +3,352 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gait Cycle Phase Explorer</title>
+<title>Walking Gait Phase Explorer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F6F7F5;
-    --card:#FFFFFF;
-    --ink:#1B2420;
-    --ink-soft:#586158;
-    --stance:#2F6F63;
-    --stance-soft:#E4EEEA;
-    --swing:#B8622A;
-    --swing-soft:#F5E7DC;
-    --amber:#E8B23D;
-    --line:#D8DED7;
-    --radius:14px;
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158;
+    --stance:#2F6F63; --stance-soft:#E4EEEA; --swing:#9A4F1E; --swing-soft:#F5E7DC;
+    --amber:#E8B23D; --line:#D8DED7; --track:#7A847B; --radius:14px;
   }
   *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--ink);
-    font-family:'Inter',sans-serif;
-    -webkit-font-smoothing:antialiased;
-    padding:28px 18px 60px;
-  }
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:28px 18px 60px;}
   .wrap{max-width:860px;margin:0 auto;}
-  h1{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:clamp(24px,4vw,32px);
-    font-weight:700;
-    margin:0 0 4px;
-    letter-spacing:-0.01em;
-  }
-  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 28px;max-width:520px;line-height:1.5;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 16px;max-width:620px;line-height:1.5;}
+
+  /* Pre-class / In-class mode (shared spec) */
+  .mode-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 14px;}
+  .mode-btns{display:inline-flex;gap:4px;background:#E9ECE8;padding:4px;border-radius:11px;}
+  .mode-btn{font:inherit;font-weight:700;font-size:14px;border:0;background:transparent;color:#586158;padding:8px 14px;border-radius:8px;cursor:pointer;}
+  .mode-btn[aria-pressed="true"]{background:#1B2420;color:#fff;}
+  .mode-help{margin:0;font-size:14px;color:#586158;flex:1 1 260px;line-height:1.45;}
+  .guide{background:#fff;border:1px solid #D8DED7;border-left:4px solid #2F6F63;border-radius:12px;padding:14px 18px;margin:0 0 16px;}
+  .guide[data-show="in"]{border-left-color:#9A4F1E;}
+  .guide h2{font-size:17px;margin:0 0 6px;} .guide h3{font-size:15px;margin:12px 0 4px;}
+  .guide ol,.guide ul{margin:4px 0 0;padding-left:22px;line-height:1.55;font-size:14.5px;}
+  .guide details{margin:4px 0;font-size:14.5px;} .guide summary{cursor:pointer;font-weight:600;}
+  .guide details p{margin:4px 0 8px 18px;color:#33392f;}
+  [hidden]{display:none !important;}
+  :focus-visible{outline:3px solid #1F6B9E;outline-offset:3px;}
+  input[type=range]:focus-visible{outline:3px solid #1F6B9E;outline-offset:4px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+  html.embed .mode-btns{display:none;}
 
   /* Timeline */
-  .timeline-card{
-    background:var(--card);
-    border-radius:var(--radius);
-    padding:22px 20px 26px;
-    box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);
-    margin-bottom:20px;
-  }
-  .phase-heading{
-    display:flex;
-    justify-content:space-between;
-    align-items:baseline;
-    margin-bottom:14px;
-    flex-wrap:wrap;
-    gap:8px;
-  }
-  .phase-name{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:22px;
-    font-weight:700;
-  }
-  .phase-name.stance{color:var(--stance);}
-  .phase-name.swing{color:var(--swing);}
-  .pct-readout{
-    font-size:14px;
-    color:var(--ink-soft);
-    font-weight:600;
-  }
-  .track-outer{position:relative;padding-top:26px;}
-  .segbar{
-    position:relative;
-    height:46px;
-    border-radius:8px;
-    overflow:hidden;
-    display:flex;
-    border:1px solid var(--line);
-  }
-  .seg{
-    position:relative;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:11px;
-    font-weight:600;
-    color:white;
-    text-align:center;
-    line-height:1.15;
-    padding:2px 4px;
-    overflow:hidden;
-  }
+  .timeline-card{background:var(--card);border-radius:var(--radius);padding:22px 20px 22px;box-shadow:0 1px 2px rgba(27,36,32,0.06),0 8px 24px rgba(27,36,32,0.05);margin-bottom:20px;}
+  .phase-heading{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+  .phase-name{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;}
+  .phase-name.stance{color:var(--stance);} .phase-name.swing{color:var(--swing);}
+  .pct-readout{font-size:14px;color:var(--ink-soft);font-weight:600;}
+  .events{position:relative;height:30px;font-size:12px;font-weight:700;color:var(--ink);}
+  .event{position:absolute;bottom:0;transform:translateX(-50%);white-space:nowrap;text-align:center;}
+  .event::after{content:'▼';display:block;font-size:10px;line-height:1;margin-top:1px;}
+  .event.first{transform:none;text-align:left;} .event.first::after{text-align:left;}
+  .track-outer{position:relative;}
+  .segbar{position:relative;height:46px;border-radius:8px;overflow:hidden;display:flex;border:1px solid var(--ink);}
+  .seg{position:relative;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;text-align:center;line-height:1.15;padding:2px 3px;overflow:hidden;}
   .seg.stance{background:var(--stance);}
-  .seg.swing{background:var(--swing);}
-  .seg + .seg{border-left:1px solid rgba(255,255,255,0.35);}
-  .seg-label{opacity:0.96;}
-  .phase-divider{
-    position:absolute;
-    top:-8px;
-    bottom:-8px;
-    width:2px;
-    background:var(--ink);
-    left:60%;
-  }
-  .phase-divider::after{
-    content:'stance ends';
-    position:absolute;
-    top:-20px;
-    left:50%;
-    transform:translateX(-50%);
-    font-size:10px;
-    color:var(--ink-soft);
-    white-space:nowrap;
-    font-weight:600;
-  }
-  .scrubber-marker{
-    position:absolute;
-    top:-10px;
-    width:2px;
-    height:66px;
-    background:var(--amber);
-    pointer-events:none;
-    transition:left 0.05s linear;
-  }
-  .scrubber-marker::before{
-    content:'';
-    position:absolute;
-    top:-7px;
-    left:-6px;
-    width:14px;
-    height:14px;
-    border-radius:50%;
-    background:var(--amber);
-    box-shadow:0 0 0 3px white, 0 1px 4px rgba(0,0,0,0.25);
-  }
-  input[type=range]{
-    width:100%;
-    margin-top:18px;
-    -webkit-appearance:none;
-    height:4px;
-    background:var(--line);
-    border-radius:4px;
-    outline:none;
-  }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;
-    width:20px;height:20px;border-radius:50%;
-    background:var(--amber);
-    border:3px solid white;
-    box-shadow:0 1px 4px rgba(0,0,0,0.3);
-    cursor:pointer;
-    margin-top:-8px;
-  }
-  input[type=range]::-moz-range-thumb{
-    width:20px;height:20px;border-radius:50%;
-    background:var(--amber);
-    border:3px solid white;
-    box-shadow:0 1px 4px rgba(0,0,0,0.3);
-    cursor:pointer;
-  }
-  .controls{
-    display:flex;
-    gap:10px;
-    margin-top:16px;
-    align-items:center;
-  }
-  button{
-    font-family:'Inter',sans-serif;
-    font-weight:600;
-    font-size:14px;
-    border:none;
-    border-radius:9px;
-    padding:9px 16px;
-    cursor:pointer;
-    transition:transform 0.08s ease, opacity 0.15s ease;
-  }
-  button:active{transform:scale(0.96);}
-  #playBtn{background:var(--ink);color:white;}
-  .step-btn{background:var(--card);color:var(--ink);border:1px solid var(--line);}
+  /* swing also gets a stripe pattern so stance vs swing is not color-only */
+  .seg.swing{background:repeating-linear-gradient(135deg,#9A4F1E 0 10px,#8A4519 10px 14px);}
+  .seg + .seg{border-left:2px solid #fff;}
+  .ticks{position:relative;height:18px;font-size:12px;color:var(--ink-soft);font-weight:600;margin-top:4px;}
+  .ticks span{position:absolute;transform:translateX(-50%);}
+  .ticks span:first-child{transform:none;} .ticks span:last-child{transform:translateX(-100%);}
+  .scrubber-marker{position:absolute;top:-6px;width:4px;height:58px;margin-left:-2px;background:var(--amber);border:1px solid var(--ink);pointer-events:none;}
+  input[type=range]{width:100%;margin-top:14px;-webkit-appearance:none;appearance:none;height:4px;background:var(--track);border-radius:4px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--amber);border:2px solid #1B2420;cursor:pointer;margin-top:-1px;}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--amber);border:2px solid #1B2420;cursor:pointer;}
+  .controls{display:flex;gap:10px;margin-top:16px;align-items:center;flex-wrap:wrap;}
+  button{font-family:'Inter',sans-serif;font-weight:600;font-size:14px;border:none;border-radius:9px;padding:9px 16px;cursor:pointer;}
+  #playBtn{background:var(--ink);color:#fff;}
+  .step-btn{background:var(--card);color:var(--ink);border:1.5px solid var(--track);}
   .step-btn:hover{background:var(--stance-soft);}
-  .legend{
-    display:flex;
-    gap:18px;
-    margin-top:16px;
-    font-size:12.5px;
-    color:var(--ink-soft);
-    font-weight:600;
-  }
+  .step-btn[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .legend{display:flex;gap:18px;margin-top:14px;font-size:13px;color:var(--ink-soft);font-weight:600;flex-wrap:wrap;}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
-  .dot{width:9px;height:9px;border-radius:50%;}
-  .dot.stance{background:var(--stance);}
-  .dot.swing{background:var(--swing);}
+  .sw{width:22px;height:12px;border-radius:3px;border:1px solid var(--ink);}
+  .sw.stance{background:var(--stance);} .sw.swing{background:repeating-linear-gradient(135deg,#9A4F1E 0 5px,#8A4519 5px 7px);}
 
-  /* Detail + illustration row */
-  .row{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:16px;
-  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
   @media (max-width:620px){ .row{grid-template-columns:1fr;} }
-  .card{
-    background:var(--card);
-    border-radius:var(--radius);
-    padding:20px;
-    box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);
-  }
-  .card h3{
-    margin:0 0 10px;
-    font-family:'Space Grotesk',sans-serif;
-    font-size:14px;
-    text-transform:none;
-    color:var(--ink-soft);
-    font-weight:600;
-  }
-  .sub-phase-name{
-    font-size:19px;
-    font-weight:700;
-    margin-bottom:8px;
-  }
-  .sub-phase-desc{
-    font-size:14.5px;
-    line-height:1.55;
-    color:#33392f;
-  }
-  .foot-stage{
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
-    height:250px;
-  }
-  #footSvg{transition:transform 0.05s linear;}
-  .com-label{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;fill:var(--ink-soft);}
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06),0 8px 24px rgba(27,36,32,0.05);}
+  .card h2.card-h{margin:0 0 10px;font-family:'Space Grotesk',sans-serif;font-size:14px;color:var(--ink-soft);font-weight:600;}
+  .sub-phase-name{font-size:19px;font-weight:700;margin-bottom:4px;}
+  .support{font-size:13.5px;font-weight:700;color:var(--ink-soft);margin-bottom:8px;}
+  .sub-phase-desc{font-size:14.5px;line-height:1.55;color:#33392f;}
+  .foot-stage{display:flex;align-items:flex-end;justify-content:center;}
+  .svg-note{font-size:12.5px;color:var(--ink-soft);margin:6px 2px 0;line-height:1.5;}
+  .com-label{font-family:'Inter',sans-serif;font-size:12px;font-weight:700;fill:var(--ink);}
 
-  /* Glossary */
-  .glossary-title{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:15px;
-    font-weight:600;
-    margin:28px 0 12px;
-    color:var(--ink-soft);
-  }
-  .gloss-grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:12px;
-  }
+  .glossary-title{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin:28px 0 12px;color:var(--ink-soft);}
+  .gloss-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
   @media (max-width:620px){ .gloss-grid{grid-template-columns:repeat(2,1fr);} }
-  @media (max-width:480px){
-    .seg{font-size:9.5px;padding:2px 2px;}
-    .segbar{height:52px;}
-  }
-  .gloss-card{
-    background:var(--card);
-    border-radius:12px;
-    padding:14px;
-    box-shadow:0 1px 2px rgba(27,36,32,0.05);
-  }
+  @media (max-width:480px){ .seg{font-size:12px;padding:2px 1px;} }
+  .gloss-card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 1px 2px rgba(27,36,32,0.05);}
   .gloss-term{font-weight:700;font-size:13.5px;margin-bottom:4px;}
-  .gloss-def{font-size:12px;color:var(--ink-soft);line-height:1.4;}
+  .gloss-def{font-size:12.5px;color:var(--ink-soft);line-height:1.45;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Gait Cycle Phase Explorer</h1>
-  <p class="subtitle">Scrub through one full walking gait cycle of a single limb. Check that you can name the phase, sub-phase, and roughly where it falls before class.</p>
+  <h1>Walking Gait Phase Explorer</h1>
+  <p class="subtitle">Scrub through one walking gait cycle of the right limb, from right initial contact to the next right initial contact. Name the phase and sub-phase at any point.</p>
+
+  <div class="mode-bar">
+    <div class="mode-btns" role="group" aria-label="Activity mode">
+      <button type="button" class="mode-btn" data-mode="pre" aria-pressed="true">Pre-class</button>
+      <button type="button" class="mode-btn" data-mode="in" aria-pressed="false">In-class</button>
+    </div>
+    <p class="mode-help" data-show="pre"><b>Pre-class:</b> work alone through the guided steps, then answer the check questions for the reading's "Before class" list.</p>
+    <p class="mode-help" data-show="in"><b>In-class:</b> partner activity. Predict first, test it with the tool, then talk through the discussion questions.</p>
+  </div>
+
+  <section class="guide" data-show="pre" aria-labelledby="preHead">
+    <h2 id="preHead">Pre-class: guided steps</h2>
+    <ol>
+      <li>Press <b>Play</b> and watch one full cycle. Stance runs from initial contact (0%) to toe off (60%).</li>
+      <li>Use <b>Next sub-phase</b> to step through all seven sub-phases. Read each description.</li>
+      <li>Drag the slider to 5% and to 55%. Both feet are on the ground: that is double support.</li>
+      <li>Read the quick reference at the bottom: step, stride, and cadence.</li>
+    </ol>
+    <h3>Check yourself</h3>
+    <details><summary>At 45% of the cycle, is the limb in stance or swing, and which sub-phase?</summary><p>Stance, terminal stance (30–50%). The heel is lifting off while the body moves ahead of the foot.</p></details>
+    <details><summary>At 80% of the cycle?</summary><p>Swing, mid swing (73–87%). The limb passes under the body.</p></details>
+    <details><summary>What is the difference between a step and a stride?</summary><p>A step runs from one foot's contact to the other foot's contact. A stride is one full cycle of one limb, so one stride = two steps.</p></details>
+    <details><summary>Cadence is 110 steps/min and step length is 0.70 m. What is walking speed?</summary><p>Step frequency = 110 ÷ 60 = 1.83 steps/s. Speed = step length × step frequency = 0.70 m × 1.83 steps/s = 1.28 m/s. Stride length = 2 × 0.70 = 1.40 m.</p></details>
+  </section>
+
+  <section class="guide" data-show="in" aria-labelledby="inHead">
+    <h2 id="inHead">In-class: partner challenge</h2>
+    <ol>
+      <li><b>Predict:</b> is the whole-body COM highest at toe off or at midstance? <b>Then test:</b> scrub and watch the COM.</li>
+      <li><b>Predict:</b> which sub-phases are double support? <b>Then test:</b> check the support line under the sub-phase name.</li>
+      <li><b>Quiz your partner:</b> turn on <b>Hide names</b>. One partner sets a %, the other names the phase and sub-phase. Then show the names and check.</li>
+    </ol>
+    <h3>Discuss</h3>
+    <ul>
+      <li>Initial contact and toe off are instants, not phases. Why do we treat them as events?</li>
+      <li>If someone walks faster, what do you expect to happen to the share of the cycle spent in double support?</li>
+      <li>The right leg's pre-swing overlaps with which sub-phase of the left leg?</li>
+    </ul>
+  </section>
 
   <div class="timeline-card">
     <div class="phase-heading">
-      <div class="phase-name" id="phaseName">Stance Phase</div>
+      <div class="phase-name stance" id="phaseName">Stance phase</div>
       <div class="pct-readout" id="pctReadout">0% of cycle</div>
     </div>
 
-    <div class="track-outer">
-      <div class="phase-divider"></div>
-      <div class="scrubber-marker" id="marker"></div>
-      <div class="segbar" id="segbar"></div>
+    <div class="events" aria-hidden="true">
+      <span class="event first" style="left:0%">Initial contact 0%</span>
+      <span class="event" style="left:60%">Toe off 60%</span>
     </div>
+    <div class="track-outer">
+      <div class="scrubber-marker" id="marker" aria-hidden="true"></div>
+      <div class="segbar" id="segbar" aria-hidden="true"></div>
+    </div>
+    <div class="ticks" id="ticks" aria-hidden="true"></div>
 
-    <input type="range" id="scrub" min="0" max="1000" value="0">
+    <label for="scrub" class="sr-only">Percent of gait cycle</label>
+    <input type="range" id="scrub" min="0" max="1000" value="0" aria-describedby="phaseList">
+    <p class="sr-only" id="phaseList">Sub-phases: loading response 0 to 10 percent, midstance 10 to 30, terminal stance 30 to 50, pre-swing 50 to 60, initial swing 60 to 73, mid swing 73 to 87, terminal swing 87 to 100. Initial contact at 0 percent and toe off at 60 percent are events.</p>
 
     <div class="controls">
-      <button id="playBtn">Play</button>
-      <button class="step-btn" id="backBtn">◂ Prev sub-phase</button>
-      <button class="step-btn" id="fwdBtn">Next sub-phase ▸</button>
+      <button type="button" id="playBtn">Play</button>
+      <button type="button" class="step-btn" id="backBtn">◂ Prev sub-phase</button>
+      <button type="button" class="step-btn" id="fwdBtn">Next sub-phase ▸</button>
+      <button type="button" class="step-btn" id="hideBtn" aria-pressed="false" data-show="in">Hide names</button>
     </div>
 
     <div class="legend">
-      <span><span class="dot stance"></span>Stance — 60% of cycle</span>
-      <span><span class="dot swing"></span>Swing — 40% of cycle</span>
+      <span><span class="sw stance"></span>Stance, solid (0–60% of cycle)</span>
+      <span><span class="sw swing"></span>Swing, striped (60–100% of cycle)</span>
     </div>
   </div>
 
   <div class="row">
     <div class="card">
-      <h3>Current sub-phase</h3>
-      <div class="sub-phase-name" id="subName">Heel Strike</div>
+      <h2 class="card-h">Current sub-phase</h2>
+      <div class="sub-phase-name" id="subName">Loading response</div>
+      <div class="support" id="support">Double support</div>
       <div class="sub-phase-desc" id="subDesc"></div>
     </div>
     <div class="card">
-      <h3>Leg &amp; whole-body center of mass (simple pendulum)</h3>
+      <h2 class="card-h">Both legs and the whole-body center of mass</h2>
       <div class="foot-stage">
-        <svg id="footSvg" width="220" height="250" viewBox="0 0 220 250">
-          <line x1="10" y1="207" x2="210" y2="207" stroke="#C9CEC9" stroke-width="3" stroke-linecap="round"/>
-          <g id="footGroup" transform="translate(110,195)">
-            <line x1="0" y1="0" x2="0" y2="-125" stroke="#1B2420" stroke-width="5" stroke-linecap="round" id="shin"/>
-            <path d="M -26 6 C -32 4 -33 -6 -26 -9 C -18 -12 -8 -12 2 -10 C 16 -8 30 -4 36 1 C 39 4 38 8 32 9 C 18 11 -4 11 -16 10 C -20 9.5 -24 8 -26 6 Z"
-                  fill="#2F6F63" id="footShape"/>
-            <circle cx="0" cy="-125" r="9" fill="#E8B23D" stroke="#fff" stroke-width="2.5" id="comDot"/>
-            <text x="0" y="-138" text-anchor="middle" class="com-label" id="comLabel">COM</text>
-          </g>
+        <svg id="legSvg" width="240" height="250" viewBox="0 0 240 250" role="img" aria-labelledby="svgTitle">
+          <title id="svgTitle">Right leg in stance; COM near its low point.</title>
+          <line x1="10" y1="212" x2="230" y2="212" stroke="#6F786F" stroke-width="3" stroke-linecap="round"/>
+          <!-- other (left) leg: dashed -->
+          <line id="otherLeg" x1="120" y1="80" x2="120" y2="206" stroke="#6F786F" stroke-width="5" stroke-dasharray="7 5" stroke-linecap="round"/>
+          <ellipse id="otherFoot" cx="128" cy="208" rx="16" ry="5" fill="none" stroke="#6F786F" stroke-width="2.5" stroke-dasharray="4 3"/>
+          <!-- this (right) leg: solid -->
+          <line id="thisLeg" x1="120" y1="80" x2="120" y2="206" stroke="#1B2420" stroke-width="6" stroke-linecap="round"/>
+          <ellipse id="thisFoot" cx="128" cy="208" rx="16" ry="6" fill="#2F6F63" stroke="#1B2420" stroke-width="1.5"/>
+          <circle id="comDot" cx="120" cy="70" r="9" fill="#E8B23D" stroke="#1B2420" stroke-width="2"/>
+          <text id="comLabel" x="136" y="66" class="com-label">COM</text>
+          <text x="12" y="236" class="com-label" style="font-weight:600;fill:#586158">walking direction →</text>
         </svg>
       </div>
-      <p style="font-size:12.5px; color:var(--ink-soft); margin:6px 2px 0; line-height:1.5;">The amber marker is the <b>whole-body</b> center of mass — not just this leg's — shown here riding atop a simplified single-leg pendulum.</p>
+      <p class="svg-note">Solid leg = the right leg we are tracking. Dashed leg = the left leg, half a cycle (50%) behind. The amber dot is the <b>whole-body</b> COM: it rises to a high point in each midstance and dips to a low point in each double support, and it moves smoothly through toe off.</p>
     </div>
   </div>
+
+  <p class="sr-only" aria-live="polite" id="live"></p>
 
   <div class="glossary-title">Quick reference</div>
   <div class="gloss-grid">
-    <div class="gloss-card">
-      <div class="gloss-term">Step length</div>
-      <div class="gloss-def">Distance between one foot's contact and the other foot's next contact.</div>
-    </div>
-    <div class="gloss-card">
-      <div class="gloss-term">Step width</div>
-      <div class="gloss-def">Side-to-side distance between the two feet during a step.</div>
-    </div>
-    <div class="gloss-card">
-      <div class="gloss-term">Stride length</div>
-      <div class="gloss-def">Distance covered by one full gait cycle of a single limb — two steps.</div>
-    </div>
-    <div class="gloss-card">
-      <div class="gloss-term">Cadence</div>
-      <div class="gloss-def">Number of steps taken per minute.</div>
-    </div>
+    <div class="gloss-card"><div class="gloss-term">Step length</div><div class="gloss-def">Distance from one foot's contact to the other foot's next contact.</div></div>
+    <div class="gloss-card"><div class="gloss-term">Stride length</div><div class="gloss-def">Distance covered in one full cycle of one limb: two steps.</div></div>
+    <div class="gloss-card"><div class="gloss-term">Cadence</div><div class="gloss-def">Steps per minute. Step frequency = cadence ÷ 60 (steps/s).</div></div>
+    <div class="gloss-card"><div class="gloss-term">Speed</div><div class="gloss-def">Speed = step length × step frequency (m × steps/s = m/s).</div></div>
   </div>
+  <p class="svg-note">Sub-phase boundaries are typical textbook (Rancho Los Amigos style) values for walking at a comfortable speed, not measured data.</p>
 </div>
 
 <script>
+// One phase scheme for every gait tool. Initial contact (0%) and toe off (60%) are events, not phases.
 const phases = [
-  {name:"Heel Strike",   start:0,  end:2,  side:"stance", desc:"The heel makes first contact with the ground. This single instant marks the start of the gait cycle for this limb."},
-  {name:"Loading Response", start:2, end:12, side:"stance", desc:"Body weight transfers onto the limb that just contacted the ground."},
-  {name:"Midstance",     start:12, end:31, side:"stance", desc:"The body's weight passes directly over the supporting foot."},
-  {name:"Propulsion",    start:31, end:55, side:"stance", desc:"The limb generates force to propel the body forward; the heel begins to lift."},
-  {name:"Terminal Stance",start:55, end:60, side:"stance", desc:"The final push through the toes before the foot leaves the ground."},
-  {name:"Initial Swing", start:60, end:73, side:"swing", desc:"The foot has just left the ground and begins moving forward through the air."},
-  {name:"Mid-Swing",     start:73, end:87, side:"swing", desc:"The limb passes underneath the body as it swings forward."},
-  {name:"Terminal Swing",start:87, end:100,side:"swing", desc:"The limb finishes decelerating and prepares to contact the ground again."}
+  {name:"Loading response", short:"LR",  start:0,  end:10,  side:"stance", support:"Double support (left toe off at about 10%)",
+   desc:"Starts at initial contact. Body weight transfers onto the right limb while the left foot is still on the ground."},
+  {name:"Midstance",        short:"Midstance", start:10, end:30,  side:"stance", support:"Single support (right foot only)",
+   desc:"The left foot has left the ground. The body passes over the right foot, and the COM rises to its high point."},
+  {name:"Terminal stance",  short:"Terminal stance", start:30, end:50,  side:"stance", support:"Single support (right foot only)",
+   desc:"Heel off: the right heel lifts and the body moves ahead of the foot. Ends when the left foot makes initial contact (50%)."},
+  {name:"Pre-swing",        short:"PSw", start:50, end:60,  side:"stance", support:"Double support (left initial contact at 50%)",
+   desc:"Push off: weight shifts to the left limb while the right toes stay on the ground. Ends at right toe off (60%)."},
+  {name:"Initial swing",    short:"Initial swing", start:60, end:73,  side:"swing", support:"Right foot off the ground (left single support)",
+   desc:"Toe off has happened. The right foot lifts and begins moving forward."},
+  {name:"Mid swing",        short:"Mid swing", start:73, end:87,  side:"swing", support:"Right foot off the ground (left single support)",
+   desc:"The right limb passes under the body as it swings forward."},
+  {name:"Terminal swing",   short:"Terminal swing", start:87, end:100, side:"swing", support:"Right foot off the ground (left single support)",
+   desc:"The right limb slows and reaches forward to prepare for the next initial contact (100% = 0% of the next cycle)."}
 ];
 
-const scrub = document.getElementById('scrub');
-const segbar = document.getElementById('segbar');
-const marker = document.getElementById('marker');
-const phaseName = document.getElementById('phaseName');
-const pctReadout = document.getElementById('pctReadout');
-const subName = document.getElementById('subName');
-const subDesc = document.getElementById('subDesc');
-const footGroup = document.getElementById('footGroup');
-const footShape = document.getElementById('footShape');
-const shin = document.getElementById('shin');
-const playBtn = document.getElementById('playBtn');
-const backBtn = document.getElementById('backBtn');
-const fwdBtn = document.getElementById('fwdBtn');
+const $ = id => document.getElementById(id);
+const scrub = $('scrub'), segbar = $('segbar'), marker = $('marker');
+let namesHidden = false;
 
-// build segment bar
-phases.forEach(p=>{
+phases.forEach(p => {
   const seg = document.createElement('div');
   seg.className = 'seg ' + p.side;
-  const width = p.end-p.start;
-  seg.style.width = width + '%';
-  seg.innerHTML = width >= 8 ? '<span class="seg-label">'+p.name+'</span>' : '';
-  seg.title = p.name;
+  seg.style.width = (p.end - p.start) + '%';
+  seg.innerHTML = '<span>' + p.short + '</span>';
   segbar.appendChild(seg);
 });
+// tick labels so the narrow segments (LR, PSw) are still named on screen
+[0,10,30,50,60,73,87,100].forEach(t => { const s = document.createElement('span'); s.style.left = t + '%'; s.textContent = t + '%'; $('ticks').appendChild(s); });
 
-let playing = false;
-let rafId = null;
+function phaseIndex(pct){ const i = phases.findIndex(p => pct >= p.start && pct < p.end); return i < 0 ? phases.length - 1 : i; }
 
-function currentPhaseIndex(pct){
-  return phases.findIndex(p => pct >= p.start && pct < p.end) ;
+// Simple kinematic picture (illustrative). Foot position relative to the hip, in px.
+const HIPX = 120, GROUND = 206, D = 52, CLEAR = 18;
+function footOf(pct){
+  pct = ((pct % 100) + 100) % 100;
+  if (pct < 60) return { x: HIPX + D - 2 * D * (pct / 60), lift: 0, stance: true };
+  const s = (pct - 60) / 40;
+  return { x: HIPX - D + 2 * D * (0.5 - 0.5 * Math.cos(Math.PI * s)), lift: CLEAR * Math.sin(Math.PI * s), stance: false };
+}
+// COM height: smooth, two highs per cycle (each midstance, ~30% and ~80%) and two lows (each double support, ~5% and ~55%)
+function comRise(pct){ return Math.cos(2 * Math.PI * (pct - 30) / 50); } // +1 high, -1 low
+
+function drawLegs(pct){
+  const rise = comRise(pct), hipY = 88 - 10 * rise;
+  const a = footOf(pct), b = footOf(pct + 50);
+  $('thisLeg').setAttribute('x1', HIPX); $('thisLeg').setAttribute('y1', hipY);
+  $('thisLeg').setAttribute('x2', a.x); $('thisLeg').setAttribute('y2', GROUND - a.lift);
+  $('thisFoot').setAttribute('cx', a.x + 8); $('thisFoot').setAttribute('cy', GROUND + 2 - a.lift);
+  $('thisFoot').setAttribute('fill', a.stance ? '#2F6F63' : '#9A4F1E');
+  $('thisLeg').setAttribute('stroke-opacity', a.stance ? '1' : '0.75');
+  $('otherLeg').setAttribute('x1', HIPX); $('otherLeg').setAttribute('y1', hipY);
+  $('otherLeg').setAttribute('x2', b.x); $('otherLeg').setAttribute('y2', GROUND - b.lift);
+  $('otherFoot').setAttribute('cx', b.x + 8); $('otherFoot').setAttribute('cy', GROUND + 2 - b.lift);
+  $('comDot').setAttribute('cy', hipY - 12); $('comLabel').setAttribute('y', hipY - 16);
+  const comTxt = rise > 0.5 ? 'COM near its high point' : rise < -0.5 ? 'COM near its low point' : (Math.sin(2 * Math.PI * (pct - 30) / 50) < 0 ? 'COM rising' : 'COM falling');
+  const footTxt = a.stance ? (a.x > HIPX + 4 ? 'right foot on the ground ahead of the hip' : a.x < HIPX - 4 ? 'right foot on the ground behind the hip' : 'right foot on the ground under the hip')
+                           : 'right foot swinging forward';
+  $('svgTitle').textContent = 'Right leg in ' + (a.stance ? 'stance' : 'swing') + ', ' + footTxt + '; left foot ' + (b.stance ? 'on the ground' : 'in the air') + '; ' + comTxt + '.';
+  return comTxt;
 }
 
-function footPose(pct, idx){
-  // idx-based simple pendulum pose: the whole leg (ankle to COM) rotates as one rigid body about the ankle.
-  let rotate = 0, lift = 0;
-  const p = phases[idx];
-  if(p.side === 'stance'){
-    if(p.name === 'Heel Strike') rotate = -18;
-    else if(p.name === 'Loading Response') rotate = -8;
-    else if(p.name === 'Midstance') rotate = 0;
-    else if(p.name === 'Propulsion') rotate = 20;
-    else if(p.name === 'Terminal Stance') rotate = 32;
-    lift = 0;
-  } else {
-    lift = -30;
-    if(p.name === 'Initial Swing') rotate = 26;
-    else if(p.name === 'Mid-Swing') rotate = 6;
-    else if(p.name === 'Terminal Swing') rotate = -10;
-  }
-  footGroup.setAttribute('transform', `translate(110,${195+lift}) rotate(${rotate})`);
-  const tone = p.side === 'stance' ? '#2F6F63' : '#B8622A';
-  footShape.setAttribute('fill', tone);
-  shin.setAttribute('stroke', p.side === 'stance' ? '#1B2420' : '#5A4A3C');
-}
-
+let lastIdx = -1;
 function render(){
-  const val = Number(scrub.value); // 0-1000
-  const pct = val/10; // 0-100
-  const idx = currentPhaseIndex(Math.min(pct,99.999));
-  const p = phases[idx];
-
-  phaseName.textContent = p.side === 'stance' ? 'Stance Phase' : 'Swing Phase';
-  phaseName.className = 'phase-name ' + p.side;
-  pctReadout.textContent = pct.toFixed(0) + '% of cycle';
-  subName.textContent = p.name;
-  subDesc.textContent = p.desc;
+  const pct = Number(scrub.value) / 10;
+  const idx = phaseIndex(Math.min(pct, 99.999)), p = phases[idx];
+  $('phaseName').textContent = namesHidden ? '?' : (p.side === 'stance' ? 'Stance phase' : 'Swing phase');
+  $('phaseName').className = 'phase-name ' + p.side;
+  $('pctReadout').textContent = pct.toFixed(0) + '% of cycle';
+  $('subName').textContent = namesHidden ? 'Name hidden: guess, then press Show names' : p.name;
+  $('support').textContent = namesHidden ? '' : p.support;
+  $('subDesc').textContent = namesHidden ? '' : p.desc;
   marker.style.left = pct + '%';
-  footPose(pct, idx);
+  const comTxt = drawLegs(pct);
+  scrub.setAttribute('aria-valuetext', namesHidden ? pct.toFixed(0) + ' percent of cycle' : pct.toFixed(0) + ' percent, ' + p.name + ', ' + p.side + ' phase');
+  if (idx !== lastIdx && !playing) {
+    $('live').textContent = namesHidden ? '' : p.name + ', ' + p.side + ' phase. ' + p.support + '. ' + comTxt + '.';
+  }
+  lastIdx = idx;
 }
 
 scrub.addEventListener('input', render);
 
-playBtn.addEventListener('click', ()=>{
+let playing = false, timer = null;
+$('playBtn').addEventListener('click', () => {
   playing = !playing;
-  playBtn.textContent = playing ? 'Pause' : 'Play';
-  if(playing) tick();
+  $('playBtn').textContent = playing ? 'Pause' : 'Play';
+  if (playing) tick(); else { clearTimeout(timer); lastIdx = -1; render(); }
 });
-
 function tick(){
-  if(!playing) return;
+  if (!playing) return;
   let v = Number(scrub.value) + 4;
-  if(v > 1000) v = 0;
-  scrub.value = v;
-  render();
-  rafId = setTimeout(tick, 30);
+  if (v > 1000) v = 0;
+  scrub.value = v; render();
+  timer = setTimeout(tick, 30);
 }
+function jump(dir){
+  const idx = phaseIndex(Math.min(Number(scrub.value) / 10, 99.999));
+  const n = (idx + dir + phases.length) % phases.length;
+  scrub.value = phases[n].start * 10; render();
+}
+$('backBtn').addEventListener('click', () => jump(-1));
+$('fwdBtn').addEventListener('click', () => jump(1));
+$('hideBtn').addEventListener('click', () => {
+  namesHidden = !namesHidden;
+  $('hideBtn').setAttribute('aria-pressed', String(namesHidden));
+  $('hideBtn').textContent = namesHidden ? 'Show names' : 'Hide names';
+  lastIdx = -1; render();
+});
+window.onModeChange = m => { if (m === 'pre' && namesHidden) $('hideBtn').click(); };
 
-backBtn.addEventListener('click', ()=>{
-  const pct = Number(scrub.value)/10;
-  const idx = currentPhaseIndex(Math.min(pct,99.999));
-  const prevIdx = (idx-1+phases.length) % phases.length;
-  scrub.value = phases[prevIdx].start*10;
-  render();
-});
-fwdBtn.addEventListener('click', ()=>{
-  const pct = Number(scrub.value)/10;
-  const idx = currentPhaseIndex(Math.min(pct,99.999));
-  const nextIdx = (idx+1) % phases.length;
-  scrub.value = phases[nextIdx].start*10;
-  render();
-});
+/* ---------- Pre-class / In-class mode ---------- */
+(function () {
+  const params = new URLSearchParams(location.search);
+  if (params.get('embed') === '1') {
+    document.documentElement.classList.add('embed');
+    // Tell the Unit 2 Explorer how tall this page is (postMessage works from file:// too). Sizing only; no state.
+    if (window.parent !== window) {
+      const sendHeight = () => {
+        const cs = getComputedStyle(document.body);
+        const h = Math.ceil(document.body.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom));
+        try { window.parent.postMessage({ unit2Height: h }, '*'); } catch (e) { /* no parent */ }
+      };
+      window.addEventListener('load', () => { sendHeight(); setTimeout(sendHeight, 800); });
+      if (window.ResizeObserver) new ResizeObserver(sendHeight).observe(document.body);
+    }
+  }
+  function setMode(m) {
+    document.querySelectorAll('.mode-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    document.querySelectorAll('[data-show]').forEach(el => { el.hidden = el.dataset.show !== m; });
+    document.documentElement.setAttribute('data-mode', m);
+    try { const u = new URL(location.href); u.searchParams.set('mode', m); history.replaceState(history.state, '', u.href); } catch (e) { /* file:// in some browsers */ }
+    if (typeof window.onModeChange === 'function') window.onModeChange(m);
+  }
+  document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  setMode(params.get('mode') === 'in' ? 'in' : 'pre');
+})();
 
 render();
 </script>
