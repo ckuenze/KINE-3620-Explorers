@@ -15,12 +15,15 @@ Each tool is a single HTML file that runs in any modern web browser. There's not
 
 | Tool | Topic | Use |
 |---|---|---|
-| [Walking Gait Phase Explorer](walking-gait-phase-explorer/) | Phases and sub-phases of the walking gait cycle | Pre-class |
-| [Walking Gait vGRF Explorer](walking-gait-vgrf-explorer/) | Vertical and horizontal ground reaction forces in walking | In-class |
-| [Gait Cycle Video Analyzer](gait-cycle-video-analyzer/) | Video analysis of gait events, timing, and joint angles | In-class |
-| [Running Gait Cycle Explorer](running-gait-cycle-explorer/) | Walking vs. running: gait cycle structure and GRF | Pre-class |
-| [Moment Arm Explorer](moment-arm-explorer/) | Internal and external moment arms and torque vs. joint angle | Pre-class |
-| [Balance and the External Moment Arm](balance-external-moment-arm/) | COM height, lean angle, and gravitational torque in balance | Pre-class |
+| [Unit 2 Explorer](unit2-explorer/) | One tab per lecture (L8–L14) with a Pre-class / In-class switch on each. `unit2-explorer-offline.html` is a single file that works offline. | Pre-class and in-class |
+| [Muscle Architecture Explorer](muscle-architecture-explorer/) | Pennation angle and tendon force, fascicle length and shortening velocity (L8) | Pre-class and in-class |
+| [Balance and the External Moment Arm](balance-external-moment-arm/) | COM height, lean angle, and gravitational torque in balance (L9) | Pre-class and in-class |
+| [Walking Gait Phase Explorer](walking-gait-phase-explorer/) | Phases and sub-phases of the walking gait cycle (L10) | Pre-class and in-class |
+| [Walking Gait vGRF Explorer](walking-gait-vgrf-explorer/) | Vertical and horizontal ground reaction forces in walking (L10) | Pre-class and in-class |
+| [Gait Cycle Video Analyzer](gait-cycle-video-analyzer/) | Video analysis of gait events, timing, and joint angles (L10–L11) | Pre-class and in-class |
+| [Moment Arm Explorer](moment-arm-explorer/) | Internal and external moment arms, torque vs. joint angle, and the knee and the GRF (L12) | Pre-class and in-class |
+| [Running Gait Cycle Explorer](running-gait-cycle-explorer/) | Walking vs. running: gait cycle structure and GRF (L13) | Pre-class and in-class |
+| [Sprinting Kinetics Explorer](sprinting-kinetics-explorer/) | Force, velocity, power, and momentum across a 100 m or 200 m sprint; contact impulse; and leg vs. vertical stiffness (L14) | Pre-class and in-class |
 
 ## Unit 3: Movement and Human Performance
 
