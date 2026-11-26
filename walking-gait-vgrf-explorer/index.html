@@ -3,549 +3,551 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>vGRF Curve Explorer</title>
+<title>Walking Gait vGRF Explorer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F6F7F5;
-    --card:#FFFFFF;
-    --ink:#1B2420;
-    --ink-soft:#586158;
-    --stance:#2F6F63;
-    --line-blue:#3A5B8C;
-    --amber:#E8B23D;
-    --rust:#B8622A;
-    --line:#D8DED7;
-    --radius:14px;
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158; --stance:#2F6F63;
+    --line-blue:#3A5B8C; --amber:#E8B23D; --rust:#9A4F1E; --line:#D8DED7; --track:#7A847B; --ref:#6F786F; --radius:14px;
   }
   *{box-sizing:border-box;}
-  body{
-    margin:0;background:var(--bg);color:var(--ink);
-    font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;
-    padding:28px 18px 60px;
-  }
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:28px 18px 60px;}
   .wrap{max-width:900px;margin:0 auto;}
-  h1{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;
-  }
-  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 24px;max-width:560px;line-height:1.5;}
-  .card{
-    background:var(--card);border-radius:var(--radius);padding:20px;
-    box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);
-    margin-bottom:16px;
-  }
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 16px;max-width:640px;line-height:1.5;}
+
+  /* Pre-class / In-class mode (shared spec) */
+  .mode-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 14px;}
+  .mode-btns{display:inline-flex;gap:4px;background:#E9ECE8;padding:4px;border-radius:11px;}
+  .mode-btn{font:inherit;font-weight:700;font-size:14px;border:0;background:transparent;color:#586158;padding:8px 14px;border-radius:8px;cursor:pointer;}
+  .mode-btn[aria-pressed="true"]{background:#1B2420;color:#fff;}
+  .mode-help{margin:0;font-size:14px;color:#586158;flex:1 1 260px;line-height:1.45;}
+  .guide{background:#fff;border:1px solid #D8DED7;border-left:4px solid #2F6F63;border-radius:12px;padding:14px 18px;margin:0 0 16px;}
+  .guide[data-show="in"]{border-left-color:#9A4F1E;}
+  .guide h2{font-size:17px;margin:0 0 6px;} .guide h3{font-size:15px;margin:12px 0 4px;}
+  .guide ol,.guide ul{margin:4px 0 0;padding-left:22px;line-height:1.55;font-size:14.5px;}
+  .guide details{margin:4px 0;font-size:14.5px;} .guide summary{cursor:pointer;font-weight:600;}
+  .guide details p{margin:4px 0 8px 18px;color:#33392f;}
+  [hidden]{display:none !important;}
+  :focus-visible{outline:3px solid #1F6B9E;outline-offset:3px;}
+  input[type=range]:focus-visible{outline:3px solid #1F6B9E;outline-offset:4px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+  html.embed .mode-btns{display:none;}
+
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06),0 8px 24px rgba(27,36,32,0.05);margin-bottom:16px;}
   .toprow{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
-  .speed-group{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:10px;}
-  .speed-btn{
-    border:none;background:transparent;padding:8px 14px;border-radius:8px;
-    font-weight:600;font-size:13.5px;cursor:pointer;color:var(--ink-soft);
-    font-family:'Inter',sans-serif;
-  }
-  .speed-btn.active{background:var(--ink);color:#fff;}
-  .readout{font-size:13.5px;font-weight:600;color:var(--ink-soft);}
+  .speed-group{display:flex;gap:6px;background:#E9ECE8;padding:4px;border-radius:10px;}
+  .speed-btn{border:none;background:transparent;padding:8px 14px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;color:var(--ink-soft);font-family:'Inter',sans-serif;}
+  .speed-btn[aria-pressed="true"]{background:var(--ink);color:#fff;}
+  .readout{font-size:14px;font-weight:600;color:var(--ink-soft);display:flex;gap:4px 14px;flex-wrap:wrap;}
   .readout b{color:var(--ink);font-size:16px;}
   svg text{font-family:'Inter',sans-serif;}
-  #chart{width:100%;height:auto;display:block;}
-  .axis-label{font-size:11px;fill:var(--ink-soft);}
-  .bw-line{stroke:#9AA39B;stroke-width:1.4;stroke-dasharray:5,4;}
+  #chart,#biChart,#apChart{width:100%;height:auto;display:block;}
+  .axis-label{font-size:12px;fill:var(--ink-soft);}
+  .bw-line{stroke:var(--ref);stroke-width:1.6;stroke-dasharray:5,4;}
   .curve{fill:none;stroke:var(--line-blue);stroke-width:3;}
-  .scrub-line{stroke:var(--amber);stroke-width:2;}
-  .scrub-dot{fill:var(--amber);stroke:#fff;stroke-width:2;}
-  input[type=range]{
-    width:100%;margin-top:16px;-webkit-appearance:none;height:4px;
-    background:var(--line);border-radius:4px;outline:none;
-  }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
-    background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;margin-top:-7px;
-  }
-  input[type=range]::-moz-range-thumb{
-    width:18px;height:18px;border-radius:50%;background:var(--amber);
-    border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;
-  }
+  .scrub-line{stroke:var(--ink);stroke-width:1.5;}
+  .scrub-dot{fill:var(--amber);stroke:var(--ink);stroke-width:2;}
+  .ctl-label{display:block;font-size:13.5px;font-weight:700;margin-top:14px;}
+  input[type=range]{width:100%;margin-top:8px;-webkit-appearance:none;appearance:none;height:4px;background:var(--track);border-radius:4px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--amber);border:2px solid #1B2420;cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--amber);border:2px solid #1B2420;cursor:pointer;}
+  input[type=range]:disabled{opacity:0.45;}
   .feature-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;}
   @media (max-width:620px){.feature-row{grid-template-columns:repeat(2,1fr);}}
-  .feat-btn{
-    border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 8px;
-    font-weight:700;font-size:13px;cursor:pointer;text-align:left;color:var(--ink-soft);
-    font-family:'Inter',sans-serif;
-  }
+  .feat-btn{border:1.5px solid var(--track);background:#fff;border-radius:10px;padding:10px 8px;font-weight:700;font-size:13px;cursor:pointer;text-align:left;color:var(--ink-soft);font-family:'Inter',sans-serif;}
   .feat-btn .letter{font-family:'Space Grotesk',sans-serif;font-size:18px;display:block;margin-bottom:2px;}
-  .feat-btn.active{border-color:var(--line-blue);background:#EEF2F7;color:var(--ink);}
-  .feat-explain{
-    margin-top:12px;font-size:14px;line-height:1.55;color:#33392f;
-    background:#F1F4F0;border-radius:10px;padding:12px 14px;min-height:20px;
-  }
-  h3{margin:0 0 10px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--ink-soft);}
-  .toggle-line{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;color:var(--ink-soft);margin-top:4px;}
-  .switch{
-    position:relative;width:38px;height:22px;border-radius:12px;background:var(--line);cursor:pointer;flex-shrink:0;
-  }
-  .switch.on{background:var(--stance);}
-  .switch::after{
-    content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
-    background:#fff;transition:left 0.15s ease;box-shadow:0 1px 3px rgba(0,0,0,0.3);
-  }
-  .switch.on::after{left:18px;}
-  details{margin-top:6px;}
-  summary{cursor:pointer;font-weight:700;font-size:14.5px;padding:6px 0;}
-  .qa{font-size:13.5px;line-height:1.6;color:#33392f;padding:8px 0 4px 4px;}
+  .feat-btn[aria-pressed="true"]{border-color:var(--line-blue);border-width:2.5px;background:#EEF2F7;color:var(--ink);}
+  .feat-explain{margin-top:12px;font-size:14px;line-height:1.55;color:#33392f;background:#F1F4F0;border-radius:10px;padding:12px 14px;min-height:20px;}
+  h2.card-h{margin:0 0 10px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;color:var(--ink-soft);}
+  .switch-btn{display:inline-flex;align-items:center;gap:10px;font:inherit;font-size:14px;font-weight:600;color:var(--ink);background:none;border:0;padding:4px 0;cursor:pointer;}
+  .switch-btn .track{position:relative;width:40px;height:22px;border-radius:12px;background:#fff;border:2px solid var(--track);flex-shrink:0;}
+  .switch-btn .track::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--track);transition:left 0.15s ease;}
+  .switch-btn[aria-checked="true"] .track{background:var(--stance);border-color:var(--stance);}
+  .switch-btn[aria-checked="true"] .track::after{left:20px;background:#fff;}
+  .switch-btn .state{font-size:12.5px;color:var(--ink-soft);}
+  .qa{font-size:14px;line-height:1.6;color:#33392f;padding:8px 0 4px 4px;}
   .qa div{margin-bottom:6px;}
-  .phase-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:12px;color:var(--ink-soft);}
+  details > summary{cursor:pointer;font-weight:700;font-size:14.5px;padding:6px 0;}
+  .phase-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12.5px;color:var(--ink-soft);}
   .phase-legend span b{color:var(--ink);}
-  .foot-legend{display:flex;gap:18px;margin-bottom:10px;font-size:13px;font-weight:600;color:var(--ink-soft);}
+  .foot-legend{display:flex;gap:18px;margin-bottom:10px;font-size:13px;font-weight:600;color:var(--ink-soft);flex-wrap:wrap;}
   .foot-legend span{display:inline-flex;align-items:center;gap:6px;}
-  .foot-legend .dot{width:10px;height:10px;border-radius:50%;}
-  .curve-left{fill:none;stroke:#2F6F63;stroke-width:3;}
-  .curve-right{fill:none;stroke:#B8622A;stroke-width:3;stroke-dasharray:0;}
-  .bilateral-readout{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;font-weight:600;color:var(--ink-soft);margin-top:10px;}
+  .curve-left{fill:none;stroke:var(--ink);stroke-width:3;}
+  .curve-right{fill:none;stroke:var(--line-blue);stroke-width:3;stroke-dasharray:9,5;}
+  .bilateral-readout{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;font-weight:600;color:var(--ink-soft);margin-top:10px;}
   .bilateral-readout b{color:var(--ink);}
   .units-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
-  .mass-control{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink-soft);}
-  .mass-control input[type=range]{width:120px;margin-top:0;}
-  .mass-control.disabled{opacity:0.4;pointer-events:none;}
+  .mass-control{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--ink-soft);}
+  .mass-control input[type=range]{width:130px;margin-top:0;}
+  .note{font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin-top:10px;}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Vertical GRF Curve Explorer</h1>
-  <p class="subtitle">Drag the scrubber along one stance phase and see how the force curve changes with walking speed. Use the feature buttons to walk through what each part of the curve means.</p>
+  <h1>Walking Gait vGRF Explorer</h1>
+  <p class="subtitle">Scrub along one stance phase of walking and see how the vertical ground reaction force (vGRF) curve changes with walking speed. Use the feature buttons to see what each part of the curve means.</p>
+
+  <div class="mode-bar">
+    <div class="mode-btns" role="group" aria-label="Activity mode">
+      <button type="button" class="mode-btn" data-mode="pre" aria-pressed="true">Pre-class</button>
+      <button type="button" class="mode-btn" data-mode="in" aria-pressed="false">In-class</button>
+    </div>
+    <p class="mode-help" data-show="pre"><b>Pre-class:</b> work alone through the guided steps, then answer the check questions for the reading's "Before class" list.</p>
+    <p class="mode-help" data-show="in"><b>In-class:</b> partner activity. Predict first, test it with the tool, then talk through the discussion questions.</p>
+  </div>
+
+  <section class="guide" data-show="pre" aria-labelledby="preHead">
+    <h2 id="preHead">Pre-class: guided steps</h2>
+    <ol>
+      <li>Stay on <b>Slow</b>. Drag the stance slider from 0% to 100% and watch the vGRF readout.</li>
+      <li>Press <b>B</b> (first peak) and <b>C</b> (second peak, late stance) to find the two peaks. Both sit just above 1.0 BW at slow speed.</li>
+      <li>Find where the curve dips below the dashed 1.0 BW line in midstance.</li>
+      <li>Switch to <b>Fast</b>. Watch the peaks, the dip, and the stance time change.</li>
+      <li>Drag <b>Body mass</b>. In BW the curve does not change, but the conversion (1.0 BW = m × 9.81 m/s² in N) does. Press <b>N</b> to read the same curve in newtons.</li>
+    </ol>
+    <h3>Check yourself</h3>
+    <details><summary>The vGRF is 1.17 BW. Is the COM accelerating up or down?</summary><p>Up. vGRF = m(g + a<sub>COM</sub>), so vGRF above body weight means a<sub>COM</sub> &gt; 0 (upward, +z).</p></details>
+    <details><summary>How many times does a walking vGRF curve cross 1.0 BW?</summary><p>Four: rising to the first peak, falling from it into the dip, rising to the second peak, and falling from it before toe off.</p></details>
+    <details><summary>Does the stance phase take more or less time as walking speed increases?</summary><p>Less. The stance time readout drops from Slow to Fast, even though the x-axis stays 0–100% of stance.</p></details>
+  </section>
+
+  <section class="guide" data-show="in" aria-labelledby="inHead">
+    <h2 id="inHead">In-class: partner challenge</h2>
+    <ol>
+      <li><b>Predict:</b> going from Slow to Fast, does the midstance dip get deeper or shallower? <b>Then test:</b> switch speeds and read the dip.</li>
+      <li><b>Predict:</b> the second peak in newtons for a 90 kg walker at Fast (peak BW × 90 kg × 9.81 m/s²). <b>Then test:</b> switch to N, set 90 kg, and press C.</li>
+      <li><b>Predict:</b> during right pre-swing, what is the left foot doing? <b>Then test:</b> turn on the both-feet view.</li>
+      <li><b>Predict:</b> where in stance does the AP GRF change from braking to propulsive? <b>Then test:</b> turn on the AP panel.</li>
+    </ol>
+    <h3>Discuss</h3>
+    <ul>
+      <li>Why can the single-foot vGRF be below body weight right after contact and right before toe off?</li>
+      <li>Which is a better comparison across speeds: % of stance or time in seconds? Why?</li>
+    </ul>
+  </section>
 
   <div class="card">
     <div class="toprow">
-      <div class="speed-group" id="speedGroup">
-        <button class="speed-btn active" data-speed="0">Slow</button>
-        <button class="speed-btn" data-speed="0.5">Normal</button>
-        <button class="speed-btn" data-speed="1">Fast</button>
+      <div class="speed-group" id="speedGroup" role="group" aria-label="Walking speed">
+        <button type="button" class="speed-btn" data-speed="0" aria-pressed="true">Slow</button>
+        <button type="button" class="speed-btn" data-speed="0.5" aria-pressed="false">Normal</button>
+        <button type="button" class="speed-btn" data-speed="1" aria-pressed="false">Fast</button>
       </div>
-      <div class="readout">% stance: <b id="pctVal">0</b> &nbsp;·&nbsp; vGRF: <b id="grfVal">0.00</b> <span id="grfUnit">BW</span></div>
+      <div class="readout">
+        <span>% stance: <b id="pctVal">0</b></span>
+        <span>vGRF: <b id="grfVal">0.00</b> <span id="grfUnit">BW</span> <span id="grfAlt"></span></span>
+        <span>Stance time: <b id="stanceVal">0.80</b> s</span>
+      </div>
     </div>
 
     <div class="units-row">
-      <div class="speed-group" id="unitGroup">
-        <button class="speed-btn active" data-unit="BW">BW</button>
-        <button class="speed-btn" data-unit="N">N</button>
+      <div class="speed-group" id="unitGroup" role="group" aria-label="Force units">
+        <button type="button" class="speed-btn" data-unit="BW" aria-pressed="true">BW</button>
+        <button type="button" class="speed-btn" data-unit="N" aria-pressed="false">N</button>
       </div>
-      <div class="mass-control disabled" id="massControlWrap">
-        <span>Body mass:</span>
-        <input type="range" id="massSlider" min="40" max="110" value="70" step="1">
+      <div class="mass-control" id="massControlWrap">
+        <label for="massSlider">Body mass</label>
+        <input type="range" id="massSlider" min="40" max="110" value="70" step="1" aria-valuetext="70 kilograms, 1.0 body weight = 686.70 newtons" aria-describedby="massNote">
         <span id="massLabel">70 kg</span>
+        <span class="state" id="massNote">1.0 BW = 70 kg × 9.81 m/s² = 686.70 N</span>
       </div>
     </div>
 
-    <svg id="chart" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="chart" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="vGRF curve"></svg>
 
-    <input type="range" id="scrub" min="0" max="1000" value="10">
+    <label class="ctl-label" for="scrub">Position in stance (% of stance)</label>
+    <input type="range" id="scrub" min="0" max="1000" value="100">
 
     <div class="feature-row" id="featureRow">
-      <button class="feat-btn" data-f="A"><span class="letter">A</span>Stance duration</button>
-      <button class="feat-btn" data-f="B"><span class="letter">B</span>Load acceptance peak</button>
-      <button class="feat-btn" data-f="C"><span class="letter">C</span>Propulsion peak</button>
-      <button class="feat-btn" data-f="D"><span class="letter">D</span>Loading rate</button>
+      <button type="button" class="feat-btn" data-f="A" aria-pressed="false"><span class="letter">A</span>Stance duration</button>
+      <button type="button" class="feat-btn" data-f="B" aria-pressed="false"><span class="letter">B</span>First peak (load acceptance)</button>
+      <button type="button" class="feat-btn" data-f="C" aria-pressed="false"><span class="letter">C</span>Second peak (late stance)</button>
+      <button type="button" class="feat-btn" data-f="D" aria-pressed="false"><span class="letter">D</span>Loading rate</button>
     </div>
-    <div class="feat-explain" id="featExplain">Click a lettered feature above to highlight it on the curve and see what it describes.</div>
+    <div class="feat-explain" id="featExplain">Press a lettered feature above to highlight it on the curve and see what it describes.</div>
     <div class="phase-legend">
-      <span><b>HS</b> Heel Strike</span>
-      <span><b>LR</b> Loading Response</span>
-      <span><b>MS</b> Midstance</span>
-      <span><b>PR</b> Propulsion</span>
-      <span><b>TS</b> Terminal Stance</span>
+      <span>Stance sub-phases (gait-cycle %):</span>
+      <span><b>LR</b> Loading response (0–10%)</span>
+      <span><b>MSt</b> Midstance (10–30%)</span>
+      <span><b>TSt</b> Terminal stance, heel off (30–50%)</span>
+      <span><b>PSw</b> Pre-swing, push off (50–60%)</span>
+      <span>Initial contact = 0% of stance; toe off = 100% of stance (60% of the cycle).</span>
     </div>
+    <p class="note">Illustrative model of a typical walking curve, not one person's data. Stance times (0.80, 0.68, 0.58 s) are example values chosen to show the trend.</p>
   </div>
 
-  <div class="card">
-    <h3>Both feet across one full gait cycle</h3>
-    <div class="toggle-line">
-      <div class="switch" id="bilateralSwitch"></div>
-      <span>Show left and right foot together</span>
-    </div>
-    <div id="bilateralWrap" style="display:none; margin-top:14px;">
+  <div class="card" data-show="in">
+    <h2 class="card-h">Both feet across one full gait cycle</h2>
+    <button type="button" class="switch-btn" id="bilateralSwitch" role="switch" aria-checked="false" aria-controls="bilateralWrap"><span class="track" aria-hidden="true"></span>Show right and left foot together</button>
+    <div id="bilateralWrap" hidden style="margin-top:14px;">
       <div class="foot-legend">
-        <span><span class="dot" style="background:#2F6F63;"></span>Left foot</span>
-        <span><span class="dot" style="background:#B8622A;"></span>Right foot</span>
-        <span><span class="dot" style="background:#3A5B8C; opacity:0.35;"></span>Double support</span>
+        <span><svg width="30" height="10" aria-hidden="true"><line x1="0" y1="5" x2="30" y2="5" stroke="#1B2420" stroke-width="3"/></svg>Right foot (solid)</span>
+        <span><svg width="30" height="10" aria-hidden="true"><line x1="0" y1="5" x2="30" y2="5" stroke="#3A5B8C" stroke-width="3" stroke-dasharray="9,5"/></svg>Left foot (dashed)</span>
+        <span><svg width="22" height="12" aria-hidden="true"><rect width="22" height="12" fill="#3A5B8C" opacity="0.18" stroke="#3A5B8C"/></svg>Double support (labeled "DS")</span>
       </div>
-      <svg id="biChart" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet"></svg>
+      <svg id="biChart" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Right and left foot vGRF across one gait cycle"></svg>
+      <label class="ctl-label" for="biScrub">Position in gait cycle (% of cycle)</label>
       <input type="range" id="biScrub" min="0" max="1000" value="0">
       <div class="bilateral-readout">
         <span>% of gait cycle: <b id="biPct">0</b></span>
-        <span>Left: <b id="biLeftVal">0.00</b> <span id="biLeftUnit">BW</span></span>
         <span>Right: <b id="biRightVal">0.00</b> <span id="biRightUnit">BW</span></span>
+        <span>Left: <b id="biLeftVal">0.00</b> <span id="biLeftUnit">BW</span></span>
         <span id="biSupportLabel"><b>Double support</b></span>
       </div>
       <div class="feat-explain" style="margin-top:12px;">
-        The two curves are the same vGRF shape you've been exploring above, just placed on a shared timeline and offset by half a gait cycle. Where they overlap, both feet are on the ground at once — <b>double support</b>. Between those windows, only one foot bears weight — <b>single support</b> — while the other limb swings through.
+        The two curves are the same vGRF shape as above, placed on one gait cycle (right initial contact to the next right initial contact) and offset by half a cycle. Where both feet are loaded, the body is in <b>double support</b> (0–10% and 50–60%). In between, one foot carries the body (<b>single support</b>) while the other limb swings.
       </div>
     </div>
   </div>
 
-
-  <div class="card">
-    <h3>Horizontal (anterior–posterior) GRF</h3>
-    <div class="toggle-line">
-      <div class="switch" id="apSwitch"></div>
-      <span>Show the horizontal GRF panel</span>
-    </div>
-    <div id="apPanelWrap" style="display:none; margin-top:14px;">
-      <svg id="apChart" viewBox="0 0 640 160" preserveAspectRatio="xMidYMid meet"></svg>
+  <div class="card" data-show="in">
+    <h2 class="card-h">Horizontal (anterior–posterior) GRF</h2>
+    <button type="button" class="switch-btn" id="apSwitch" role="switch" aria-checked="false" aria-controls="apPanelWrap"><span class="track" aria-hidden="true"></span>Show the AP GRF panel</button>
+    <div id="apPanelWrap" hidden style="margin-top:14px;">
+      <svg id="apChart" viewBox="0 0 640 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="AP GRF curve"></svg>
       <div class="feat-explain" style="margin-top:10px;">
-        The horizontal component of GRF occurs because your center of mass is only directly above your point of ground contact for a single instant, near midstance. Before that instant, the horizontal force is <b>posterior — a braking force</b>. After it, the horizontal force is <b>anterior — a propulsive force</b>.
+        Our axes: +y is anterior. Early in stance the foot is ahead of the COM, so the AP GRF points posterior (−y): a <b>braking</b> force. Late in stance the foot is behind the COM, so it points anterior (+y): a <b>propulsive</b> force. In this simple model the switch happens at 50% of stance at every speed.
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <h3>Discussion prompts</h3>
+  <div class="card" data-show="in">
+    <h2 class="card-h">Discussion prompts</h2>
     <details>
-      <summary>When is vGRF equal to, above, and below bodyweight?</summary>
+      <summary>When is vGRF equal to, above, and below body weight?</summary>
       <div class="qa">
-        <div><b>Equal to BW:</b> at the four points where the curve crosses the dashed 1.0 BW line — rising early in loading response, falling into the midstance dip, rising again out of the dip into propulsion, and falling late in terminal stance as pushoff eases.</div>
-        <div><b>Above BW:</b> during the two peaks — load acceptance (B) and propulsion (C) — while the body is actively accelerating its center of mass upward.</div>
-        <div><b>Below BW:</b> through midstance, while the center of mass is near the top of its rise-and-fall path and briefly decelerating vertically.</div>
+        <div><b>Equal to BW:</b> at four instants where the curve crosses the dashed 1.0 BW line: rising to and falling from each peak.</div>
+        <div><b>Above BW:</b> around the two peaks (B and C). From vGRF = m(g + a<sub>COM</sub>), vGRF &gt; W means a<sub>COM</sub> &gt; 0: the COM is accelerating upward.</div>
+        <div><b>Below BW:</b> in the midstance dip, and also right after contact and just before toe off. vGRF &lt; W means a<sub>COM</sub> &lt; 0: the COM is accelerating downward. Near contact and toe off the other foot is also on the ground (double support), so this single-foot curve carries only part of the load.</div>
       </div>
     </details>
     <details>
       <summary>What's the difference between average and instantaneous loading rate?</summary>
       <div class="qa">
-        <div><b>Average loading rate</b> is the overall slope of the vGRF curve across the whole load acceptance phase (from initial contact to the B peak).</div>
-        <div><b>Instantaneous loading rate</b> is the single steepest slope reached at any moment within that phase — often what's flagged as clinically relevant in injury mechanics (e.g., stress fractures, joint loading).</div>
+        <div><b>Average loading rate</b> is the overall slope of the vGRF curve during load acceptance: here, from initial contact to the B peak. Units are BW/s (or N/s). Many studies instead use a fixed window such as 20–80% of the rise to the first peak [CITE needed], so check the definition before comparing numbers.</div>
+        <div><b>Instantaneous loading rate</b> is the steepest slope reached at any moment in that window. It is often the one discussed in injury research.</div>
       </div>
     </details>
   </div>
+
+  <p class="sr-only" aria-live="polite" id="live"></p>
 </div>
 
 <script>
-// ---- curve model ----
+// ---- curve model (illustrative) ----
 function gauss(x, mu, sigma){ return Math.exp(-((x-mu)*(x-mu))/(2*sigma*sigma)); }
 function envelope(x){ return Math.pow(Math.max(Math.sin(Math.PI*x/100),0.0001), 0.32); }
 
+// Peaks rise with speed (about 1.05 BW slow, 1.17 normal, 1.29 fast) and the midstance dip gets deeper
+// (about 0.76, 0.69, 0.62 BW).
 function vgrf(x, speed){
   const peakB = 1.25 + 0.30*speed;
   const peakC = 1.25 + 0.34*speed;
-  const dip   = 0.34 - 0.15*speed;
+  const dip   = 0.24 + 0.14*speed;
   const raw = 1 + (peakB-1)*gauss(x,20,9) + (peakC-1)*gauss(x,80,9) - dip*gauss(x,50,14);
   return Math.max(raw * envelope(x), 0);
 }
 function apgrf(x, speed){
   const amp = 0.10 + 0.16*speed;
-  return -amp * Math.sin(2*Math.PI*x/100) * envelope(x);
+  return -amp * Math.sin(2*Math.PI*x/100) * envelope(x);   // − = posterior (braking), + = anterior (propulsive)
 }
+const STANCE_T = { '0': 0.80, '0.5': 0.68, '1': 0.58 };   // s, illustrative
+const SPEED_NAME = { '0': 'Slow', '0.5': 'Normal', '1': 'Fast' };
 
-let speed = 0;
-let activeFeature = null;
-let units = 'BW';
-let mass = 70;
+let speed = 0, activeFeature = null, units = 'BW', mass = 70;
 const G = 9.81;
+const $ = id => document.getElementById(id);
 
 function forceLabel(valBW, decimals){
   if(units === 'BW') return valBW.toFixed(decimals);
-  return Math.round(valBW * mass * G).toString();
+  return (valBW * mass * G).toFixed(decimals === undefined ? 2 : Math.max(decimals, 0));
 }
 function unitSuffix(){ return units; }
+function stanceTime(){ return STANCE_T[String(speed)]; }
 
+// Stance sub-phases in % of STANCE (stance = 60% of the gait cycle): LR 0–10, MSt 10–30, TSt 30–50, PSw 50–60 % of cycle.
 const stancePhases = [
-  {name:"Heel Strike",       abbr:"HS", start:0,     end:3.33},
-  {name:"Loading Response",  abbr:"LR", start:3.33,  end:20},
-  {name:"Midstance",         abbr:"MS", start:20,    end:51.67},
-  {name:"Propulsion",        abbr:"PR", start:51.67, end:91.67},
-  {name:"Terminal Stance",   abbr:"TS", start:91.67, end:100}
+  {name:"Loading response", abbr:"LR",  start:0,     end:16.67},
+  {name:"Midstance",        abbr:"MSt", start:16.67, end:50},
+  {name:"Terminal stance",  abbr:"TSt", start:50,    end:83.33},
+  {name:"Pre-swing",        abbr:"PSw", start:83.33, end:100}
 ];
+function subPhaseAt(pct){ return stancePhases.find(p => pct >= p.start && pct < p.end) || stancePhases[3]; }
 
 // ---- chart geometry ----
-const W=640,H=300, padL=48,padR=20,padT=20,padB=34;
+const W=640,H=300, padL=56,padR=20,padT=24,padB=40;
 const plotW = W-padL-padR, plotH = H-padT-padB;
 const yMax = 1.7;
 function xPix(pct){ return padL + (pct/100)*plotW; }
 function yPix(val){ return padT + (1 - val/yMax)*plotH; }
 
-const chart = document.getElementById('chart');
-
 function buildPath(fn){
   let d='';
-  for(let x=0;x<=100;x+=1){
-    const px = xPix(x), py = yPix(fn(x,speed));
-    d += (x===0?'M':'L') + px.toFixed(1) + ' ' + py.toFixed(1) + ' ';
-  }
+  for(let x=0;x<=100;x+=1){ d += (x===0?'M':'L') + xPix(x).toFixed(1) + ' ' + yPix(fn(x,speed)).toFixed(1) + ' '; }
   return d;
 }
-
-function featureRange(f){
-  if(f==='A') return [0,100];
-  if(f==='B') return [8,32];
-  if(f==='C') return [68,92];
-  if(f==='D') return [0,20];
-  return null;
-}
-const featureText = {
-  A: "The total width of the curve — how long the foot stays loaded on the ground during stance. This shortens as walking speed increases.",
-  B: "The first peak. This is the highest vertical force experienced while the body accepts weight onto the newly planted limb, just after heel strike.",
-  C: "The second peak. This is the highest vertical force generated as the limb pushes off and propels the body into the next step.",
-  D: "The slope of the curve from initial contact up to the B peak — how quickly force builds during load acceptance. A steeper slope means a more abrupt loading rate."
-};
-
-function findPeak(xMin, xMax, speed){
+function findPeak(xMin, xMax, sp){
   let bestX = xMin, bestY = -Infinity;
-  for(let x=xMin; x<=xMax; x+=0.5){
-    const y = vgrf(x, speed);
-    if(y > bestY){ bestY = y; bestX = x; }
-  }
+  for(let x=xMin; x<=xMax; x+=0.5){ const y = vgrf(x, sp); if(y > bestY){ bestY = y; bestX = x; } }
   return {x: bestX, y: bestY};
+}
+function findTrough(sp){
+  let bx = 35, by = Infinity;
+  for(let x=35; x<=65; x+=0.5){ const y = vgrf(x, sp); if(y < by){ by = y; bx = x; } }
+  return {x: bx, y: by};
+}
+function peakB(){ return findPeak(8, 35, speed); }
+function peakC(){ return findPeak(65, 92, speed); }
+
+function featureText(f){
+  const b = peakB(), c = peakC(), T = stanceTime();
+  // computed from the rounded values shown, so the equation on screen reproduces the result
+  const tB = Number((b.x/100*T).toFixed(2));
+  const lrTxt = (Number(forceLabel(b.y,2)) / tB).toFixed(2) + (units === 'BW' ? ' BW/s' : ' N/s');
+  if(f==='A') return `The whole width of the curve: how long the foot is on the ground. Here stance lasts ${T.toFixed(2)} s at ${SPEED_NAME[String(speed)]} speed. The x-axis is % of stance, so the curve looks the same width; read the stance time to see it shorten as speed increases.`;
+  if(f==='B') return `The first peak, ${forceLabel(b.y,2)} ${unitSuffix()} at ${b.x.toFixed(0)}% of stance, as the body accepts weight onto the limb just after initial contact.`;
+  if(f==='C') return `The second peak (late stance), ${forceLabel(c.y,2)} ${unitSuffix()} at ${c.x.toFixed(0)}% of stance, in terminal stance, as the COM's downward motion is slowed and reversed (vGRF > W, so the COM accelerates upward). It is not push-off: push off is pre-swing, and the forward (propulsive) push shows in the AP GRF, not in vGRF.`;
+  if(f==='D') return `Average loading rate: the rise from initial contact (about 0) to the B peak, divided by the time it takes. ${forceLabel(b.y,2)} ${unitSuffix()} ÷ ${tB.toFixed(2)} s = ${lrTxt}. A steeper slope means force builds more abruptly.`;
+  return '';
 }
 
 function render(){
-  const val = Number(document.getElementById('scrub').value);
-  const pct = val/10;
+  const pct = Number($('scrub').value)/10;
   const grf = vgrf(pct, speed);
-  document.getElementById('pctVal').textContent = pct.toFixed(0);
-  document.getElementById('grfVal').textContent = forceLabel(grf, 2);
-  document.getElementById('grfUnit').textContent = unitSuffix();
+  $('pctVal').textContent = pct.toFixed(0);
+  $('grfVal').textContent = forceLabel(grf, 2);
+  $('grfUnit').textContent = unitSuffix();
+  $('grfAlt').textContent = units === 'BW' ? `(${(Number(grf.toFixed(2))*mass*G).toFixed(2)} N at ${mass} kg)` : `(${grf.toFixed(2)} BW)`;
+  $('stanceVal').textContent = stanceTime().toFixed(2);
+  const sp = subPhaseAt(pct);
+  $('scrub').setAttribute('aria-valuetext', `${pct.toFixed(0)} percent of stance, ${sp.name}, vGRF ${forceLabel(grf,2)} ${units === 'BW' ? 'body weights' : 'newtons'}`);
 
   let svg = '';
-  // gridlines / axes
-  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#D8DED7" stroke-width="1.5"/>`;
-  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#D8DED7" stroke-width="1.5"/>`;
-  // y ticks
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#7A847B" stroke-width="1.5"/>`;
+  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#7A847B" stroke-width="1.5"/>`;
   [0,0.5,1.0,1.5].forEach(v=>{
     const y=yPix(v);
     svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#EDEFEC" stroke-width="1"/>`;
-    svg += `<text x="${padL-8}" y="${y+4}" text-anchor="end" class="axis-label">${forceLabel(v, units==='BW'?1:0)}</text>`;
+    svg += `<text x="${padL-8}" y="${y+4}" text-anchor="end" class="axis-label">${units==='BW' ? v.toFixed(1) : (v*mass*G).toFixed(0)}</text>`;
   });
-  // x ticks
-  [0,20,40,60,80,100].forEach(v=>{
-    const x=xPix(v);
-    svg += `<text x="${x}" y="${H-padB+18}" text-anchor="middle" class="axis-label">${v}%</text>`;
-  });
-  svg += `<text x="${padL}" y="14" class="axis-label">Force (${unitSuffix()})</text>`;
-  svg += `<text x="${W-padR}" y="${H-8}" text-anchor="end" class="axis-label">% of stance phase</text>`;
+  [0,20,40,60,80,100].forEach(v=>{ svg += `<text x="${xPix(v)}" y="${H-padB+18}" text-anchor="middle" class="axis-label">${v}%</text>`; });
+  svg += `<text x="${padL}" y="14" class="axis-label">vGRF (${unitSuffix()})</text>`;
+  svg += `<text x="${W-padR}" y="${H-6}" text-anchor="end" class="axis-label">% of stance (initial contact → toe off)</text>`;
 
-  // stance sub-phase bands
   stancePhases.forEach((ph,i)=>{
     const x0 = xPix(ph.start), x1 = xPix(ph.end);
-    if(i % 2 === 1){
-      svg += `<rect x="${x0}" y="${padT}" width="${x1-x0}" height="${plotH}" fill="#2F6F63" opacity="0.045"/>`;
-    }
-    if(ph.start > 0){
-      svg += `<line x1="${x0}" y1="${padT}" x2="${x0}" y2="${H-padB}" stroke="#C9CEC9" stroke-width="1" stroke-dasharray="2,3"/>`;
-    }
-    if(x1-x0 >= 44){
-      svg += `<text x="${(x0+x1)/2}" y="${padT+13}" text-anchor="middle" class="axis-label" font-weight="700">${ph.abbr}</text>`;
-    }
+    if(i % 2 === 1) svg += `<rect x="${x0}" y="${padT}" width="${x1-x0}" height="${plotH}" fill="#2F6F63" opacity="0.05"/>`;
+    if(ph.start > 0) svg += `<line x1="${x0}" y1="${padT}" x2="${x0}" y2="${H-padB}" stroke="#7A847B" stroke-width="1" stroke-dasharray="2,3"/>`;
+    svg += `<text x="${(x0+x1)/2}" y="${padT+13}" text-anchor="middle" class="axis-label" font-weight="700">${ph.abbr}</text>`;
   });
 
-  // BW reference
   svg += `<line x1="${padL}" y1="${yPix(1)}" x2="${W-padR}" y2="${yPix(1)}" class="bw-line"/>`;
-  svg += `<text x="${padL+4}" y="${yPix(1)-6}" class="axis-label">${units==='BW' ? '1.0 BW' : forceLabel(1,0)+' N (1.0 BW)'}</text>`;
+  svg += `<text x="${padL+4}" y="${yPix(1)-6}" class="axis-label">${units==='BW' ? '1.0 BW' : (mass*G).toFixed(2)+' N (1.0 BW)'}</text>`;
 
-  // feature highlight
   if(activeFeature === 'B' || activeFeature === 'C'){
-    const [rx0,rx1] = featureRange(activeFeature);
-    const peak = findPeak(rx0, rx1, speed);
+    const peak = activeFeature === 'B' ? peakB() : peakC();
     const px = xPix(peak.x), py = yPix(peak.y);
-    // guide lines from the peak point to both axes
     svg += `<line x1="${px}" y1="${py}" x2="${px}" y2="${H-padB}" stroke="#3A5B8C" stroke-width="1.5" stroke-dasharray="3,3"/>`;
     svg += `<line x1="${padL}" y1="${py}" x2="${px}" y2="${py}" stroke="#3A5B8C" stroke-width="1.5" stroke-dasharray="3,3"/>`;
     svg += `<circle cx="${px}" cy="${py}" r="7" fill="#3A5B8C" stroke="#fff" stroke-width="2.5"/>`;
-    const labelAbove = py > padT + 24;
-    svg += `<text x="${px}" y="${labelAbove ? py-13 : py+20}" text-anchor="middle" class="axis-label" font-weight="700" fill="#3A5B8C">${forceLabel(peak.y,2)} ${unitSuffix()} at ${peak.x.toFixed(0)}%</text>`;
-  } else if(activeFeature){
-    const [fx0,fx1] = featureRange(activeFeature);
-    svg += `<rect x="${xPix(fx0)}" y="${padT}" width="${xPix(fx1)-xPix(fx0)}" height="${plotH}" fill="#3A5B8C" opacity="0.08"/>`;
-    if(activeFeature==='D'){
-      const x0=0, x1=20;
-      svg += `<line x1="${xPix(x0)}" y1="${yPix(vgrf(x0,speed))}" x2="${xPix(x1)}" y2="${yPix(vgrf(x1,speed))}" stroke="#B8622A" stroke-width="2.5" stroke-dasharray="4,3"/>`;
-    }
+    svg += `<text x="${px}" y="${py > padT + 24 ? py-13 : py+20}" text-anchor="middle" class="axis-label" font-weight="700" style="fill:#3A5B8C">${activeFeature}: ${forceLabel(peak.y,2)} ${unitSuffix()} at ${peak.x.toFixed(0)}%</text>`;
+  } else if(activeFeature === 'A'){
+    svg += `<rect x="${xPix(0)}" y="${padT}" width="${plotW}" height="${plotH}" fill="#3A5B8C" opacity="0.06"/>`;
+    const yA = H - padB - 12;
+    svg += `<line x1="${xPix(1)}" y1="${yA}" x2="${xPix(99)}" y2="${yA}" stroke="#3A5B8C" stroke-width="2"/>`;
+    svg += `<text x="${xPix(50)}" y="${yA-6}" text-anchor="middle" class="axis-label" font-weight="700" style="fill:#3A5B8C">A: stance time ${stanceTime().toFixed(2)} s</text>`;
+  } else if(activeFeature === 'D'){
+    const b = peakB();
+    svg += `<rect x="${xPix(0)}" y="${padT}" width="${xPix(b.x)-xPix(0)}" height="${plotH}" fill="#3A5B8C" opacity="0.08"/>`;
+    svg += `<line x1="${xPix(0)}" y1="${yPix(vgrf(0,speed))}" x2="${xPix(b.x)}" y2="${yPix(b.y)}" stroke="#9A4F1E" stroke-width="2.5" stroke-dasharray="4,3"/>`;
+    svg += `<text x="${xPix(b.x)+6}" y="${yPix(b.y)+30}" class="axis-label" font-weight="700" style="fill:#9A4F1E">D: slope to B peak</text>`;
   }
 
-  // curve
   svg += `<path d="${buildPath(vgrf)}" class="curve"/>`;
-
-  // scrubber
   const sx = xPix(pct), sy = yPix(grf);
   svg += `<line x1="${sx}" y1="${padT}" x2="${sx}" y2="${H-padB}" class="scrub-line"/>`;
   svg += `<circle cx="${sx}" cy="${sy}" r="6" class="scrub-dot"/>`;
+  $('chart').innerHTML = svg;
 
-  chart.innerHTML = svg;
+  const b = peakB(), c = peakC(), tr = findTrough(speed);
+  $('chart').setAttribute('aria-label', `Walking vGRF at ${SPEED_NAME[String(speed)]} speed, stance time ${stanceTime().toFixed(2)} s. First peak ${forceLabel(b.y,2)} ${unitSuffix()} at ${b.x.toFixed(0)}% of stance, midstance dip ${forceLabel(tr.y,2)} ${unitSuffix()} at ${tr.x.toFixed(0)}%, second peak ${forceLabel(c.y,2)} ${unitSuffix()} at ${c.x.toFixed(0)}%. Marker at ${pct.toFixed(0)}%: ${forceLabel(grf,2)} ${unitSuffix()}.`);
+  if(activeFeature) $('featExplain').textContent = featureText(activeFeature);
 
-  // AP chart
-  if(document.getElementById('apSwitch').classList.contains('on')){
-    renderAP(pct);
-  }
+  if($('apSwitch').getAttribute('aria-checked') === 'true') renderAP(pct);
+}
+
+function announce(){
+  const pct = Number($('scrub').value)/10, grf = vgrf(pct, speed);
+  $('live').textContent = `${SPEED_NAME[String(speed)]} speed. ${pct.toFixed(0)}% of stance, ${subPhaseAt(pct).name}. vGRF ${forceLabel(grf,2)} ${unitSuffix()}. Stance time ${stanceTime().toFixed(2)} s.`;
 }
 
 function renderAP(pct){
-  const W2=640,H2=160, pT=16,pB=30,pL=48,pR=20;
+  const W2=640,H2=180, pT=18,pB=36,pL=56,pR=20;
   const plotH2 = H2-pT-pB, plotW2 = W2-pL-pR;
   const yMax2 = 0.3;
   const yP = v => pT + (1 - (v+yMax2)/(2*yMax2))*plotH2;
   const xP = x => pL + (x/100)*plotW2;
   let svg='';
-  svg += `<line x1="${pL}" y1="${yP(0)}" x2="${W2-pR}" y2="${yP(0)}" stroke="#9AA39B" stroke-width="1.4" stroke-dasharray="5,4"/>`;
-  svg += `<text x="${pL+4}" y="${yP(0)-6}" class="axis-label">0</text>`;
-  let dPos='', dNeg='';
+  svg += `<rect x="${xP(0)}" y="${pT}" width="${xP(50)-xP(0)}" height="${plotH2}" fill="#9A4F1E" opacity="0.05"/>`;
+  svg += `<rect x="${xP(50)}" y="${pT}" width="${xP(100)-xP(50)}" height="${plotH2}" fill="#2F6F63" opacity="0.05"/>`;
+  svg += `<line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H2-pB}" stroke="#7A847B" stroke-width="1.5"/>`;
+  [-0.2,-0.1,0,0.1,0.2].forEach(v=>{
+    const y = yP(v);
+    svg += `<line x1="${pL}" y1="${y}" x2="${W2-pR}" y2="${y}" stroke="${v===0 ? '#6F786F' : '#EDEFEC'}" stroke-width="${v===0 ? 1.6 : 1}" ${v===0 ? 'stroke-dasharray="5,4"' : ''}/>`;
+    const lab = units==='BW' ? (v>0?'+':v<0?'−':'') + Math.abs(v).toFixed(1) : (v>0?'+':v<0?'−':'') + Math.abs(v*mass*G).toFixed(0);
+    svg += `<text x="${pL-8}" y="${y+4}" text-anchor="end" class="axis-label">${lab}</text>`;
+  });
+  [0,20,40,60,80,100].forEach(v=>{ svg += `<text x="${xP(v)}" y="${H2-pB+16}" text-anchor="middle" class="axis-label">${v}%</text>`; });
+  svg += `<text x="${pL}" y="12" class="axis-label">AP GRF (${unitSuffix()}), + anterior</text>`;
+  svg += `<text x="${W2-pR}" y="${H2-4}" text-anchor="end" class="axis-label">% of stance</text>`;
+  svg += `<text x="${xP(25)}" y="${H2-pB-8}" text-anchor="middle" class="axis-label" font-weight="700" style="fill:#9A4F1E">braking (−y, posterior)</text>`;
+  svg += `<text x="${xP(75)}" y="${pT+14}" text-anchor="middle" class="axis-label" font-weight="700" style="fill:#2F6F63">propulsive (+y, anterior)</text>`;
   let path='';
-  for(let x=0;x<=100;x+=1){
-    const v = apgrf(x,speed);
-    const px=xP(x), py=yP(v);
-    path += (x===0?'M':'L')+px.toFixed(1)+' '+py.toFixed(1)+' ';
-  }
-  // shaded regions: braking (negative, first half) rust; propulsive (positive, second half) teal
-  svg += `<rect x="${xP(0)}" y="${pT}" width="${xP(50)-xP(0)}" height="${plotH2}" fill="#B8622A" opacity="0.06"/>`;
-  svg += `<rect x="${xP(50)}" y="${pT}" width="${xP(100)-xP(50)}" height="${plotH2}" fill="#2F6F63" opacity="0.06"/>`;
-  svg += `<text x="${xP(22)}" y="${pT+16}" text-anchor="middle" class="axis-label" fill="#B8622A">braking</text>`;
-  svg += `<text x="${xP(78)}" y="${pT+16}" text-anchor="middle" class="axis-label" fill="#2F6F63">propulsive</text>`;
+  for(let x=0;x<=100;x+=1){ path += (x===0?'M':'L')+xP(x).toFixed(1)+' '+yP(apgrf(x,speed)).toFixed(1)+' '; }
   svg += `<path d="${path}" fill="none" stroke="#3A5B8C" stroke-width="3"/>`;
-  const sx = xP(pct), sy = yP(apgrf(pct,speed));
+  const v = apgrf(pct,speed), sx = xP(pct), sy = yP(v);
   svg += `<line x1="${sx}" y1="${pT}" x2="${sx}" y2="${H2-pB}" class="scrub-line"/>`;
   svg += `<circle cx="${sx}" cy="${sy}" r="5" class="scrub-dot"/>`;
-  document.getElementById('apChart').innerHTML = svg;
+  $('apChart').innerHTML = svg;
+  let mn = 0, mx = 0; for(let x=0;x<=100;x+=0.5){ const a = apgrf(x,speed); mn = Math.min(mn,a); mx = Math.max(mx,a); }
+  $('apChart').setAttribute('aria-label', `AP GRF, + anterior. Braking (negative) in the first half of stance, peak ${forceLabel(mn,2)} ${unitSuffix()}; propulsive (positive) in the second half, peak +${forceLabel(mx,2)} ${unitSuffix()}. Marker at ${pct.toFixed(0)}%: ${forceLabel(v,2)} ${unitSuffix()}.`);
 }
 
-document.getElementById('scrub').addEventListener('input', render);
+function rerenderAll(){
+  render();
+  if($('bilateralSwitch').getAttribute('aria-checked') === 'true') renderBilateral(Number($('biScrub').value)/10);
+}
 
-document.getElementById('speedGroup').addEventListener('click', (e)=>{
+$('scrub').addEventListener('input', render);
+$('scrub').addEventListener('change', announce);
+
+$('speedGroup').addEventListener('click', (e)=>{
   const btn = e.target.closest('.speed-btn');
   if(!btn) return;
   speed = Number(btn.dataset.speed);
-  document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-  if(document.getElementById('bilateralSwitch').classList.contains('on')){
-    renderBilateral(Number(document.getElementById('biScrub').value)/10);
-  }
+  document.querySelectorAll('#speedGroup .speed-btn').forEach(b=>b.setAttribute('aria-pressed', String(b === btn)));
+  rerenderAll(); announce();
 });
 
-document.getElementById('featureRow').addEventListener('click', (e)=>{
+$('featureRow').addEventListener('click', (e)=>{
   const btn = e.target.closest('.feat-btn');
   if(!btn) return;
-  const f = btn.dataset.f;
-  if(activeFeature === f){
-    activeFeature = null;
-    document.getElementById('featExplain').textContent = 'Click a lettered feature above to highlight it on the curve and see what it describes.';
-  } else {
-    activeFeature = f;
-    document.querySelectorAll('.feat-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('featExplain').textContent = featureText[f];
-  }
-  if(activeFeature===null) document.querySelectorAll('.feat-btn').forEach(b=>b.classList.remove('active'));
+  activeFeature = activeFeature === btn.dataset.f ? null : btn.dataset.f;
+  document.querySelectorAll('.feat-btn').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.f === activeFeature)));
+  $('featExplain').textContent = activeFeature ? featureText(activeFeature) : 'Press a lettered feature above to highlight it on the curve and see what it describes.';
   render();
+  $('live').textContent = $('featExplain').textContent;
 });
 
-document.getElementById('apSwitch').addEventListener('click', ()=>{
-  const sw = document.getElementById('apSwitch');
-  sw.classList.toggle('on');
-  const on = sw.classList.contains('on');
-  document.getElementById('apPanelWrap').style.display = on ? 'block' : 'none';
-  if(on) renderAP(Number(document.getElementById('scrub').value)/10);
-});
+function toggleSwitch(sw, wrap, onShow){
+  const on = sw.getAttribute('aria-checked') !== 'true';
+  sw.setAttribute('aria-checked', String(on));
+  $(wrap).hidden = !on;
+  if(on) onShow();
+}
+$('apSwitch').addEventListener('click', ()=> toggleSwitch($('apSwitch'), 'apPanelWrap', ()=>renderAP(Number($('scrub').value)/10)));
+$('bilateralSwitch').addEventListener('click', ()=> toggleSwitch($('bilateralSwitch'), 'bilateralWrap', ()=>renderBilateral(Number($('biScrub').value)/10)));
 
 // ---- bilateral (both feet) chart ----
 function footValue(xCycle, offset){
-  let rel = xCycle - offset;
-  rel = ((rel % 100) + 100) % 100;
-  if(rel <= 60){
-    return vgrf(rel/60*100, speed);
-  }
-  return 0;
+  let rel = ((xCycle - offset) % 100 + 100) % 100;
+  return rel <= 60 ? vgrf(rel/60*100, speed) : 0;
 }
 
 function renderBilateral(pctCycle){
-  const W2=640,H2=300, pT=20,pB=34,pL=48,pR=20;
-  const plotW2 = W2-pL-pR, plotH2 = H2-pT-pB;
-  const yMax2 = 1.7;
+  const W2=640,H2=300, pT=24,pB=40,pL=56,pR=20;
+  const plotW2 = W2-pL-pR, plotH2 = H2-pT-pB, yMax2 = 1.7;
   const xP = x => pL + (x/100)*plotW2;
   const yP = v => pT + (1 - v/yMax2)*plotH2;
-
   let svg='';
-  svg += `<line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H2-pB}" stroke="#D8DED7" stroke-width="1.5"/>`;
-  svg += `<line x1="${pL}" y1="${H2-pB}" x2="${W2-pR}" y2="${H2-pB}" stroke="#D8DED7" stroke-width="1.5"/>`;
+  [[0,10],[50,60]].forEach(([a,b])=>{
+    svg += `<rect x="${xP(a)}" y="${pT}" width="${xP(b)-xP(a)}" height="${plotH2}" fill="#3A5B8C" opacity="0.14"/>`;
+    svg += `<text x="${(xP(a)+xP(b))/2}" y="${pT+13}" text-anchor="middle" class="axis-label" font-weight="700">DS</text>`;
+  });
+  svg += `<line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H2-pB}" stroke="#7A847B" stroke-width="1.5"/>`;
+  svg += `<line x1="${pL}" y1="${H2-pB}" x2="${W2-pR}" y2="${H2-pB}" stroke="#7A847B" stroke-width="1.5"/>`;
   [0,0.5,1.0,1.5].forEach(v=>{
     const y=yP(v);
     svg += `<line x1="${pL}" y1="${y}" x2="${W2-pR}" y2="${y}" stroke="#EDEFEC" stroke-width="1"/>`;
-    svg += `<text x="${pL-8}" y="${y+4}" text-anchor="end" class="axis-label">${forceLabel(v, units==='BW'?1:0)}</text>`;
+    svg += `<text x="${pL-8}" y="${y+4}" text-anchor="end" class="axis-label">${units==='BW' ? v.toFixed(1) : (v*mass*G).toFixed(0)}</text>`;
   });
-  [0,20,40,60,80,100].forEach(v=>{
-    const x=xP(v);
-    svg += `<text x="${x}" y="${H2-pB+18}" text-anchor="middle" class="axis-label">${v}%</text>`;
-  });
-  svg += `<text x="${pL}" y="14" class="axis-label">Force (${unitSuffix()})</text>`;
-  svg += `<text x="${W2-pR}" y="${H2-8}" text-anchor="end" class="axis-label">% of gait cycle (this limb's heel strike to next heel strike)</text>`;
-
-  // double support shading: where both feet are in stance
-  const doubleWindows = [[0,10],[50,60]];
-  doubleWindows.forEach(([a,b])=>{
-    svg += `<rect x="${xP(a)}" y="${pT}" width="${xP(b)-xP(a)}" height="${plotH2}" fill="#3A5B8C" opacity="0.10"/>`;
-  });
-
-  // BW reference
+  [0,20,40,60,80,100].forEach(v=>{ svg += `<text x="${xP(v)}" y="${H2-pB+18}" text-anchor="middle" class="axis-label">${v}%</text>`; });
+  svg += `<text x="${pL}" y="14" class="axis-label">vGRF (${unitSuffix()})</text>`;
+  svg += `<text x="${W2-pR}" y="${H2-6}" text-anchor="end" class="axis-label">% of gait cycle (right initial contact → next right initial contact)</text>`;
   svg += `<line x1="${pL}" y1="${yP(1)}" x2="${W2-pR}" y2="${yP(1)}" class="bw-line"/>`;
-  svg += `<text x="${pL+4}" y="${yP(1)-6}" class="axis-label">${units==='BW' ? '1.0 BW' : forceLabel(1,0)+' N (1.0 BW)'}</text>`;
-
-  // curves
-  let pathL='', pathR='';
+  svg += `<text x="${pL+4}" y="${yP(1)-6}" class="axis-label">${units==='BW' ? '1.0 BW' : (mass*G).toFixed(2)+' N (1.0 BW)'}</text>`;
+  let pathR='', pathL='';
   for(let x=0;x<=100;x+=1){
-    const vl = footValue(x,0), vr = footValue(x,50);
-    const px = xP(x);
-    pathL += (x===0?'M':'L') + px.toFixed(1) + ' ' + yP(vl).toFixed(1) + ' ';
-    pathR += (x===0?'M':'L') + px.toFixed(1) + ' ' + yP(vr).toFixed(1) + ' ';
+    pathR += (x===0?'M':'L') + xP(x).toFixed(1) + ' ' + yP(footValue(x,0)).toFixed(1) + ' ';
+    pathL += (x===0?'M':'L') + xP(x).toFixed(1) + ' ' + yP(footValue(x,50)).toFixed(1) + ' ';
   }
-  svg += `<path d="${pathL}" class="curve-left"/>`;
-  svg += `<path d="${pathR}" class="curve-right"/>`;
-
-  // scrubber
-  const sx = xP(pctCycle);
-  const vl = footValue(pctCycle,0), vr = footValue(pctCycle,50);
+  svg += `<path d="${pathR}" class="curve-left"/>`;
+  svg += `<path d="${pathL}" class="curve-right"/>`;
+  const sx = xP(pctCycle), vr = footValue(pctCycle,0), vl = footValue(pctCycle,50);
   svg += `<line x1="${sx}" y1="${pT}" x2="${sx}" y2="${H2-pB}" class="scrub-line"/>`;
-  svg += `<circle cx="${sx}" cy="${yP(vl)}" r="6" fill="#2F6F63" stroke="#fff" stroke-width="2"/>`;
-  svg += `<circle cx="${sx}" cy="${yP(vr)}" r="6" fill="#B8622A" stroke="#fff" stroke-width="2"/>`;
-
-  document.getElementById('biChart').innerHTML = svg;
-  document.getElementById('biPct').textContent = pctCycle.toFixed(0);
-  document.getElementById('biLeftVal').textContent = forceLabel(vl, 2);
-  document.getElementById('biRightVal').textContent = forceLabel(vr, 2);
-  document.getElementById('biLeftUnit').textContent = unitSuffix();
-  document.getElementById('biRightUnit').textContent = unitSuffix();
-  const bothDown = vl>0.001 && vr>0.001;
-  document.getElementById('biSupportLabel').innerHTML = bothDown ? '<b>Double support</b>' : (vl>0.001 ? '<b>Single support — left</b>' : '<b>Single support — right</b>');
+  svg += `<circle cx="${sx}" cy="${yP(vr)}" r="6" fill="#1B2420" stroke="#fff" stroke-width="2"/>`;
+  svg += `<rect x="${sx-6}" y="${yP(vl)-6}" width="12" height="12" fill="#3A5B8C" stroke="#fff" stroke-width="2"/>`;
+  $('biChart').innerHTML = svg;
+  $('biPct').textContent = pctCycle.toFixed(0);
+  $('biRightVal').textContent = forceLabel(vr, 2);
+  $('biLeftVal').textContent = forceLabel(vl, 2);
+  $('biRightUnit').textContent = unitSuffix();
+  $('biLeftUnit').textContent = unitSuffix();
+  const bothDown = vr>0.001 && vl>0.001;
+  const supp = bothDown ? 'Double support' : (vr>0.001 ? 'Single support: right' : 'Single support: left');
+  $('biSupportLabel').innerHTML = '<b>' + supp + '</b>';
+  $('biScrub').setAttribute('aria-valuetext', `${pctCycle.toFixed(0)} percent of gait cycle, ${supp}, right ${forceLabel(vr,2)} ${unitSuffix()}, left ${forceLabel(vl,2)} ${unitSuffix()}`);
+  $('biChart').setAttribute('aria-label', `Right foot (solid) loaded from 0 to 60% of the cycle; left foot (dashed) loaded from 50% to 110%, that is 50–100% and 0–10%. Double support 0–10% and 50–60%. Marker at ${pctCycle.toFixed(0)}%: ${supp}.`);
 }
+$('biScrub').addEventListener('input', (e)=> renderBilateral(Number(e.target.value)/10));
+$('biScrub').addEventListener('change', ()=> { $('live').textContent = $('biSupportLabel').textContent + '. Right ' + $('biRightVal').textContent + ', left ' + $('biLeftVal').textContent + ' ' + unitSuffix() + '.'; });
 
-document.getElementById('biScrub').addEventListener('input', (e)=>{
-  renderBilateral(Number(e.target.value)/10);
-});
-
-document.getElementById('bilateralSwitch').addEventListener('click', ()=>{
-  const sw = document.getElementById('bilateralSwitch');
-  sw.classList.toggle('on');
-  const on = sw.classList.contains('on');
-  document.getElementById('bilateralWrap').style.display = on ? 'block' : 'none';
-  if(on) renderBilateral(Number(document.getElementById('biScrub').value)/10);
-});
-
-document.getElementById('unitGroup').addEventListener('click', (e)=>{
+$('unitGroup').addEventListener('click', (e)=>{
   const btn = e.target.closest('.speed-btn');
   if(!btn) return;
   units = btn.dataset.unit;
-  document.querySelectorAll('#unitGroup .speed-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('massControlWrap').classList.toggle('disabled', units==='BW');
-  render();
-  if(document.getElementById('apSwitch').classList.contains('on')) renderAP(Number(document.getElementById('scrub').value)/10);
-  if(document.getElementById('bilateralSwitch').classList.contains('on')) renderBilateral(Number(document.getElementById('biScrub').value)/10);
+  document.querySelectorAll('#unitGroup .speed-btn').forEach(b=>b.setAttribute('aria-pressed', String(b === btn)));
+  rerenderAll(); announce();
 });
 
-document.getElementById('massSlider').addEventListener('input', (e)=>{
+$('massSlider').addEventListener('input', (e)=>{
   mass = Number(e.target.value);
-  document.getElementById('massLabel').textContent = mass + ' kg';
-  if(units==='N'){
-    render();
-    if(document.getElementById('apSwitch').classList.contains('on')) renderAP(Number(document.getElementById('scrub').value)/10);
-    if(document.getElementById('bilateralSwitch').classList.contains('on')) renderBilateral(Number(document.getElementById('biScrub').value)/10);
-  }
+  $('massLabel').textContent = mass + ' kg';
+  e.target.setAttribute('aria-valuetext', `${mass} kilograms, 1.0 body weight = ${(mass*G).toFixed(2)} newtons`);
+  $('massNote').textContent = `1.0 BW = ${mass} kg × 9.81 m/s² = ${(mass*G).toFixed(2)} N`;
+  rerenderAll();
 });
 
-document.getElementById('massControlWrap').classList.add('disabled');
+// Units and body mass work in both modes (BW mode shows the N conversion for the chosen mass).
+
+/* ---------- Pre-class / In-class mode ---------- */
+(function () {
+  const params = new URLSearchParams(location.search);
+  if (params.get('embed') === '1') {
+    document.documentElement.classList.add('embed');
+    // Tell the Unit 2 Explorer how tall this page is (postMessage works from file:// too). Sizing only; no state.
+    if (window.parent !== window) {
+      const sendHeight = () => {
+        const cs = getComputedStyle(document.body);
+        const h = Math.ceil(document.body.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom));
+        try { window.parent.postMessage({ unit2Height: h }, '*'); } catch (e) { /* no parent */ }
+      };
+      window.addEventListener('load', () => { sendHeight(); setTimeout(sendHeight, 800); });
+      if (window.ResizeObserver) new ResizeObserver(sendHeight).observe(document.body);
+    }
+  }
+  function setMode(m) {
+    document.querySelectorAll('.mode-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    document.querySelectorAll('[data-show]').forEach(el => { el.hidden = el.dataset.show !== m; });
+    document.documentElement.setAttribute('data-mode', m);
+    try { const u = new URL(location.href); u.searchParams.set('mode', m); history.replaceState(history.state, '', u.href); } catch (e) { /* file:// in some browsers */ }
+    if (typeof window.onModeChange === 'function') window.onModeChange(m);
+  }
+  document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  setMode(params.get('mode') === 'in' ? 'in' : 'pre');
+})();
 
 render();
 </script>
