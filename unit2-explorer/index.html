@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 2 Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158; --line:#D8DED7; --focus:#1F6B9E;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:24px 16px 60px;}
+  .wrap{max-width:1060px;margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 16px;line-height:1.5;}
+  .tabs{display:flex;gap:4px;flex-wrap:wrap;background:#E9ECE8;padding:4px;border-radius:11px;margin-bottom:16px;}
+  .tab{border:none;background:transparent;padding:9px 14px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;color:var(--ink-soft);font-family:'Inter',sans-serif;}
+  .tab .n{display:inline-block;font-size:12px;font-weight:700;margin-right:5px;}
+  .tab[aria-selected="true"]{background:var(--ink);color:#fff;}
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06),0 8px 24px rgba(27,36,32,0.05);margin-bottom:16px;min-width:0;}
+  h2{margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:19px;}
+  .sub{color:var(--ink-soft);font-size:14.5px;margin:0 0 12px;line-height:1.5;}
+  .sub a{color:var(--focus);font-weight:600;}
+  .bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 14px;}
+  .seg{display:inline-flex;gap:4px;background:#E9ECE8;padding:4px;border-radius:11px;}
+  .seg button{font:inherit;font-weight:700;font-size:14px;border:0;background:transparent;color:var(--ink-soft);padding:8px 14px;border-radius:8px;cursor:pointer;}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:#fff;}
+  .seg-label{font-size:13px;font-weight:700;color:var(--ink-soft);}
+  .mode-help{margin:0;font-size:14px;color:var(--ink-soft);flex:1 1 260px;line-height:1.45;}
+  iframe{width:100%;border:0;border-radius:12px;background:#fff;display:block;}
+  .note{font-size:13px;color:var(--ink-soft);line-height:1.55;margin-top:10px;}
+  [hidden]{display:none !important;}
+  :focus-visible{outline:3px solid var(--focus);outline-offset:3px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Unit 2 Explorer</h1>
+  <p class="subtitle">KINE 3620 · One tab per lecture. Signs follow our class system: +x right, +y anterior, +z superior, and the right-hand rule. Hip flexion +, knee flexion − (extension +), ankle dorsiflexion +. Angles are in radians.</p>
+
+  <div class="tabs" id="tabs" role="tablist" aria-label="Unit 2 lectures">
+    <button class="tab" role="tab" id="tab-l8"  aria-controls="panel-l8"  data-tab="l8"><span class="n">L8</span>Muscle</button>
+    <button class="tab" role="tab" id="tab-l9"  aria-controls="panel-l9"  data-tab="l9"><span class="n">L9</span>Balance</button>
+    <button class="tab" role="tab" id="tab-l10" aria-controls="panel-l10" data-tab="l10"><span class="n">L10</span>Gait cycle</button>
+    <button class="tab" role="tab" id="tab-l11" aria-controls="panel-l11" data-tab="l11"><span class="n">L11</span>Gait kinematics</button>
+    <button class="tab" role="tab" id="tab-l12" aria-controls="panel-l12" data-tab="l12"><span class="n">L12</span>Moments</button>
+    <button class="tab" role="tab" id="tab-l13" aria-controls="panel-l13" data-tab="l13"><span class="n">L13</span>Running</button>
+    <button class="tab" role="tab" id="tab-l14" aria-controls="panel-l14" data-tab="l14"><span class="n">L14</span>Sprinting</button>
+  </div>
+
+  <!-- Each panel: what it is for, a mode switch (and for L10 a tool switch), and one lazy-loaded iframe.
+       data-tools lists the tool(s): key|folder|title|extra query|height -->
+  <section class="card panel" role="tabpanel" id="panel-l8" aria-labelledby="tab-l8" tabindex="0"
+    data-tools="muscle|muscle-architecture-explorer|Muscle Architecture Explorer||1500">
+    <h2>Muscle architecture</h2>
+    <p class="sub"><b>What this is for:</b> see how pennation angle changes the force that reaches the tendon (F·cos α) and why longer fascicles shorten faster.</p>
+  </section>
+
+  <section class="card panel" role="tabpanel" id="panel-l9" aria-labelledby="tab-l9" tabindex="0" hidden
+    data-tools="balance|balance-external-moment-arm|Balance and the External Moment Arm||1500">
+    <h2>Balance and the external moment arm</h2>
+    <p class="sub"><b>What this is for:</b> lean an inverted-pendulum body and watch gravity’s external moment grow with COM height and lean, and see when the COM leaves the base of support.</p>
+  </section>
+
+  <section class="card panel" role="tabpanel" id="panel-l10" aria-labelledby="tab-l10" tabindex="0" hidden
+    data-tools="phase|walking-gait-phase-explorer|Walking Gait Phase Explorer||1500;vgrf|walking-gait-vgrf-explorer|Walking Gait vGRF Explorer||1900;video|gait-cycle-video-analyzer|Gait Cycle Video Analyzer|&view=events|2000">
+    <h2>The walking gait cycle</h2>
+    <p class="sub"><b>What this is for:</b> name the phases and events of one stride, read the vertical GRF through stance, and time real gait events from video. All three tools use the same phase scheme.</p>
+  </section>
+
+  <section class="card panel" role="tabpanel" id="panel-l11" aria-labelledby="tab-l11" tabindex="0" hidden
+    data-tools="angles|gait-cycle-video-analyzer|Gait Cycle Video Analyzer, joint angles|&view=angles|2000">
+    <h2>Gait kinematics: joint angles from video</h2>
+    <p class="sub"><b>What this is for:</b> place three points (proximal, joint center, distal) on a video frame and get the joint angle in our sign convention, e.g. knee −1.05 rad (−60°, flexion).</p>
+  </section>
+
+  <section class="card panel" role="tabpanel" id="panel-l12" aria-labelledby="tab-l12" tabindex="0" hidden
+    data-tools="moments|moment-arm-explorer|Moment Arm Explorer||2600">
+    <h2>Moments and moment arms</h2>
+    <p class="sub"><b>What this is for:</b> change the elbow angle and watch the muscle’s and the forearm weight’s moment arms change, then compare the internal and external moments (τ = F × d⊥). Window 3, <b>Knee and the GRF</b>: set the GRF’s size, angle from the ground and perpendicular distance from the knee, then read the external knee moment (GRF in front = extension +, behind = flexion −) and the equal and opposite internal moment needed.</p>
+  </section>
+
+  <section class="card panel" role="tabpanel" id="panel-l13" aria-labelledby="tab-l13" tabindex="0" hidden
+    data-tools="running|running-gait-cycle-explorer|Running Gait Cycle Explorer||1800">
+    <h2>Walking vs running</h2>
+    <p class="sub"><b>What this is for:</b> compare double support with the float phase, and the walking and running vGRF curves (impact peak, active peak, loading rate).</p>
+  </section>
+
+  <section class="card panel" role="tabpanel" id="panel-l14" aria-labelledby="tab-l14" tabindex="0" hidden
+    data-tools="sprint|sprinting-kinetics-explorer|Sprinting Kinetics Explorer||2400">
+    <h2>Sprinting kinetics</h2>
+    <p class="sub"><b>What this is for:</b> follow force and power across a race, apply net impulse = change in momentum to one ground contact, and compare leg and vertical stiffness.</p>
+  </section>
+
+  <p class="note">KINE 3620 · Unit 2. Idealized models for learning; not patient data. Each tool also works on its own: use the “Open it in its own window” link.</p>
+</div>
+
+<script>
+const TABS = ['l8', 'l9', 'l10', 'l11', 'l12', 'l13', 'l14'];
+const startMode = new URLSearchParams(location.search).get('mode') === 'in' ? 'in' : 'pre';
+const state = {};   // per tab: { mode, tool, built, tools[] }
+
+function toolUrl(t, mode) { return `../${t.folder}/index.html?mode=${mode}${t.extra}&embed=1`; }
+function soloUrl(t, mode) { return `../${t.folder}/index.html?mode=${mode}${t.extra}`; }
+
+function build(id) {
+  const panel = document.getElementById('panel-' + id);
+  const tools = panel.dataset.tools.split(';').map(s => { const [key, folder, title, extra, h] = s.split('|'); return { key, folder, title, extra, h: +h }; });
+  const st = state[id] = { mode: startMode, tool: tools[0].key, tools, built: true };
+  const bar = document.createElement('div'); bar.className = 'bar';
+  if (tools.length > 1) {
+    const g = document.createElement('div'); g.className = 'seg'; g.setAttribute('role', 'group'); g.setAttribute('aria-label', 'Tool');
+    tools.forEach(t => {
+      const b = document.createElement('button'); b.type = 'button'; b.dataset.tool = t.key;
+      b.textContent = { phase: 'Phase explorer', vgrf: 'vGRF explorer', video: 'Video analyzer' }[t.key] || t.title;
+      b.addEventListener('click', () => { st.tool = t.key; load(id); writeHash(id); });
+      g.appendChild(b);
+    });
+    const lab = document.createElement('span'); lab.className = 'seg-label'; lab.textContent = 'Tool:';
+    bar.appendChild(lab); bar.appendChild(g);
+  }
+  const mg = document.createElement('div'); mg.className = 'seg'; mg.setAttribute('role', 'group'); mg.setAttribute('aria-label', 'Activity mode');
+  [['pre', 'Pre-class'], ['in', 'In-class']].forEach(([m, label]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.mode = m; b.textContent = label;
+    b.addEventListener('click', () => { st.mode = m; load(id); });
+    mg.appendChild(b);
+  });
+  const ml = document.createElement('span'); ml.className = 'seg-label'; ml.textContent = 'Mode:';
+  bar.appendChild(ml); bar.appendChild(mg);
+  const help = document.createElement('p'); help.className = 'mode-help'; bar.appendChild(help);
+  panel.appendChild(bar);
+  const fr = document.createElement('iframe'); panel.appendChild(fr);   // created on first open = lazy load
+  const solo = document.createElement('p'); solo.className = 'note'; panel.appendChild(solo);
+  st.fr = fr; st.help = help; st.solo = solo; st.bar = bar;
+}
+
+function load(id) {
+  const st = state[id], t = st.tools.find(x => x.key === st.tool) || st.tools[0];
+  st.bar.querySelectorAll('button[data-tool]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tool === t.key)));
+  st.bar.querySelectorAll('button[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === st.mode)));
+  st.help.innerHTML = st.mode === 'pre'
+    ? '<b>Pre-class:</b> guided steps and check questions for the reading’s “Before class” list.'
+    : '<b>In-class:</b> partner challenge. Predict, test with the tool, then discuss.';
+  const url = toolUrl(t, st.mode);
+  st.fr.title = `${t.title} (${st.mode === 'pre' ? 'pre-class' : 'in-class'} mode)`;
+  st.fr.style.height = t.h + 'px';
+  if (st.fr.getAttribute('src') !== url) st.fr.setAttribute('src', url);   // reloads the tool with the new mode
+  st.solo.innerHTML = `<a href="${soloUrl(t, st.mode)}" target="_blank" rel="noopener">Open ${t.title} in its own window</a>`;
+}
+
+function writeHash(id) {
+  const st = state[id];
+  const h = id + (st && st.tools.length > 1 && st.tool !== st.tools[0].key ? '-' + st.tool : '');
+  try { history.replaceState(null, '', '#' + h); } catch (e) { location.hash = h; }
+}
+
+function showTab(id, focus) {
+  TABS.forEach(k => {
+    const tab = document.getElementById('tab-' + k), on = k === id;
+    tab.setAttribute('aria-selected', String(on)); tab.tabIndex = on ? 0 : -1;
+    document.getElementById('panel-' + k).hidden = !on;
+  });
+  if (focus) document.getElementById('tab-' + id).focus();
+  if (!state[id]) build(id);   // lazy: build and load the iframe on first open
+  load(id);
+  writeHash(id);
+}
+
+const tablist = document.getElementById('tabs');
+tablist.querySelectorAll('[role="tab"]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+tablist.addEventListener('keydown', e => {
+  const i = TABS.indexOf(document.activeElement && document.activeElement.dataset.tab);
+  if (i < 0) return;
+  let j = null;
+  if (e.key === 'ArrowRight') j = (i + 1) % TABS.length;
+  else if (e.key === 'ArrowLeft') j = (i - 1 + TABS.length) % TABS.length;
+  else if (e.key === 'Home') j = 0;
+  else if (e.key === 'End') j = TABS.length - 1;
+  if (j !== null) { e.preventDefault(); showTab(TABS[j], true); }
+});
+
+function fromHash() {
+  const [id, sub] = location.hash.replace('#', '').split('-');
+  if (!TABS.includes(id)) return false;
+  if (sub) { if (!state[id]) build(id); if (state[id].tools.some(t => t.key === sub)) state[id].tool = sub; }
+  showTab(id);
+  return true;
+}
+// Each tool posts its page height when embedded, so the frame fits without an inner scrollbar.
+// This is sizing only (the tool's state always comes from the URL query), and it works from file:// too.
+window.addEventListener('message', e => {
+  const h = e.data && typeof e.data.unit2Height === 'number' ? e.data.unit2Height : 0;
+  if (h < 200 || h > 20000) return;
+  Object.values(state).forEach(st => { if (st.fr && e.source === st.fr.contentWindow) st.fr.style.height = (h + 8) + 'px'; });
+});
+window.addEventListener('hashchange', fromHash);
+if (!fromHash()) showTab('l8');
+</script>
+</body>
+</html>
