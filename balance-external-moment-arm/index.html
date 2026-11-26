@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>External Moment Arm &amp; Torque Explorer</title>
+<title>Balance and the External Moment Arm</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -13,10 +13,12 @@
     --ink:#1B2420;
     --ink-soft:#586158;
     --stance:#2F6F63;
-    --rust:#B8622A;
+    --rust:#9A4F1E;
     --line-blue:#3A5B8C;
     --amber:#E8B23D;
     --line:#D8DED7;
+    --track:#7A847B;
+    --warn:#B71C1C;
     --radius:14px;
   }
   *{box-sizing:border-box;}
@@ -30,7 +32,7 @@
     font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);
     font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;
   }
-  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 24px;max-width:600px;line-height:1.5;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 16px;max-width:640px;line-height:1.5;}
   .layout{display:grid;grid-template-columns:1.15fr 1fr;gap:16px;}
   @media (max-width:800px){ .layout{grid-template-columns:1fr;} }
   .card{
@@ -40,125 +42,197 @@
   }
   h3{margin:0 0 14px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--ink-soft);}
   #stage{width:100%;height:auto;display:block;}
-  .axis-label{font-size:11px;fill:var(--ink-soft);font-family:'Inter',sans-serif;}
+  .axis-label{font-size:13px;fill:var(--ink-soft);font-family:'Inter',sans-serif;}
 
   .control{margin-bottom:20px;}
-  .control:last-child{margin-bottom:0;}
-  .control-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .control-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:8px;}
   .control-label{font-weight:700;font-size:14px;}
-  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--stance);}
+  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--stance);white-space:nowrap;}
   .control-val.angle{color:var(--rust);}
   .control-val.mass{color:var(--ink-soft);}
   input[type=range]{
-    width:100%;-webkit-appearance:none;height:4px;background:var(--line);border-radius:4px;outline:none;
+    width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--track);border-radius:4px;margin:10px 0 6px;
   }
   input[type=range]::-webkit-slider-thumb{
     -webkit-appearance:none;width:20px;height:20px;border-radius:50%;
-    background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;margin-top:-8px;
+    background:var(--amber);border:2px solid #1B2420;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;
   }
   input[type=range]::-moz-range-thumb{
     width:20px;height:20px;border-radius:50%;background:var(--amber);
-    border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;
+    border:2px solid #1B2420;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;
   }
-  .control-sub{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+  .control-sub{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.45;}
   .divider{height:1px;background:var(--line);margin:18px 0;}
   .preset-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
   .preset-btn{
-    border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;
-    font-weight:600;font-size:12.5px;cursor:pointer;color:var(--ink-soft);font-family:'Inter',sans-serif;
+    border:1.5px solid #7A847B;background:#fff;border-radius:9px;padding:8px 12px;
+    font-weight:600;font-size:13px;cursor:pointer;color:var(--ink);font-family:'Inter',sans-serif;
   }
   .preset-btn:hover{background:#F1F4F0;}
+  .preset-btn[aria-pressed="true"]{background:#1B2420;color:#fff;border-color:#1B2420;}
 
   .equation{
     font-family:'Space Grotesk',sans-serif;font-size:15px;background:#F1F4F0;border-radius:10px;
     padding:14px 16px;line-height:1.7;
   }
-  .equation .row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px;font-family:'Inter',sans-serif;color:var(--ink-soft);}
+  .equation .row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;font-size:14px;margin-bottom:4px;font-family:'Inter',sans-serif;color:var(--ink-soft);}
   .equation .row b{color:var(--ink);font-family:'Space Grotesk',sans-serif;}
   .result-big{
     display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;
-    border-top:1px dashed var(--line);
+    border-top:1px dashed #7A847B;gap:8px;
   }
   .result-big .label{font-size:13px;font-weight:700;color:var(--ink-soft);}
-  .result-big .value{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:var(--line-blue);}
+  .result-big .value{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:var(--line-blue);white-space:nowrap;}
+  .bos{margin-top:10px;font-size:14px;font-weight:700;padding:8px 10px;border-radius:8px;background:#E6F0EE;color:#2F6F63;}
+  .bos.out{background:#FBE9E7;color:var(--warn);}
 
-  .note{font-size:13.5px;line-height:1.6;color:#33392f;}
+  .note{font-size:14px;line-height:1.6;color:#33392f;}
+
+  /* Pre-class / In-class mode (shared spec) */
+  .mode-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 14px;}
+  .mode-btns{display:inline-flex;gap:4px;background:#E9ECE8;padding:4px;border-radius:11px;}
+  .mode-btn{font:inherit;font-weight:700;font-size:14px;border:0;background:transparent;color:#586158;padding:8px 14px;border-radius:8px;cursor:pointer;}
+  .mode-btn[aria-pressed="true"]{background:#1B2420;color:#fff;}
+  .mode-help{margin:0;font-size:14px;color:#586158;flex:1 1 260px;line-height:1.45;}
+  .guide{background:#fff;border:1px solid #D8DED7;border-left:4px solid #2F6F63;border-radius:12px;padding:14px 18px;margin:0 0 16px;}
+  .guide[data-show="in"]{border-left-color:#9A4F1E;}
+  .guide h2{font-size:17px;margin:0 0 6px;} .guide h3{font-size:15px;margin:12px 0 4px;color:var(--ink);}
+  .guide ol,.guide ul{margin:4px 0 0;padding-left:22px;line-height:1.55;font-size:14.5px;}
+  .guide details{margin:4px 0;font-size:14.5px;} .guide summary{cursor:pointer;font-weight:600;}
+  .guide details p{margin:4px 0 8px 18px;color:#33392f;}
+  [hidden]{display:none !important;}
+  :focus-visible{outline:3px solid #1F6B9E;outline-offset:3px;}
+  input[type=range]:focus-visible{outline:3px solid #1F6B9E;outline-offset:4px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+  html.embed .mode-btns{display:none;}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>External Moment Arm &amp; Torque Explorer</h1>
-  <p class="subtitle">Change how high the center of mass sits and how far the body leans from vertical, and watch what happens to the moment arm and the external torque gravity creates about the base of support.</p>
+  <h1>Balance and the External Moment Arm</h1>
+  <p class="subtitle">Change how high the center of mass (COM) sits and how far the body leans forward. Watch the moment arm and the external moment that gravity creates about the ankle. Signs: +y anterior, +z superior, rotation about the x (mediolateral) axis, right-hand rule.</p>
+
+  <div class="mode-bar">
+    <div class="mode-btns" role="group" aria-label="Activity mode">
+      <button type="button" class="mode-btn" data-mode="pre" aria-pressed="true">Pre-class</button>
+      <button type="button" class="mode-btn" data-mode="in" aria-pressed="false">In-class</button>
+    </div>
+    <p class="mode-help" data-show="pre"><b>Pre-class:</b> work alone through the guided steps, then answer the check questions before Lecture 9.</p>
+    <p class="mode-help" data-show="in"><b>In-class:</b> partner activity. Predict first, test it with the tool, then talk through the discussion questions.</p>
+  </div>
+
+  <section class="guide" data-show="pre" aria-labelledby="preHead">
+    <h2 id="preHead">Pre-class: guided steps</h2>
+    <ol>
+      <li>Start at the default (h = 0.95 m, θ = 0.17 rad). Read d and τ, and check the arithmetic by hand.</li>
+      <li>Raise θ slowly. Watch d grow, and watch the COM line approach the toe edge.</li>
+      <li>Keep θ fixed and lower h. The same lean now makes a smaller moment arm and a smaller τ.</li>
+      <li>Lean until the COM line passes the toe edge. That is where an ankle strategy runs out.</li>
+    </ol>
+    <h3>Check yourself</h3>
+    <details><summary>What is the moment arm d of body weight about the ankle?</summary><p>The perpendicular distance from the ankle (the pivot) to the line of action of W. Here W acts straight down, so d = h·sin θ.</p></details>
+    <details><summary>For a forward lean, is the external moment from gravity + or − about x?</summary><p>Negative. Point your right thumb along +x (to the right): positive rotation carries +y toward +z (backward lean). Gravity pulls a forward-leaning body further forward, so τx = −W·d.</p></details>
+    <details><summary>Why does crouching lower the torque for the same lean?</summary><p>d = h·sin θ, so a lower COM (smaller h) gives a smaller moment arm, and τ = W·d falls with it.</p></details>
+    <details><summary>What happens once the COM line passes the toe edge?</summary><p>The center of pressure can't move past the edge of the foot, so the ankle muscles can no longer balance the moment. A hip strategy (moving the trunk) or a step (a new base of support) is needed.</p></details>
+  </section>
+
+  <section class="guide" data-show="in" aria-labelledby="inHead">
+    <h2 id="inHead">In-class: partner challenge</h2>
+    <ol>
+      <li><b>Predict:</b> if h is halved at the same θ, what happens to τ? <b>Then test:</b> compare h = 1.00 m and 0.50 m at θ = 0.10 rad.</li>
+      <li><b>Predict:</b> at h = 1.00 m, which lean angle puts the COM line right over the toe edge (0.20 m)? Solve sin θ = 0.20 ÷ 1.00 first. <b>Then test.</b></li>
+      <li><b>Predict:</b> does a heavier person have a larger moment arm, a larger torque, or both? <b>Then test</b> with the mass slider.</li>
+    </ol>
+    <h3>Discuss</h3>
+    <ul>
+      <li>For the person to stay still, what internal moment must the plantar flexors supply? How is it related to gravity's external moment, −W·d about x?</li>
+      <li>When would you expect someone to switch from an ankle strategy to a hip strategy, or to take a step?</li>
+      <li>What does this one-segment model leave out of a real crouch?</li>
+    </ul>
+  </section>
 
   <div class="layout">
     <div class="card">
-      <h3>Side view</h3>
-      <svg id="stage" viewBox="0 0 420 420" preserveAspectRatio="xMidYMid meet"></svg>
+      <h3 id="stageHead">Side view (person faces right, +y anterior)</h3>
+      <svg id="stage" viewBox="0 0 420 420" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="stageTitle stageDesc">
+        <title id="stageTitle">Inverted pendulum side view</title>
+        <desc id="stageDesc">Body leans forward.</desc>
+        <g id="stageG"></g>
+      </svg>
     </div>
 
     <div>
       <div class="card">
         <div class="control">
           <div class="control-head">
-            <span class="control-label">COM height (h)</span>
+            <label class="control-label" for="hSlider">COM height (h)</label>
             <span class="control-val" id="hVal">0.95 m</span>
           </div>
-          <input type="range" id="hSlider" min="40" max="160" value="95" step="1">
-          <div class="control-sub">Height of the center of mass above the ankle/base of support.</div>
+          <input type="range" id="hSlider" min="0.40" max="1.10" value="0.95" step="0.01" aria-describedby="hSub">
+          <div class="control-sub" id="hSub">Height of the COM above the ankle. A standing adult's COM is roughly 0.9–1.0 m high (approximate).</div>
         </div>
 
         <div class="control">
           <div class="control-head">
-            <span class="control-label">Angle from vertical (θ)</span>
-            <span class="control-val angle" id="thetaVal">10°</span>
+            <label class="control-label" for="thetaSlider">Forward lean from vertical (θ)</label>
+            <span class="control-val angle" id="thetaVal">0.17 rad (10°)</span>
           </div>
-          <input type="range" id="thetaSlider" min="0" max="40" value="10" step="0.5">
-          <div class="control-sub">How far the body has leaned away from true vertical.</div>
+          <input type="range" id="thetaSlider" min="0" max="0.40" value="0.17" step="0.005" aria-describedby="thetaSub">
+          <div class="control-sub" id="thetaSub">How far the body has leaned forward (toward +y) from true vertical. Steps of 0.005 rad (arrow keys).</div>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="control" style="margin-bottom:0;">
-          <div class="control-head">
-            <span class="control-label">Body mass</span>
-            <span class="control-val mass" id="mVal">70 kg</span>
+        <div data-show="in">
+          <div class="divider"></div>
+          <div class="control" style="margin-bottom:6px;">
+            <div class="control-head">
+              <label class="control-label" for="mSlider">Body mass (m)</label>
+              <span class="control-val mass" id="mVal">70 kg</span>
+            </div>
+            <input type="range" id="mSlider" min="40" max="110" value="70" step="1" aria-describedby="mSub">
+            <div class="control-sub" id="mSub">Changes W = m·g, and so τ. It does not change d.</div>
           </div>
-          <input type="range" id="mSlider" min="40" max="110" value="70" step="1">
-          <div class="control-sub">Used only to convert the moment arm into a torque value (N·m).</div>
         </div>
 
-        <div class="preset-row">
-          <button class="preset-btn" data-h="140" data-t="10">Standing tall, slight sway</button>
-          <button class="preset-btn" data-h="70" data-t="10">Partial crouch, same sway</button>
-          <button class="preset-btn" data-h="95" data-t="35">Near limit of stability</button>
+        <div class="preset-row" role="group" aria-label="Presets">
+          <button type="button" class="preset-btn" data-h="1.00" data-t="0.10" aria-pressed="false">Standing tall, slight sway</button>
+          <button type="button" class="preset-btn" data-h="0.70" data-t="0.10" aria-pressed="false">Partial crouch, same sway</button>
+          <button type="button" class="preset-btn" data-h="0.95" data-t="0.21" aria-pressed="false" data-show="in">Near the toe edge</button>
+          <button type="button" class="preset-btn" data-h="0.95" data-t="0.30" aria-pressed="false" data-show="in">Past the toe edge</button>
         </div>
       </div>
 
       <div class="card">
         <h3>Live calculation</h3>
         <div class="equation">
-          <div class="row">Moment arm: <b>d = h × sin(θ)</b></div>
-          <div class="row" id="dCalc">d = 0.95 m × sin(10°)</div>
+          <div class="row">Perpendicular moment arm: <b>d = h · sin θ</b></div>
+          <div class="row" id="dCalc">d = 0.95 m × sin(0.17 rad) = 0.161 m</div>
           <div class="result-big">
             <span class="label">Moment arm (d)</span>
-            <span class="value" id="dVal">0.16 m</span>
+            <span class="value" id="dVal">0.161 m</span>
           </div>
         </div>
         <div class="equation" style="margin-top:12px;">
-          <div class="row">External torque: <b>τ = m·g·d</b></div>
-          <div class="row" id="tCalc">τ = 70 kg × 9.81 × 0.16 m</div>
+          <div class="row">Body weight: <b>W = m · g</b></div>
+          <div class="row" id="wCalc">W = 70 kg × 9.81 m/s² = 686.70 N</div>
+          <div class="row" style="margin-top:6px;">External moment (gravity): <b>τx = −W · d</b></div>
+          <div class="row" id="tCalc">τx = −686.70 N × 0.161 m = −110.56 N·m</div>
           <div class="result-big">
-            <span class="label">External torque (τ)</span>
-            <span class="value" id="tauVal">115.4 N·m</span>
+            <span class="label">External moment (τx)</span>
+            <span class="value" id="tauVal">−110.56 N·m</span>
           </div>
         </div>
+        <div class="bos" id="bosMsg">COM line inside the base of support (toe edge 0.20 m ahead of the ankle).</div>
+        <p class="note" style="margin:10px 0 0;" id="holdMsg">Forward lean: gravity's external moment about x is −W·d = −110.56 N·m. To hold still, the plantar flexors supply an equal and opposite internal moment, 110.56 N·m, so the net moment is zero.</p>
       </div>
     </div>
   </div>
 
+  <div id="liveSummary" class="sr-only" aria-live="polite"></div>
+
   <div class="card">
     <h3>Why this matters</h3>
-    <p class="note">The external torque gravity creates about your base of support depends on <b>both</b> variables — not just how far you've leaned. A tall, extended body (higher h) produces a much larger torque for the exact same lean angle than a lower, more crouched body does. That's part of why a hip strategy — which keeps the COM relatively high — has to work against more torque than an ankle strategy, and why crouching lowers your COM and reduces the torque a given perturbation can create.</p>
+    <p class="note">Body weight creates a larger external moment when the COM is higher or the lean is larger. Ankle muscles can resist only until the center of pressure reaches the edge of the foot. Beyond that, a hip strategy moves the trunk to bring the COM back over the base of support, and a step makes a new base.</p>
+    <p class="note"><b>Model:</b> the body is a single-segment inverted pendulum pivoting at the ankle, with a fixed toe edge 0.20 m ahead of the ankle (an approximate adult value). "Partial crouch" only lowers h; a real crouch also bends the hip and knee, which this model ignores. Values are illustrative, not patient data.</p>
   </div>
 </div>
 
@@ -166,94 +240,140 @@
 const hSlider = document.getElementById('hSlider');
 const thetaSlider = document.getElementById('thetaSlider');
 const mSlider = document.getElementById('mSlider');
-const stage = document.getElementById('stage');
+const stageG = document.getElementById('stageG');
 const g = 9.81;
+const TOE = 0.20; // m ahead of the ankle (illustrative)
+let liveTimer = null;
 
 function render(){
-  const h = Number(hSlider.value)/100; // m
-  const theta = Number(thetaSlider.value); // deg
-  const m = Number(mSlider.value); // kg
-  const thetaRad = theta * Math.PI/180;
-  // round d to 3 decimals and compute torque from the rounded value,
-  // so the numbers shown in the calculation multiply out to the result shown
-  const d = Math.round(h * Math.sin(thetaRad) * 1000) / 1000;
-  const W = m*g;
-  const tau = W * d;
+  const h = Number(hSlider.value);          // m (2 decimals)
+  const theta = Number(thetaSlider.value);  // rad (2 decimals)
+  const m = Number(mSlider.value);          // kg
+  const deg = theta * 180 / Math.PI;
+  // round d to 3 decimals and compute τ from the shown W and d, so the shown numbers multiply out to the result
+  const d = Math.round(h * Math.sin(theta) * 1000) / 1000;
+  const W = Math.round(m * g * 100) / 100;
+  const tau = -W * d;
+  const out = d > TOE;
 
   document.getElementById('hVal').textContent = h.toFixed(2) + ' m';
-  document.getElementById('thetaVal').textContent = theta.toFixed(1) + '°';
+  const tS = fmtRad(theta);
+  document.getElementById('thetaVal').textContent = tS + ' rad (' + deg.toFixed(0) + '°)';
   document.getElementById('mVal').textContent = m + ' kg';
   document.getElementById('dVal').textContent = d.toFixed(3) + ' m';
-  document.getElementById('tauVal').textContent = tau.toFixed(1) + ' N·m';
-  document.getElementById('dCalc').textContent = `d = ${h.toFixed(2)} m × sin(${theta.toFixed(1)}°) = ${d.toFixed(3)} m`;
-  document.getElementById('tCalc').textContent = `τ = ${m} kg × 9.81 × ${d.toFixed(3)} m = ${tau.toFixed(1)} N·m`;
+  document.getElementById('dCalc').textContent = `d = ${h.toFixed(2)} m × sin(${tS} rad) = ${d.toFixed(3)} m`;
+  document.getElementById('wCalc').textContent = `W = ${m} kg × 9.81 m/s² = ${W.toFixed(2)} N`;
+  document.getElementById('tCalc').textContent = `τx = −${W.toFixed(2)} N × ${d.toFixed(3)} m = ${fmtSigned(tau)} N·m`;
+  document.getElementById('tauVal').textContent = fmtSigned(tau) + ' N·m';
 
-  drawStage(h, theta, d);
-}
+  const bos = document.getElementById('bosMsg');
+  bos.classList.toggle('out', out);
+  bos.textContent = out
+    ? `COM outside base of support: d = ${d.toFixed(3)} m is past the toe edge (0.20 m). Ankle muscles alone can't hold this.`
+    : `COM line inside the base of support (d = ${d.toFixed(3)} m; toe edge 0.20 m ahead of the ankle).`;
+  document.getElementById('holdMsg').textContent = out
+    ? 'The center of pressure cannot move past the toes, so the ankle cannot balance this moment. A hip strategy or a step is needed.'
+    : (Math.abs(tau) < 0.005 ? 'Upright: the COM is over the ankle, so gravity makes no external moment and no ankle moment is needed.' : `Forward lean: gravity's external moment about x is −W·d = ${fmtSigned(tau)} N·m. To hold still, the plantar flexors supply an equal and opposite internal moment, ${Math.abs(tau).toFixed(2)} N·m, so the net moment is zero.`);
 
-function drawStage(h, thetaDeg, d){
-  const W=420,H=420;
-  const pivotX = 150, pivotY = 360;
-  const scale = 190; // px per meter, calibrated so 1.6m fits
-  const thetaRad = thetaDeg*Math.PI/180;
+  hSlider.setAttribute('aria-valuetext', h.toFixed(2) + ' meters');
+  thetaSlider.setAttribute('aria-valuetext', tS + ' radians (' + deg.toFixed(0) + ' degrees)');
+  mSlider.setAttribute('aria-valuetext', m + ' kilograms');
 
-  // rod endpoint (COM), leaning to the right as theta increases
-  const comX = pivotX + h*scale*Math.sin(thetaRad);
-  const comY = pivotY - h*scale*Math.cos(thetaRad);
+  const summary = `Body leans ${tS} radians (${deg.toFixed(0)} degrees) forward; COM ${h.toFixed(2)} m high; moment arm ${d.toFixed(3)} m; external moment ${fmtSigned(tau)} newton meters. ` +
+    (out ? 'COM is outside the base of support.' : 'COM is inside the base of support.');
+  document.getElementById('stageDesc').textContent = summary;
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(() => { document.getElementById('liveSummary').textContent = summary; }, 400);
 
-  // vertical reference top (full scale, 1.6m)
-  const vertTopY = pivotY - 1.6*scale;
-
-  let svg = '';
-  // ground
-  svg += `<line x1="40" y1="${pivotY}" x2="${W-20}" y2="${pivotY}" stroke="#D8DED7" stroke-width="2"/>`;
-  svg += `<text x="${W-24}" y="${pivotY+18}" text-anchor="end" class="axis-label">base of support</text>`;
-
-  // vertical reference (dashed)
-  svg += `<line x1="${pivotX}" y1="${pivotY}" x2="${pivotX}" y2="${vertTopY}" stroke="#B7BFB8" stroke-width="1.5" stroke-dasharray="4,4"/>`;
-
-  // height scale ticks
-  [0.5,1.0,1.5].forEach(v=>{
-    const y = pivotY - v*scale;
-    svg += `<line x1="${pivotX-6}" y1="${y}" x2="${pivotX+6}" y2="${y}" stroke="#B7BFB8" stroke-width="1.5"/>`;
-    svg += `<text x="${pivotX-12}" y="${y+4}" text-anchor="end" class="axis-label">${v.toFixed(1)}m</text>`;
+  // preset state
+  document.querySelectorAll('.preset-btn').forEach(b => {
+    b.setAttribute('aria-pressed', String(Number(b.dataset.h) === h && Number(b.dataset.t) === theta));
   });
 
-  // horizontal projection line (moment arm) from COM down to vertical line's height, then to vertical axis
-  svg += `<line x1="${pivotX}" y1="${comY}" x2="${comX}" y2="${comY}" stroke="#3A5B8C" stroke-width="2" stroke-dasharray="5,4"/>`;
+  drawStage(h, theta, d, out);
+}
 
-  // moment arm label — anchored just right of the COM marker to avoid the height-scale ticks
-  svg += `<text x="${comX+16}" y="${comY-8}" text-anchor="start" class="axis-label" fill="#3A5B8C" font-weight="700">d = ${d.toFixed(3)} m</text>`;
+// radians to 2 decimals, or 3 when the 0.005-rad step lands between hundredths
+function fmtRad(x){ return Math.abs(Math.round(x * 100) - x * 100) < 1e-6 ? x.toFixed(2) : x.toFixed(3); }
+function fmtSigned(x){
+  if (Math.abs(x) < 0.005) return '0.00';
+  return (x < 0 ? '−' : '+') + Math.abs(x).toFixed(2);
+}
 
-  // pivot point
+function drawStage(h, theta, d, out){
+  const W=420;
+  const pivotX = 130, pivotY = 370;
+  const scale = 270; // px per meter (1.10 m fits)
+  const comX = pivotX + h*scale*Math.sin(theta);
+  const comY = pivotY - h*scale*Math.cos(theta);
+  const toeX = pivotX + TOE*scale;
+  const vertTopY = pivotY - 1.15*scale;
+  const warn = '#B71C1C';
+
+  let svg = `<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+           <path d="M0,0 L8,4 L0,8 Z" fill="#1B2420"/></marker>
+           <marker id="arrowSoft" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+           <path d="M0,0 L8,4 L0,8 Z" fill="#586158"/></marker>
+           <marker id="arrowRust" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+           <path d="M0,0 L8,4 L0,8 Z" fill="#9A4F1E"/></marker></defs>`;
+  // ground and foot (base of support)
+  svg += `<line x1="30" y1="${pivotY}" x2="${W-20}" y2="${pivotY}" stroke="#7A847B" stroke-width="2"/>`;
+  svg += `<rect x="${pivotX-14}" y="${pivotY-8}" width="${toeX-pivotX+14}" height="8" rx="3" fill="#C9D3CF" stroke="#586158" stroke-width="1"/>`;
+  svg += `<line x1="${toeX}" y1="${pivotY+14}" x2="${toeX}" y2="${pivotY-120}" stroke="${out ? warn : '#6F786F'}" stroke-width="2" stroke-dasharray="6,4"/>`;
+  svg += `<text x="${toeX+6}" y="${pivotY-108}" class="axis-label" style="fill:${out ? warn : '#586158'}" font-weight="700">toe edge</text>`;
+  svg += `<text x="${toeX+6}" y="${pivotY-93}" class="axis-label">0.20 m</text>`;
+
+  // axes
+  svg += `<line x1="40" y1="${pivotY+40}" x2="100" y2="${pivotY+40}" stroke="#586158" stroke-width="2" marker-end="url(#arrowSoft)"/>`;
+  svg += `<text x="106" y="${pivotY+44}" class="axis-label">+y (anterior)</text>`;
+  svg += `<line x1="40" y1="${pivotY+40}" x2="40" y2="${pivotY-20}" stroke="#586158" stroke-width="2" marker-end="url(#arrowSoft)"/>`;
+  svg += `<text x="34" y="${pivotY-26}" class="axis-label">+z</text>`;
+
+  // vertical reference (dashed)
+  svg += `<line x1="${pivotX}" y1="${pivotY}" x2="${pivotX}" y2="${vertTopY}" stroke="#6F786F" stroke-width="1.5" stroke-dasharray="4,4"/>`;
+  [0.5,1.0].forEach(v=>{
+    const y = pivotY - v*scale;
+    svg += `<line x1="${pivotX-6}" y1="${y}" x2="${pivotX+6}" y2="${y}" stroke="#6F786F" stroke-width="1.5"/>`;
+    svg += `<text x="${pivotX-10}" y="${y+4}" text-anchor="end" class="axis-label">${v.toFixed(1)} m</text>`;
+  });
+
+  // line of action of W (dashed, down from COM to the ground)
+  svg += `<line x1="${comX}" y1="${comY}" x2="${comX}" y2="${pivotY}" stroke="${out ? warn : '#586158'}" stroke-width="1.5" stroke-dasharray="2,4"/>`;
+
+  // moment arm (perpendicular from the ankle's vertical to W's line of action)
+  svg += `<line x1="${pivotX}" y1="${comY}" x2="${comX}" y2="${comY}" stroke="#3A5B8C" stroke-width="2.5" stroke-dasharray="6,4"/>`;
+  svg += `<text x="${comX+16}" y="${comY+6}" text-anchor="start" class="axis-label" style="fill:#3A5B8C" font-weight="700">d = ${d.toFixed(3)} m</text>`;
+
+  // pivot (ankle)
   svg += `<circle cx="${pivotX}" cy="${pivotY}" r="6" fill="#1B2420"/>`;
+  svg += `<text x="${pivotX-10}" y="${pivotY+18}" text-anchor="end" class="axis-label">ankle</text>`;
 
-  // rod (body segment)
+  // body segment
   svg += `<line x1="${pivotX}" y1="${pivotY}" x2="${comX}" y2="${comY}" stroke="#2F6F63" stroke-width="8" stroke-linecap="round"/>`;
 
-  // torque arc at pivot, direction matches lean
-  const arcR = 34;
-  const sweep = thetaDeg > 0 ? 1 : 0;
-  const arcEndX = pivotX + arcR*Math.sin(thetaRad*0.9);
-  const arcEndY = pivotY - arcR*Math.cos(thetaRad*0.9);
-  if(thetaDeg > 1){
-    svg += `<path d="M ${pivotX} ${pivotY-arcR} A ${arcR} ${arcR} 0 0 1 ${arcEndX} ${arcEndY}" fill="none" stroke="#B8622A" stroke-width="3"/>`;
-    svg += `<circle cx="${arcEndX}" cy="${arcEndY}" r="3.5" fill="#B8622A"/>`;
+  // external moment arc (gravity), drawn in the forward (−x) rotation direction
+  const arcR = 64;
+  if (theta > 0.02){
+    const a1 = theta + 0.08, a2 = theta + 0.55;
+    const x1 = pivotX + arcR*Math.sin(a1), y1 = pivotY - arcR*Math.cos(a1);
+    const x2 = pivotX + arcR*Math.sin(a2), y2 = pivotY - arcR*Math.cos(a2);
+    svg += `<path d="M ${x1} ${y1} A ${arcR} ${arcR} 0 0 1 ${x2} ${y2}" fill="none" stroke="#9A4F1E" stroke-width="3" marker-end="url(#arrowRust)"/>`;
+    svg += `<text x="${pivotX+arcR+24}" y="${pivotY-40}" class="axis-label" style="fill:#9A4F1E" font-weight="700">external moment</text>`;
+    svg += `<text x="${pivotX+arcR+24}" y="${pivotY-25}" class="axis-label" style="fill:#9A4F1E">(gravity, τx −)</text>`;
   }
 
   // COM marker
-  svg += `<circle cx="${comX}" cy="${comY}" r="11" fill="#E8B23D" stroke="#fff" stroke-width="2.5"/>`;
-  svg += `<text x="${comX}" y="${comY-18}" text-anchor="middle" class="axis-label" font-weight="700">COM</text>`;
+  svg += `<circle cx="${comX}" cy="${comY}" r="11" fill="#E8B23D" stroke="#1B2420" stroke-width="2"/>`;
+  svg += `<text x="${comX+16}" y="${comY-14}" text-anchor="start" class="axis-label" font-weight="700" style="fill:#1B2420">COM</text>`;
 
-  // weight vector (downward arrow from COM)
+  // weight vector
   const wLen = 46;
   svg += `<line x1="${comX}" y1="${comY}" x2="${comX}" y2="${comY+wLen}" stroke="#1B2420" stroke-width="2.5" marker-end="url(#arrow)"/>`;
-  svg += `<text x="${comX+10}" y="${comY+wLen-4}" class="axis-label" font-weight="700">W</text>`;
+  svg += `<text x="${comX+10}" y="${comY+wLen-4}" class="axis-label" font-weight="700" style="fill:#1B2420">W</text>`;
 
-  svg = `<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-           <path d="M0,0 L8,4 L0,8 Z" fill="#1B2420"/></marker></defs>` + svg;
+  if (out) svg += `<text x="${W-16}" y="30" text-anchor="end" class="axis-label" style="fill:${warn}" font-weight="700">COM outside base of support</text>`;
 
-  stage.innerHTML = svg;
+  stageG.innerHTML = svg;
 }
 
 [hSlider, thetaSlider, mSlider].forEach(el => el.addEventListener('input', render));
@@ -266,7 +386,36 @@ document.querySelectorAll('.preset-btn').forEach(btn=>{
   });
 });
 
-render();
+/* ---------- Pre-class / In-class mode ---------- */
+(function () {
+  const params = new URLSearchParams(location.search);
+  if (params.get('embed') === '1') {
+    document.documentElement.classList.add('embed');
+    // Tell the Unit 2 Explorer how tall this page is (postMessage works from file:// too). Sizing only; no state.
+    if (window.parent !== window) {
+      const sendHeight = () => {
+        const cs = getComputedStyle(document.body);
+        const h = Math.ceil(document.body.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom));
+        try { window.parent.postMessage({ unit2Height: h }, '*'); } catch (e) { /* no parent */ }
+      };
+      window.addEventListener('load', () => { sendHeight(); setTimeout(sendHeight, 800); });
+      if (window.ResizeObserver) new ResizeObserver(sendHeight).observe(document.body);
+    }
+  }
+  function setMode(m) {
+    document.querySelectorAll('.mode-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    document.querySelectorAll('[data-show]').forEach(el => { el.hidden = el.dataset.show !== m; });
+    document.documentElement.setAttribute('data-mode', m);
+    try { const u = new URL(location.href); u.searchParams.set('mode', m); history.replaceState(history.state, '', u.href); } catch (e) { /* file:// in some browsers */ }
+    if (typeof window.onModeChange === 'function') window.onModeChange(m);
+  }
+  window.onModeChange = function (m) {
+    if (m === 'pre') { mSlider.value = 70; }   // pre-class uses a fixed 70 kg
+    render();
+  };
+  document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  setMode(params.get('mode') === 'in' ? 'in' : 'pre');
+})();
 </script>
 </body>
 </html>
