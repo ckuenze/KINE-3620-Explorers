@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprinting Kinetics Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158;
+    --stance:#2F6F63; --rust:#9A4F1E; --amber:#E8B23D; --amber-text:#8A5A2E; --line-blue:#3A5B8C; --purple:#7A5C8A; --line:#D8DED7; --track:#7A847B; --axis:#6F786F; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:28px 18px 60px;}
+  .wrap{max-width:1060px;margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 14px;max-width:740px;line-height:1.5;}
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);margin-bottom:16px;}
+  h2.window-title{margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;}
+  .window-sub{color:var(--ink-soft);font-size:14px;margin:0 0 16px;line-height:1.5;}
+  h3.chart-title{margin:0 0 6px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:var(--ink-soft);text-align:center;}
+  .note{font-size:13px;line-height:1.6;color:#33392f;}
+
+  .toprow{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:12px;}
+  .race-group{display:flex;gap:4px;background:#E9ECE8;padding:3px;border-radius:9px;}
+  .race-btn{font:inherit;border:none;background:transparent;padding:7px 14px;border-radius:7px;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink-soft);}
+  .race-btn[aria-pressed="true"]{background:var(--ink);color:#fff;}
+
+  .control{margin-bottom:10px;}
+  .control-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:8px;}
+  .control-label{font-weight:700;font-size:14px;}
+  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:var(--amber-text);white-space:nowrap;}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--track);border-radius:4px;margin:10px 0;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--amber);border:2px solid #1B2420;cursor:pointer;margin-top:-8px;}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--amber);border:2px solid #1B2420;cursor:pointer;}
+
+  .segbar{position:relative;height:30px;border-radius:8px;overflow:hidden;display:flex;border:1px solid var(--axis);margin-top:4px;}
+  .seg{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;overflow:hidden;white-space:nowrap;}
+  .seg+.seg{border-left:2px solid #fff;}
+  .phase-list{font-size:13px;color:#33392f;margin:6px 0 0;line-height:1.5;}
+  .phase-tag{text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;margin-top:2px;color:var(--ink);}
+
+  .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+  @media (max-width:680px){ .charts-grid{grid-template-columns:1fr;} }
+  svg.chart{width:100%;height:auto;display:block;}
+  .axis-label{font-size:12px;fill:var(--ink-soft);font-family:'Inter',sans-serif;}
+  .readout-strip{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:13.5px;color:var(--ink-soft);}
+  .readout-strip b{font-family:'Space Grotesk',sans-serif;color:var(--ink);}
+
+  .preset-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .preset-btn{font:inherit;border:1.5px solid var(--axis);background:#fff;border-radius:9px;padding:8px 13px;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink);}
+  .preset-btn:hover{background:#F1F4F0;}
+
+  .stiff-layout{display:grid;grid-template-columns:1fr 1.3fr;gap:18px;align-items:start;}
+  @media (max-width:700px){ .stiff-layout{grid-template-columns:1fr;} }
+  .leg-stage{display:flex;justify-content:center;}
+  .stiff-readouts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+  .stiff-stat{background:#F1F4F0;border-radius:10px;padding:10px 12px;}
+  .stiff-stat .label{font-size:12px;color:var(--ink-soft);font-weight:700;}
+  .stiff-stat .value{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;}
+
+  .eqn-box{background:#F1F4F0;border-radius:10px;padding:12px 14px;margin-top:12px;font-size:14px;line-height:1.7;color:#33392f;}
+  .eqn-box .eqn{font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--ink);}
+  .imp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:6px;}
+  @media (max-width:680px){ .imp-grid{grid-template-columns:1fr;} }
+  .imp-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-top:10px;}
+  @media (max-width:700px){ .imp-layout{grid-template-columns:1fr;} }
+
+  .mode-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 14px;}
+  .mode-btns{display:inline-flex;gap:4px;background:#E9ECE8;padding:4px;border-radius:11px;}
+  .mode-btn{font:inherit;font-weight:700;font-size:14px;border:0;background:transparent;color:#586158;padding:8px 14px;border-radius:8px;cursor:pointer;}
+  .mode-btn[aria-pressed="true"]{background:#1B2420;color:#fff;}
+  .mode-help{margin:0;font-size:14px;color:#586158;flex:1 1 260px;line-height:1.45;}
+  .guide{background:#fff;border:1px solid #D8DED7;border-left:4px solid #2F6F63;border-radius:12px;padding:14px 18px;margin:0 0 16px;}
+  .guide[data-show="in"]{border-left-color:#9A4F1E;}
+  .guide h2{font-size:17px;margin:0 0 6px;} .guide h3{font-size:15px;margin:12px 0 4px;}
+  .guide ol,.guide ul{margin:4px 0 0;padding-left:22px;line-height:1.55;font-size:14.5px;}
+  .guide details{margin:4px 0;font-size:14.5px;} .guide summary{cursor:pointer;font-weight:600;}
+  .guide details p{margin:4px 0 8px 18px;color:#33392f;}
+  [hidden]{display:none !important;}
+  :focus-visible{outline:3px solid #1F6B9E;outline-offset:3px;}
+  input[type=range]:focus-visible{outline:3px solid #1F6B9E;outline-offset:4px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+  html.embed .mode-btns{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sprinting Kinetics Explorer</h1>
+  <p class="subtitle">Three windows: how force, velocity, power, and momentum relate across a simulated sprint; how the net impulse of one ground contact changes momentum; and how leg stiffness changes a single ground contact. Horizontal is +y (anterior, the running direction).</p>
+
+  <div class="mode-bar">
+    <div class="mode-btns" role="group" aria-label="Activity mode">
+      <button type="button" class="mode-btn" data-mode="pre" aria-pressed="true">Pre-class</button>
+      <button type="button" class="mode-btn" data-mode="in" aria-pressed="false">In-class</button>
+    </div>
+    <p class="mode-help" data-show="pre"><b>Pre-class:</b> work alone through the guided steps, then answer the check questions for the reading's "Before class" list.</p>
+    <p class="mode-help" data-show="in"><b>In-class:</b> partner activity. Predict first, test it with the tool, then talk through the discussion questions.</p>
+  </div>
+
+  <section class="guide" data-show="pre" aria-labelledby="preHead">
+    <h2 id="preHead">Pre-class: guided steps</h2>
+    <ol>
+      <li>Window 1: drag <b>Time in race</b> from 0 s to the finish. Watch force fall while velocity rises. Find when power peaks.</li>
+      <li>Window 2: keep the defaults and check the arithmetic: J = 500 N × 0.150 s, then Δv = J ÷ m.</li>
+      <li>Window 2: drag the net force below zero (braking wins). What happens to Δv?</li>
+      <li>Window 3: press <b>Lower stiffness (12 kN/m)</b>, then <b>Higher stiffness (28 kN/m)</b> (or drag the leg stiffness slider). Watch contact time, peak force, ΔL and Δy.</li>
+    </ol>
+    <h3>Check yourself</h3>
+    <details><summary>Give the equations and units for momentum, power, and impulse.</summary><p>Momentum p = m·v (kg·m/s). Power P = F·v (W, or N·m/s). Impulse J = F·Δt (N·s). Note that 1 N·s = 1 kg·m/s.</p></details>
+    <details><summary>State the impulse–momentum theorem in your own words.</summary><p>The net impulse on the body equals its change in momentum: F_net·Δt = m·Δv. Only the net force (propulsive minus braking) changes speed.</p></details>
+    <details><summary>What does leg stiffness mean in the loading and unloading phases of stance?</summary><p>k_leg = F_peak ÷ ΔL. In loading, the leg compresses (ΔL grows) as force rises. In unloading, it lengthens again as force falls. A stiffer leg compresses less for the same force.</p></details>
+    <details><summary>How does vertical stiffness differ from leg stiffness?</summary><p>k_vert = F_peak ÷ Δy uses the drop of the center of mass (Δy), not the leg's own compression (ΔL). Because the leg sweeps through an angle, Δy is smaller than ΔL, so k_vert is larger than k_leg. Studies do not clearly rank which one matters more for sprint performance.</p></details>
+  </section>
+
+  <section class="guide" data-show="in" aria-labelledby="inHead">
+    <h2 id="inHead">In-class: partner challenge</h2>
+    <ol>
+      <li><b>Predict:</b> does peak power come at the start, the middle, or top speed? <b>Then test:</b> scrub Window 1 and read the power curve.</li>
+      <li><b>Predict:</b> an 80 kg sprinter, −200 N net force, 100 ms contact, entering at 10.00 m/s. What is the new speed? <b>Then test:</b> set it in Window 2.</li>
+      <li><b>Predict:</b> switch to the 200 m. Where does it lose the most speed? <b>Then test:</b> compare the velocity curves.</li>
+      <li><b>Predict:</b> which goes up more from lower to higher stiffness, k_leg or k_vert? <b>Then test:</b> use the presets in Window 3.</li>
+    </ol>
+    <h3>Discuss</h3>
+    <ul>
+      <li>At top speed the sprinter still pushes hard on every step, yet the force curve here is small. Why? (Hint: this is net horizontal force.)</li>
+      <li>Speed = step length × step frequency. How could a change in stiffness or contact time affect each one?</li>
+      <li>Is more stiffness always better? What could go wrong?</li>
+    </ul>
+  </section>
+
+  <div class="card">
+    <h2 class="window-title">Force, velocity, power, and momentum across the race</h2>
+    <p class="window-sub">All four curves come from one modeled velocity curve. Force is the net horizontal force the sprinter must produce: F = m·a + air drag. Mass changes force and momentum, not the velocity curve (a simplification).</p>
+
+    <div class="toprow">
+      <div class="race-group" id="raceGroup" role="group" aria-label="Race distance" data-show="in">
+        <button type="button" class="race-btn" aria-pressed="true" data-race="100m">100 m</button>
+        <button type="button" class="race-btn" aria-pressed="false" data-race="200m">200 m</button>
+      </div>
+      <div class="control" style="flex:1;max-width:280px;margin-bottom:0;">
+        <div class="control-head">
+          <label class="control-label" for="massSlider">Sprinter mass</label>
+          <span class="control-val" id="massVal">80 kg</span>
+        </div>
+        <input type="range" id="massSlider" min="55" max="100" value="80" step="1" aria-valuetext="80 kilograms">
+      </div>
+    </div>
+
+    <div class="segbar" id="phaseSegbar" aria-hidden="true"></div>
+    <p class="phase-list" id="phaseList"></p>
+    <label class="control-label" for="timeScrub" style="display:block;margin-top:8px;">Time in race</label>
+    <input type="range" id="timeScrub" min="0" max="1000" value="150" aria-valuetext="1.52 seconds">
+    <div class="phase-tag" id="phaseTag">Drive</div>
+
+    <div class="charts-grid">
+      <div><h3 class="chart-title" id="hF">Net horizontal force (N)</h3><svg class="chart" id="chartForce" viewBox="0 0 320 180" role="img" aria-labelledby="hF"></svg></div>
+      <div><h3 class="chart-title" id="hV">Velocity (m/s)</h3><svg class="chart" id="chartVelocity" viewBox="0 0 320 180" role="img" aria-labelledby="hV"></svg></div>
+      <div><h3 class="chart-title" id="hP">Power (W)</h3><svg class="chart" id="chartPower" viewBox="0 0 320 180" role="img" aria-labelledby="hP"></svg></div>
+      <div><h3 class="chart-title" id="hM">Momentum (kg·m/s)</h3><svg class="chart" id="chartMomentum" viewBox="0 0 320 180" role="img" aria-labelledby="hM"></svg></div>
+    </div>
+
+    <div class="readout-strip" id="raceReadout"></div>
+    <div class="eqn-box" id="eqnBox"></div>
+    <p class="note" style="margin-top:14px;">Illustrative model of a generic sprinter: velocity rises as v<sub>max</sub>(1 − e<sup>−t/τ</sup>) and then fades smoothly after about 6 s. Air drag = 0.25·v² N (illustrative). Phases follow the lecture by distance: drive 0–10 m, transition 10–30 m, maximum velocity 30–60 m, speed maintenance 60 m to the finish. Not timing-gate data from a real athlete or race.</p>
+  </div>
+
+  <div class="card">
+    <h2 class="window-title">Impulse and momentum: one ground contact</h2>
+    <p class="window-sub">Each contact applies a net horizontal impulse. Set the average net horizontal force (propulsive minus braking) and the contact time for one step, and see how much that one step changes speed.</p>
+
+    <div class="imp-grid">
+      <div class="control">
+        <div class="control-head">
+          <label class="control-label" for="impForceSlider">Average net horizontal force (propulsive − braking)</label>
+          <span class="control-val" id="impForceVal">+500 N</span>
+        </div>
+        <input type="range" id="impForceSlider" min="-300" max="600" value="500" step="10" aria-valuetext="plus 500 newtons">
+      </div>
+      <div class="control">
+        <div class="control-head">
+          <label class="control-label" for="impTimeSlider">Ground contact time</label>
+          <span class="control-val" id="impTimeVal">150 ms</span>
+        </div>
+        <input type="range" id="impTimeSlider" min="60" max="300" value="150" step="5" aria-valuetext="150 milliseconds">
+      </div>
+      <div class="control">
+        <div class="control-head">
+          <label class="control-label" for="impVBeforeSlider">Velocity entering this step</label>
+          <span class="control-val" id="impVBeforeVal">3.00 m/s</span>
+        </div>
+        <input type="range" id="impVBeforeSlider" min="0" max="11" value="3" step="0.1" aria-valuetext="3.00 meters per second">
+      </div>
+    </div>
+
+    <div class="imp-layout">
+      <svg class="chart" id="impChart" viewBox="0 0 340 240" role="img" aria-label="Velocity before and after the step"></svg>
+      <div class="eqn-box" id="impEqnBox"></div>
+    </div>
+    <p class="note" style="margin-top:10px;">Sprinter mass is shared with Window 1 (<span id="impMassEcho">80 kg</span>). One isolated contact; a real race adds up many of these. Positive = anterior (+y).</p>
+  </div>
+
+  <div class="card">
+    <h2 class="window-title">Leg stiffness: lower versus higher</h2>
+    <p class="window-sub">During contact the leg acts something like a spring. Change leg stiffness and see how contact time, peak vertical GRF, leg compression (ΔL), and COM drop (Δy) change.</p>
+
+    <div class="preset-row" role="group" aria-label="Stiffness presets">
+      <button type="button" class="preset-btn" id="lowBtn">Lower stiffness (12 kN/m)</button>
+      <button type="button" class="preset-btn" id="highBtn">Higher stiffness (28 kN/m)</button>
+    </div>
+
+    <div class="control">
+      <div class="control-head">
+        <label class="control-label" for="stiffSlider">Leg stiffness (k<sub>leg</sub>)</label>
+        <span class="control-val" id="stiffVal">20.0 kN/m (middle)</span>
+      </div>
+      <input type="range" id="stiffSlider" min="10" max="30" value="20" step="0.5" aria-valuetext="20.0 kilonewtons per meter">
+    </div>
+
+    <div class="stiff-layout">
+      <div>
+        <div class="leg-stage"><svg id="legStage" viewBox="0 0 200 260" width="200" height="260" role="img" aria-label="Leg drawn as a spring"></svg></div>
+        <div class="stiff-readouts">
+          <div class="stiff-stat"><div class="label">Ground contact time</div><div class="value" id="gctVal">150 ms</div></div>
+          <div class="stiff-stat"><div class="label">Peak vertical GRF</div><div class="value" id="peakVal">2.85 BW</div></div>
+          <div class="stiff-stat"><div class="label">Leg compression ΔL</div><div class="value" id="dLVal">0.0998 m</div></div>
+          <div class="stiff-stat"><div class="label">COM drop Δy</div><div class="value" id="dyVal">—</div></div>
+        </div>
+      </div>
+      <div>
+        <h3 class="chart-title" id="hS">Vertical GRF during one ground contact (BW)</h3>
+        <svg class="chart" id="stiffChart" viewBox="0 0 400 240" role="img" aria-labelledby="hS"></svg>
+      </div>
+    </div>
+
+    <div class="eqn-box" id="stiffEqnBox"></div>
+    <p class="note" style="margin-top:14px;">Illustrative 700 N (about 71.36 kg) sprinter. Contact time and peak force follow the typical pattern (higher stiffness is linked to shorter contact and higher peak force). Δy is computed from the force curve (a symmetric sine-shaped contact). Not force-plate data from a specific sprinter.</p>
+  </div>
+  <p class="sr-only" aria-live="polite" id="liveSummary"></p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const r2 = x => Math.round(x*100)/100;
+const f2 = x => (Math.abs(x) < 0.005 ? 0 : x).toFixed(2);
+const sgn2 = x => (x > 0.004 ? '+' : x < -0.004 ? '−' : '') + Math.abs(x).toFixed(2);
+let liveTimer = null;
+function announce(s){ clearTimeout(liveTimer); liveTimer = setTimeout(()=>{ $('liveSummary').textContent = s; }, 700); }
+
+// ============== Window 1: Force / Velocity / Power / Momentum ==============
+const VMAX = 11.5, TAU = 1.3, T_FADE = 6.0, W_FADE = 1.0, CDRAG = 0.25;
+const FADE = {'100m':0.012, '200m':0.008};   // per s, after a smooth onset near 6 s
+const DIST = {'100m':100, '200m':200};
+let race = '100m';
+const softplus = t => W_FADE*Math.log1p(Math.exp((t-T_FADE)/W_FADE));
+const sigmoid = t => 1/(1+Math.exp(-(t-T_FADE)/W_FADE));
+function velocityAt(t){ const d = FADE[race]; return VMAX*(1-Math.exp(-t/TAU))*(1-d*softplus(t)); }
+function accelAt(t){   // analytic dv/dt (no kink)
+  const d = FADE[race];
+  return VMAX*Math.exp(-t/TAU)/TAU*(1-d*softplus(t)) - VMAX*(1-Math.exp(-t/TAU))*d*sigmoid(t);
+}
+const dragAt = t => CDRAG*velocityAt(t)**2;
+const forceAt = (t, m) => m*accelAt(t) + dragAt(t);
+const powerAt = (t, m) => forceAt(t,m)*velocityAt(t);
+const momentumAt = (t, m) => m*velocityAt(t);
+
+// integrate position to get race time and distance-based phase boundaries
+let RACE = null;
+function buildRace(){
+  const L = DIST[race], dt = 0.002, ts = [0], xs = [0];
+  let x = 0, t = 0;
+  while (x < L && t < 40){ x += velocityAt(t + dt/2)*dt; t += dt; ts.push(t); xs.push(x); }
+  const timeAt = d => { for (let i=1;i<xs.length;i++) if (xs[i] >= d) return ts[i-1] + (d - xs[i-1])/(xs[i]-xs[i-1])*(ts[i]-ts[i-1]); return t; };
+  const T = timeAt(L);
+  const posAt = tt => { const i = Math.min(xs.length-1, Math.max(0, Math.round(tt/dt))); return xs[i]; };
+  const phases = [
+    {name:'Drive', a:0, b:10, color:'#2F6F63'},
+    {name:'Transition', a:10, b:30, color:'#3A5B8C'},
+    {name:'Max velocity', a:30, b:60, color:'#7A5C8A'},
+    {name:'Speed maintenance', a:60, b:L, color:'#9A4F1E'}
+  ].map(p => ({...p, ta: timeAt(p.a), tb: timeAt(p.b)}));
+  RACE = {T, phases, posAt};
+}
+function phaseAt(t){ return RACE.phases.find(p => t <= p.tb) || RACE.phases[RACE.phases.length-1]; }
+
+function buildSegbar(){
+  const bar = $('phaseSegbar'); bar.innerHTML = '';
+  RACE.phases.forEach(p=>{
+    const seg = document.createElement('div'); seg.className = 'seg';
+    const w = (p.tb-p.ta)/RACE.T*100;
+    seg.style.width = w + '%'; seg.style.background = p.color;
+    seg.textContent = w >= 22 ? p.name : (w >= 9 ? p.name.split(' ')[0] : '');
+    bar.appendChild(seg);
+  });
+  $('phaseList').textContent = RACE.phases.map(p => `${p.name} ${p.a}–${p.b} m (${p.ta.toFixed(2)}–${p.tb.toFixed(2)} s)`).join(' · ') + `. Finish ${RACE.T.toFixed(2)} s.`;
+}
+
+function drawMiniChart(svgId, fn, yMin, yMax, color, totalTime, markerT, unit, name){
+  const svgEl = $(svgId);
+  const W=320,H=180, padL=44,padR=12,padT=12,padB=28, plotW=W-padL-padR, plotH=H-padT-padB;
+  const xP = x => padL + x/totalTime*plotW, yP = y => padT + (1-(y-yMin)/(yMax-yMin))*plotH;
+  let svg = '';
+  [yMin, (yMin+yMax)/2, yMax].forEach(v=>{
+    svg += `<line x1="${padL}" y1="${yP(v)}" x2="${W-padR}" y2="${yP(v)}" stroke="#E4E8E3" stroke-width="1"/>`;
+    svg += `<text x="${padL-6}" y="${yP(v)+4}" text-anchor="end" class="axis-label">${Math.round(v)}</text>`;
+  });
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#6F786F" stroke-width="1.3"/>`;
+  svg += `<line x1="${padL}" y1="${yP(Math.max(0,yMin))}" x2="${W-padR}" y2="${yP(Math.max(0,yMin))}" stroke="#6F786F" stroke-width="1.3"/>`;
+  [0, totalTime/2, totalTime].forEach(v=>{ svg += `<text x="${xP(v)}" y="${H-padB+16}" text-anchor="middle" class="axis-label">${v.toFixed(0)} s</text>`; });
+  let d = '', peak = {t:0, y:-Infinity};
+  for (let i=0;i<=160;i++){
+    const t = i/160*totalTime, val = fn(t);
+    if (val > peak.y) peak = {t, y:val};
+    d += (i?'L':'M') + xP(t).toFixed(1) + ' ' + yP(Math.max(yMin, Math.min(val, yMax))).toFixed(1) + ' ';
+  }
+  svg += `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.6"/>`;
+  const mv = fn(markerT);
+  svg += `<line x1="${xP(markerT)}" y1="${padT}" x2="${xP(markerT)}" y2="${H-padB}" stroke="#1B2420" stroke-width="1.2" stroke-dasharray="3,3"/>`;
+  svg += `<circle cx="${xP(markerT)}" cy="${yP(Math.max(yMin, Math.min(mv, yMax)))}" r="4.5" fill="${color}" stroke="#1B2420" stroke-width="1.5"/>`;
+  svgEl.innerHTML = svg;
+  svgEl.setAttribute('aria-label', `${name}: starts at ${f2(fn(0))} ${unit}, peaks at ${f2(peak.y)} ${unit} at ${peak.t.toFixed(2)} s, ends at ${f2(fn(totalTime))} ${unit}. Marker at ${markerT.toFixed(2)} s shows ${f2(mv)} ${unit}.`);
+  return mv;
+}
+
+const massSlider = $('massSlider'), timeScrub = $('timeScrub');
+function renderRace(){
+  const mass = Number(massSlider.value), T = RACE.T;
+  $('massVal').textContent = mass + ' kg';
+  massSlider.setAttribute('aria-valuetext', mass + ' kilograms');
+  const t = Number(timeScrub.value)/1000*T;
+  const ph = phaseAt(t), x = RACE.posAt(t);
+  $('phaseTag').textContent = `${ph.name} · ${t.toFixed(2)} s · ${x.toFixed(2)} m`;
+  timeScrub.setAttribute('aria-valuetext', `${t.toFixed(2)} seconds, ${x.toFixed(2)} meters, ${ph.name} phase`);
+
+  const fTop = mass*VMAX/TAU*1.08;
+  drawMiniChart('chartForce', tt=>forceAt(tt,mass), 0, Math.max(fTop, 300), '#9A4F1E', T, t, 'N', 'Net horizontal force');
+  drawMiniChart('chartVelocity', tt=>velocityAt(tt), 0, 12, '#3A5B8C', T, t, 'm/s', 'Velocity');
+  drawMiniChart('chartPower', tt=>powerAt(tt,mass), 0, Math.max(fTop*VMAX*0.3, 800), '#7A5C8A', T, t, 'W', 'Power');
+  drawMiniChart('chartMomentum', tt=>momentumAt(tt,mass), 0, Math.max(mass*VMAX*1.08, 400), '#2F6F63', T, t, 'kg·m/s', 'Momentum');
+
+  // rounded inputs so each shown equation reproduces its shown result
+  const a = r2(accelAt(t)), v = r2(velocityAt(t));
+  const Fd = r2(CDRAG*v*v), F = r2(mass*a + Fd), P = r2(F*v), p = r2(mass*v);
+  $('raceReadout').innerHTML = `<span>time <b>${t.toFixed(2)} s</b></span><span>distance <b>${x.toFixed(2)} m</b></span><span>force <b>${f2(F)} N</b></span><span>velocity <b>${f2(v)} m/s</b></span><span>power <b>${f2(P)} W</b></span><span>momentum <b>${f2(p)} kg·m/s</b></span>`;
+  $('eqnBox').innerHTML =
+    `<div class="eqn">F = m·a + F<sub>drag</sub>, with F<sub>drag</sub> = 0.25·v²</div>` +
+    `<div>F = ${mass} kg × ${f2(a)} m/s² + 0.25 × (${f2(v)} m/s)² = ${f2(r2(mass*a))} N + ${f2(Fd)} N = <b>${f2(F)} N</b></div>` +
+    `<div class="eqn" style="margin-top:6px;">P = F·v</div>` +
+    `<div>P = ${f2(F)} N × ${f2(v)} m/s = <b>${f2(P)} W</b></div>` +
+    `<div class="eqn" style="margin-top:6px;">p = m·v</div>` +
+    `<div>p = ${mass} kg × ${f2(v)} m/s = <b>${f2(p)} kg·m/s</b></div>`;
+  $('impMassEcho').textContent = mass + ' kg';
+  announce(`At ${t.toFixed(2)} s (${ph.name}, ${x.toFixed(2)} m): force ${f2(F)} N, velocity ${f2(v)} m/s, power ${f2(P)} W, momentum ${f2(p)} kg·m/s.`);
+  renderImpulse(true);
+}
+document.querySelectorAll('.race-btn').forEach(btn=>btn.addEventListener('click', ()=>{
+  race = btn.dataset.race;
+  document.querySelectorAll('.race-btn').forEach(b=>b.setAttribute('aria-pressed', String(b===btn)));
+  buildRace(); buildSegbar(); renderRace();
+}));
+massSlider.addEventListener('input', renderRace);
+timeScrub.addEventListener('input', renderRace);
+
+// ============== Window 2: Impulse and momentum ==============
+const impForceSlider = $('impForceSlider'), impTimeSlider = $('impTimeSlider'), impVBeforeSlider = $('impVBeforeSlider');
+function drawImpulseChart(vBefore, vAfter){
+  const svgEl = $('impChart');
+  const W=340,H=240, padL=44,padR=16,padT=50,padB=34, plotW=W-padL-padR, plotH=H-padT-padB;
+  const yMax = 14, yP = y => padT + (1-Math.max(0,y)/yMax)*plotH, barW = 70;
+  const x1 = padL+40, x2 = padL+plotW-40-barW;
+  const dv = vAfter - vBefore;
+  const col = dv > 0.004 ? '#2F6F63' : dv < -0.004 ? '#9A4F1E' : '#586158';
+  const word = dv > 0.004 ? 'gain' : dv < -0.004 ? 'loss' : 'no change';
+  let svg = '';
+  [0,7,14].forEach(v=>{
+    svg += `<line x1="${padL}" y1="${yP(v)}" x2="${W-padR}" y2="${yP(v)}" stroke="#E4E8E3" stroke-width="1"/>`;
+    svg += `<text x="${padL-6}" y="${yP(v)+4}" text-anchor="end" class="axis-label">${v}</text>`;
+  });
+  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#6F786F" stroke-width="1.5"/>`;
+  svg += `<text x="${padL}" y="14" class="axis-label">Velocity (m/s)</text>`;
+  svg += `<text x="${(x1+x2+barW)/2}" y="34" text-anchor="middle" class="axis-label" style="font-weight:700;fill:${col}">Δv = ${sgn2(dv)} m/s (${word})</text>`;
+  svg += `<rect x="${x1}" y="${yP(vBefore)}" width="${barW}" height="${H-padB-yP(vBefore)}" fill="#6F786F" rx="4"/>`;
+  svg += `<text x="${x1+barW/2}" y="${H-padB+18}" text-anchor="middle" class="axis-label" style="font-weight:700">before</text>`;
+  svg += `<text x="${x1+barW/2}" y="${yP(vBefore)-8}" text-anchor="middle" class="axis-label" style="font-weight:700">${f2(vBefore)}</text>`;
+  svg += `<rect x="${x2}" y="${yP(vAfter)}" width="${barW}" height="${H-padB-yP(vAfter)}" fill="${col}" rx="4" ${dv < -0.004 ? 'stroke="#1B2420" stroke-dasharray="4,3"' : ''}/>`;
+  svg += `<text x="${x2+barW/2}" y="${H-padB+18}" text-anchor="middle" class="axis-label" style="font-weight:700">after</text>`;
+  svg += `<text x="${x2+barW/2}" y="${yP(vAfter)-8}" text-anchor="middle" class="axis-label" style="font-weight:700">${f2(vAfter)}</text>`;
+  svgEl.innerHTML = svg;
+  svgEl.setAttribute('aria-label', `Velocity before the step ${f2(vBefore)} m/s, after ${f2(vAfter)} m/s: a ${word} of ${f2(Math.abs(dv))} m/s.`);
+}
+function renderImpulse(quiet){
+  const F = Number(impForceSlider.value), dt = Number(impTimeSlider.value)/1000;
+  const vB = r2(Number(impVBeforeSlider.value)), mass = Number(massSlider.value);
+  $('impForceVal').textContent = (F > 0 ? '+' : F < 0 ? '−' : '') + Math.abs(F) + ' N';
+  impForceSlider.setAttribute('aria-valuetext', (F > 0 ? 'plus ' : F < 0 ? 'minus ' : '') + Math.abs(F) + ' newtons' + (F < 0 ? ', braking larger than propulsion' : ''));
+  $('impTimeVal').textContent = Math.round(dt*1000) + ' ms';
+  impTimeSlider.setAttribute('aria-valuetext', Math.round(dt*1000) + ' milliseconds');
+  $('impVBeforeVal').textContent = f2(vB) + ' m/s';
+  impVBeforeSlider.setAttribute('aria-valuetext', f2(vB) + ' meters per second');
+  const J = r2(F*dt), dv = r2(J/mass);
+  let vA = r2(vB + dv);
+  const reversed = vA < 0;
+  drawImpulseChart(vB, Math.max(vA, 0));
+  $('impEqnBox').innerHTML =
+    `<div class="eqn">Net impulse J = F<sub>net</sub>·Δt</div>` +
+    `<div>J = ${F < 0 ? '−' : ''}${Math.abs(F)} N × ${dt.toFixed(3)} s = <b>${sgn2(J)} N·s</b></div>` +
+    `<div class="eqn" style="margin-top:6px;">Net impulse = change in momentum: J = m·Δv</div>` +
+    `<div>Δv = J ÷ m = ${sgn2(J)} N·s ÷ ${mass} kg = <b>${sgn2(dv)} m/s</b></div>` +
+    `<div style="margin-top:6px;">New velocity = ${f2(vB)} m/s ${dv < 0 ? '−' : '+'} ${f2(Math.abs(dv))} m/s = <b>${f2(vA)} m/s</b></div>` +
+    `<div>Momentum: ${f2(r2(mass*vB))} → ${f2(r2(mass*vA))} kg·m/s</div>` +
+    (reversed ? `<div><b>Note:</b> the model would stop the sprinter and reverse direction. That does not happen in a real step; braking only slows the runner.</div>` : '');
+  if (!quiet) announce(`Net impulse ${sgn2(J)} N·s. Velocity change ${sgn2(dv)} m/s. New velocity ${f2(vA)} m/s.`);
+}
+[impForceSlider, impTimeSlider, impVBeforeSlider].forEach(el=>el.addEventListener('input', ()=>renderImpulse(false)));
+
+// ============== Window 3: Leg stiffness ==============
+const stiffSlider = $('stiffSlider');
+const BW_N = 700, MASS_S = BW_N/9.81, G = 9.81;
+const frac = k => (k-10)/20;                            // 0 at 10 kN/m, 1 at 30 kN/m
+const gctFrom = k => 0.20 - frac(k)*0.10;               // s
+const peakFrom = k => 2.2 + frac(k)*1.3;                 // BW
+const levelOf = k => k < 16 ? 'lower' : k <= 24 ? 'middle' : 'higher';
+function comDrop(Fp, tc){
+  // symmetric sine-shaped contact: landing and takeoff vertical speeds are equal; lowest point at mid-contact
+  const w = Math.PI/tc, v0 = (Fp*2*tc/Math.PI - MASS_S*G*tc)/(2*MASS_S), t = tc/2;
+  const y = -v0*t + (Fp/MASS_S)*(t/w - Math.sin(w*t)/(w*w)) - G*t*t/2;
+  return -y;
+}
+function drawLegStage(k, dL){
+  const cx = 100, hipY = 30, footY = 220, L0 = footY - hipY;
+  const len = L0 - dL*600;                 // ΔL drawn larger than scale so it is visible
+  const kneeY = hipY + len*0.45, coilBottom = hipY + len - 16;
+  let svg = `<line x1="20" y1="${footY+10}" x2="180" y2="${footY+10}" stroke="#6F786F" stroke-width="3" stroke-linecap="round"/>`;
+  svg += `<line x1="${cx}" y1="${hipY}" x2="${cx}" y2="${kneeY}" stroke="#2F6F63" stroke-width="14" stroke-linecap="round"/>`;
+  let path = `M ${cx} ${kneeY}`;
+  for (let i=1;i<=6;i++) path += ` L ${cx + (i%2 ? -18 : 18)} ${kneeY + (coilBottom-kneeY)*i/6}`;
+  path += ` L ${cx} ${coilBottom}`;
+  svg += `<path d="${path}" fill="none" stroke="#9A4F1E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  svg += `<line x1="${cx}" y1="${coilBottom}" x2="${cx}" y2="${footY}" stroke="#2F6F63" stroke-width="12" stroke-linecap="round"/>`;
+  svg += `<circle cx="${cx}" cy="${hipY + dL*600}" r="10" fill="#1B2420"/>`;
+  svg += `<line x1="150" y1="${hipY}" x2="150" y2="${hipY + dL*600}" stroke="#1B2420" stroke-width="2"/>`;
+  svg += `<text x="156" y="${hipY + dL*300 + 4}" class="axis-label" style="font-weight:700">ΔL</text>`;
+  svg += `<text x="${cx}" y="${hipY-14}" text-anchor="middle" class="axis-label" style="font-weight:700">hip</text>`;
+  svg += `<ellipse cx="${cx}" cy="${footY+10}" rx="34" ry="9" fill="#2F6F63"/>`;
+  svg += `<text x="${cx}" y="${footY+34}" text-anchor="middle" class="axis-label" style="font-weight:700">ground contact</text>`;
+  $('legStage').innerHTML = svg;
+  $('legStage').setAttribute('aria-label', `Leg drawn as a spring at ${k.toFixed(1)} kN/m, compressed by ${(dL*100).toFixed(2)} cm at peak force (drawn larger than scale).`);
+}
+function drawStiffChart(k, gct, peak){
+  const svgEl = $('stiffChart');
+  const W=400,H=240, padL=44,padR=16,padT=16,padB=32, plotW=W-padL-padR, plotH=H-padT-padB, xMax=0.22, yMax=3.6;
+  const xP = x => padL + x/xMax*plotW, yP = y => padT + (1-y/yMax)*plotH;
+  let svg = '';
+  [0,1,2,3].forEach(v=>{
+    svg += `<line x1="${padL}" y1="${yP(v)}" x2="${W-padR}" y2="${yP(v)}" stroke="#E4E8E3" stroke-width="1"/>`;
+    svg += `<text x="${padL-6}" y="${yP(v)+4}" text-anchor="end" class="axis-label">${v}</text>`;
+  });
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#6F786F" stroke-width="1.3"/>`;
+  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#6F786F" stroke-width="1.3"/>`;
+  svg += `<line x1="${padL}" y1="${yP(1)}" x2="${W-padR}" y2="${yP(1)}" stroke="#6F786F" stroke-width="1.2" stroke-dasharray="5,4"/>`;
+  svg += `<text x="${W-padR-2}" y="${yP(1)-5}" text-anchor="end" class="axis-label">1 BW</text>`;
+  [0,0.05,0.10,0.15,0.20].forEach(v=>{ svg += `<text x="${xP(v)}" y="${H-padB+17}" text-anchor="middle" class="axis-label">${(v*1000).toFixed(0)} ms</text>`; });
+  let d = '';
+  for (let i=0;i<=100;i++){ const t = i/100*gct; d += (i?'L':'M') + xP(t).toFixed(1) + ' ' + yP(peak*Math.sin(Math.PI*t/gct)).toFixed(1) + ' '; }
+  svg += `<path d="${d}" fill="none" stroke="#9A4F1E" stroke-width="3"/>`;
+  svg += `<circle cx="${xP(gct/2)}" cy="${yP(peak)}" r="5" fill="#9A4F1E" stroke="#1B2420" stroke-width="1.5"/>`;
+  svg += `<text x="${xP(gct/2)+8}" y="${yP(peak)-8}" class="axis-label" style="font-weight:700;fill:#9A4F1E">${peak.toFixed(2)} BW</text>`;
+  svgEl.innerHTML = svg;
+  svgEl.setAttribute('aria-label', `Vertical GRF during one contact: rises to ${peak.toFixed(2)} BW at ${(gct*500).toFixed(0)} ms and returns to zero at ${(gct*1000).toFixed(0)} ms.`);
+}
+function renderStiffness(quiet){
+  const k = Number(stiffSlider.value);
+  $('stiffVal').textContent = `${k.toFixed(1)} kN/m (${levelOf(k)})`;
+  stiffSlider.setAttribute('aria-valuetext', `${k.toFixed(1)} kilonewtons per meter, ${levelOf(k)} stiffness`);
+  const gct = gctFrom(k), peak = r2(peakFrom(k)), Fp = r2(peak*BW_N);
+  const dL = Math.round(Fp/(k*1000)*10000)/10000;          // m, 4 decimals (= cm to 2 decimals)
+  const dy = Math.round(comDrop(Fp, gct)*10000)/10000;
+  const kv = Fp/dy;
+  $('gctVal').textContent = Math.round(gct*1000) + ' ms';
+  $('peakVal').textContent = peak.toFixed(2) + ' BW';
+  $('dLVal').textContent = dL.toFixed(4) + ' m';
+  $('dyVal').textContent = dy.toFixed(4) + ' m';
+  drawLegStage(k, dL); drawStiffChart(k, gct, peak);
+  $('stiffEqnBox').innerHTML =
+    `<div class="eqn">Leg stiffness: k<sub>leg</sub> = F<sub>peak</sub> ÷ ΔL, so ΔL = F<sub>peak</sub> ÷ k<sub>leg</sub></div>` +
+    `<div>F<sub>peak</sub> = ${peak.toFixed(2)} BW × ${BW_N} N = ${f2(Fp)} N; ΔL = ${f2(Fp)} N ÷ ${(k*1000).toFixed(0)} N/m = <b>${dL.toFixed(4)} m</b></div>` +
+    `<div class="eqn" style="margin-top:6px;">Vertical stiffness: k<sub>vert</sub> = F<sub>peak</sub> ÷ Δy</div>` +
+    `<div>k<sub>vert</sub> = ${f2(Fp)} N ÷ ${dy.toFixed(4)} m = <b>${f2(kv)} N/m (${(kv/1000).toFixed(2)} kN/m)</b></div>` +
+    `<div style="margin-top:6px;">A stiffer leg compresses less (smaller ΔL) for a given force. Here higher stiffness is linked to a shorter contact and a higher peak force. Δy is smaller than ΔL because the leg sweeps through an angle under the body, so k<sub>vert</sub> is larger than k<sub>leg</sub>. Stiffness is regulated, not "more is better", and studies do not clearly rank leg vs. vertical stiffness for sprint performance.</div>`;
+  if (!quiet) announce(`Leg stiffness ${k.toFixed(1)} kN/m: contact ${Math.round(gct*1000)} ms, peak ${peak.toFixed(2)} BW, ΔL ${dL.toFixed(4)} m, Δy ${dy.toFixed(4)} m, vertical stiffness ${(kv/1000).toFixed(2)} kN/m.`);
+}
+stiffSlider.addEventListener('input', ()=>renderStiffness(false));
+$('lowBtn').addEventListener('click', ()=>{ stiffSlider.value = 12; renderStiffness(false); });
+$('highBtn').addEventListener('click', ()=>{ stiffSlider.value = 28; renderStiffness(false); });
+
+// in pre-class mode only the 100 m race is used
+window.onModeChange = m => {
+  if (m === 'pre' && race !== '100m') { race = '100m'; document.querySelectorAll('.race-btn').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.race==='100m'))); buildRace(); buildSegbar(); renderRace(); }
+};
+
+buildRace(); buildSegbar();
+renderRace();
+renderImpulse(true);
+renderStiffness(true);
+$('liveSummary').textContent = '';
+
+/* ---------- Pre-class / In-class mode ---------- */
+(function () {
+  const params = new URLSearchParams(location.search);
+  if (params.get('embed') === '1') {
+    document.documentElement.classList.add('embed');
+    // Tell the Unit 2 Explorer how tall this page is (postMessage works from file:// too). Sizing only; no state.
+    if (window.parent !== window) {
+      const sendHeight = () => {
+        const cs = getComputedStyle(document.body);
+        const h = Math.ceil(document.body.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom));
+        try { window.parent.postMessage({ unit2Height: h }, '*'); } catch (e) { /* no parent */ }
+      };
+      window.addEventListener('load', () => { sendHeight(); setTimeout(sendHeight, 800); });
+      if (window.ResizeObserver) new ResizeObserver(sendHeight).observe(document.body);
+    }
+  }
+  function setMode(m) {
+    document.querySelectorAll('.mode-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    document.querySelectorAll('[data-show]').forEach(el => { el.hidden = el.dataset.show !== m; });
+    document.documentElement.setAttribute('data-mode', m);
+    try { const u = new URL(location.href); u.searchParams.set('mode', m); history.replaceState(history.state, '', u.href); } catch (e) { /* file:// in some browsers */ }
+    if (typeof window.onModeChange === 'function') window.onModeChange(m);
+  }
+  document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  setMode(params.get('mode') === 'in' ? 'in' : 'pre');
+})();
+</script>
+</body>
+</html>
