@@ -444,6 +444,18 @@ details{margin-top:6px;} summary{cursor:pointer;font-weight:700;font-size:15px;p
     <section id="v-entry" role="tabpanel" aria-labelledby="n-entry" class="hidden">
       <div class="cols">
         <div>
+          <div class="panel" id="feedPanel">
+            <div class="ph"><h2>Live feed (Google Form)</h2><span class="sub">Reads a published CSV link every few seconds and adds new codes</span></div>
+            <label class="f" for="feedUrl">Published CSV link (from Google Sheets: File → Share → Publish to web → the scoreboard tab → CSV)</label>
+            <input type="url" id="feedUrl" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&amp;single=true&amp;output=csv" autocomplete="off" spellcheck="false" style="width:100%;font-family:Consolas,monospace;font-size:13px">
+            <div class="row" style="margin-top:8px;align-items:flex-end;flex-wrap:wrap;gap:10px">
+              <div><label class="f" for="feedEvery">Check every</label><select id="feedEvery"><option value="15">15 s</option><option value="30" selected>30 s</option><option value="60">60 s</option></select></div>
+              <button class="btn go" type="button" id="feedStart" aria-pressed="false">Start live feed</button>
+              <button class="btn" type="button" id="feedNow">Check now</button>
+            </div>
+            <div class="msg" id="feedMsg" role="status" aria-live="polite"></div>
+            <p class="note">Publish only a tab with two columns: the scoreboard name the student chose (for example <b>JL7</b>) and the results code. Never publish names or emails: anyone with the link can read that tab. A student who submits again under the same scoreboard name is updated, not duplicated. If the feed can't be read, use Bulk paste below.</p>
+          </div>
           <div class="panel">
             <div class="ph"><h2>Upload files</h2><span class="sub">RTLAB_Name.txt files, a Canvas download, or a saved results CSV</span></div>
             <div class="drop" id="drop">
@@ -1104,7 +1116,8 @@ function showSaveState(){
   $('saveState').innerHTML=canSave?('The board saves itself in this browser'+(lastSaved?' (last saved '+lastSaved.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})+')':'')+'. That copy can vanish if the cache is cleared or you switch browsers, so also use <b>Save board</b> for a backup file.'):'<b>Not saving in this browser.</b> Save board is the only way to keep these scores.';
 }
 function dn(name){if(!S.cfg.initials)return name;return initialsOf(name);}
-function initialsOf(name){return name.trim().split(/\s+/).map(function(w){return w.charAt(0).toUpperCase()+'.';}).join(' ');}
+function initialsOf(name){var n=name.trim();if(!/\s/.test(n)&&n.length<=8)return n;   // a short scoreboard name the student chose (e.g., JL7) is shown as typed
+  return n.split(/\s+/).map(function(w){return w.charAt(0).toUpperCase()+'.';}).join(' ');}
 
 /* ---------- code parsing (one parser for RTLAB1 and RTLAB2) ---------- */
 function findCode(str){var m=/RTLAB([12])\|/.exec(str);return m?{at:m.index,ver:Number(m[1])}:null;}
@@ -1328,6 +1341,33 @@ $('bulkGo').addEventListener('click',function(){
   save();renderAll();flash('bulkMsg',tallyText(t,'line'),!t.added&&!t.upd);
   if(t.added||t.upd)$('bulk').value='';
 });
+/* ---------- live feed: poll a published Google Sheets CSV (scoreboard name, code) ---------- */
+var feed={timer:null,seen:{},busy:false};
+try{var fu=localStorage.getItem('rtlab_feed_url');if(fu)$('feedUrl').value=fu;}catch(e){}
+function feedTime(){return new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit',second:'2-digit'});}
+function feedCheck(){
+  var url=$('feedUrl').value.trim();
+  if(!/^https?:\/\/\S+$/.test(url)){flash('feedMsg','Paste the published CSV link first (it starts with https://).',true);return;}
+  if(feed.busy)return;feed.busy=true;
+  try{localStorage.setItem('rtlab_feed_url',url);}catch(e){}
+  fetch(url+(url.indexOf('?')<0?'?':'&')+'_t='+Date.now(),{cache:'no-store'})
+    .then(function(r){if(!r.ok)throw new Error('the link answered with HTTP '+r.status+'.');return r.text();})
+    .then(function(text){
+      if(/^\s*</.test(text))throw new Error('the link returned a web page, not CSV. In Google Sheets use File → Share → Publish to web, pick the scoreboard tab and CSV.');
+      var fresh=text.split(/\r?\n/).filter(function(l){return l.trim()&&findCode(l)&&!feed.seen[l];});
+      fresh.forEach(function(l){feed.seen[l]=1;});
+      var t=newTally();
+      if(fresh.length){ingest(fresh.join('\n'),t);save();renderAll();}
+      flash('feedMsg','Checked at '+feedTime()+'. '+(fresh.length?tallyText(t,'line'):'No new codes.')+(feed.timer?' Checking every '+$('feedEvery').value+' s.':''),false);
+    })
+    .catch(function(e){flash('feedMsg','Could not read the feed at '+feedTime()+': '+(e&&e.message?e.message:'network error.')+(feed.timer?' The board will keep trying.':''),true);})
+    .then(function(){feed.busy=false;});
+}
+function feedStop(){if(feed.timer){clearInterval(feed.timer);feed.timer=null;}$('feedStart').textContent='Start live feed';$('feedStart').setAttribute('aria-pressed','false');}
+function feedStartFn(){feedStop();feed.timer=setInterval(feedCheck,Number($('feedEvery').value)*1000);$('feedStart').textContent='Stop live feed';$('feedStart').setAttribute('aria-pressed','true');feedCheck();}
+$('feedStart').addEventListener('click',function(){if(feed.timer){feedStop();flash('feedMsg','Live feed stopped at '+feedTime()+'.',false);}else feedStartFn();});
+$('feedNow').addEventListener('click',feedCheck);
+$('feedEvery').addEventListener('change',function(){if(feed.timer)feedStartFn();});
 // Name from a file name, e.g. "RTLAB_Jordan_Lee.txt" or a Canvas download "leejordan_12345_67890_RTLAB_Jordan_Lee-1.txt"
 function nameFromFile(fn){
   return fn.replace(/\.[^.]+$/,'').replace(/^(late_)?[a-z]+_\d+_\d+_/i,'').replace(/^RTLAB_?/i,'').replace(/-\d+$/,'').replace(/_+/g,' ').trim();

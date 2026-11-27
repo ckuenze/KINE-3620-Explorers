@@ -52,6 +52,17 @@ Open `index.html?mode=board` on the computer connected to the projector.
 
 **Save and back up.** The board saves itself in the browser when it can. If the browser cannot save (private window, embedded page, blocked storage), a red banner says so. Use **Save board (JSON)** for a backup file and **Load board** to restore it on any computer. **Save results (CSV)** keeps each code in column 2, so the CSV can be dropped back in. **Save for website** downloads a standalone results page (initials only by default).
 
+### Live feed from a Google Form (optional)
+
+Students paste their results code into a Google Form, and the board picks up new codes on its own.
+
+1. **Form.** Make a Google Form with two short-answer questions: "Scoreboard name (your initials plus a number, e.g., JL7)" and "Results code". In Settings, restrict it to your institution and collect verified email addresses. That records who submitted without putting names on the board.
+2. **Sheet.** Link the Form to a Sheet (Responses → Link to Sheets). Add a second tab named `Scoreboard` with this formula in A1 (adjust the column letters if your Form's columns differ): `=QUERY('Form Responses 1'!C:D, "select C, D where D is not null", 1)`.
+3. **Publish only that tab.** File → Share → Publish to web → choose the `Scoreboard` tab and "Comma-separated values (.csv)" → Publish. Copy the link. Anyone with this link can read the tab, so it must never contain names or emails.
+4. **Board.** Enter Scores → Live feed → paste the link → Start live feed (checks every 15, 30 or 60 s). A student who resubmits under the same scoreboard name is updated, not duplicated. Short scoreboard names (one word, up to 8 characters) are shown as typed.
+
+Google refreshes a published CSV every few minutes, so new codes appear with some delay. If the feed can't be read (for example, a browser or network blocks it), copy the two columns from the responses Sheet into **Bulk paste** instead.
+
 To try it before class, click **Load sample athletes** (made-up names, including "Guessing Gus", who is fast but inaccurate), then **Clear everything**.
 
 ## Results code
@@ -60,7 +71,7 @@ To try it before class, click **Load sample athletes** (made-up names, including
 
 ## Privacy
 
-Everything runs in the browser. Nothing is uploaded, and the page makes no external requests (system fonts only). The student modes do not read or write browser storage; results vanish when the page closes unless the student saves them. The scoreboard keeps scores only in the browser on the instructor's computer and in files the instructor saves. Projected names default to initials. No student results are part of this repository.
+Everything runs in the browser. Nothing is uploaded, and the page makes no external requests (system fonts only). The one exception is the optional live feed, which only reads the CSV link the instructor pastes. The student modes do not read or write browser storage; results vanish when the page closes unless the student saves them. The scoreboard keeps scores only in the browser on the instructor's computer and in files the instructor saves. Projected names default to initials. No student results are part of this repository.
 
 ## Details
 
