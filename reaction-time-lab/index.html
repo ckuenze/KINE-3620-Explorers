@@ -4,77 +4,102 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Reaction Time Lab</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
-/* UVA game-night theme: navy and orange, always dark so every device looks the same */
+/* UVA game-night theme: navy and orange, always dark so every device looks the same. System fonts only (no external requests). */
 :root{
-  --bg:#0E1630; --card:#18223F; --ink:#F4F6FB; --ink-soft:#A9B3CF; --soft:#222D52; --line:#34416B;
-  --teal:#E57200; --orange:#E57200; --orange-hot:#F84C1E; --navy:#232D4B; --led:#FFB547; --red:#E0453A;
-  --go:#2FA866; --wait:#232D4B; --warn-bg:#3A2610; --ok-bg:#2A2410; --radius:14px;
+  --bg:#0E1630; --card:#18223F; --ink:#F4F6FB; --ink-soft:#A9B3CF; --soft:#222D52; --line:#34416B; --edge:#A9B3CF;
+  --orange:#E57200; --orange-hot:#F84C1E; --navy:#232D4B; --navy-deep:#141C33; --navy-ink:#0B1124; --led:#FFB547;
+  --mute:#8D97B5; --red:#FF5A4E; --red-soft:#FF8A80; --green:#3FD38A;
+  --go:#23874F; --stop:#B3261E; --warn-bg:#3A2610; --ok-bg:#2A2410; --radius:14px;
   --shadow:0 2px 0 rgba(0,0,0,0.35),0 10px 30px rgba(0,0,0,0.35);
-  --sport:"Oswald","Arial Narrow","Franklin Gothic Medium",Impact,sans-serif;
+  --sport:"Oswald","Bahnschrift","Arial Narrow","Franklin Gothic Medium",Impact,sans-serif;
   --digit:"Orbitron","Consolas","Courier New",monospace;
-  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); color-scheme:dark;
+  color-scheme:dark;
 }
-html{scroll-padding-top:env(safe-area-inset-top,0px);}
 *{box-sizing:border-box;}
+[hidden]{display:none !important;}
+.hidden{display:none !important;}
 body{margin:0;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:20px 16px 60px;-webkit-font-smoothing:antialiased;
   background:radial-gradient(circle at 1px 1px,rgba(255,255,255,.04) 1px,transparent 1.6px) 0 0/6px 6px,radial-gradient(ellipse at top,#1D2747 0%,var(--bg) 70%);background-color:var(--bg);min-height:100vh;}
+html.embed body{min-height:0;}
+html[data-mode="board"] body{background-color:var(--navy-ink);padding-bottom:80px;}
 .wrap{max-width:900px;margin:0 auto;}
-input[type=radio]{accent-color:var(--orange);}
-.bar{background:linear-gradient(90deg,var(--orange-hot),var(--orange)) !important;}
+html[data-mode="board"] .wrap{max-width:1280px;}
+:focus-visible{outline:3px solid var(--led);outline-offset:3px;}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+a{color:var(--led);}
+
+/* ---------- banner + mode bar ---------- */
 .banner{position:relative;overflow:hidden;text-align:center;background:linear-gradient(180deg,var(--navy),#141C33);border:3px solid var(--orange);border-radius:16px;
-  padding:16px 18px 14px;margin-bottom:16px;box-shadow:0 0 0 4px var(--bg),0 0 36px rgba(229,114,0,.25);}
+  padding:16px 18px 14px;margin-bottom:14px;box-shadow:0 0 0 4px var(--bg),0 0 36px rgba(229,114,0,.25);}
 .banner:before,.banner:after{content:"";position:absolute;top:0;bottom:0;width:64px;background:repeating-linear-gradient(-55deg,var(--orange) 0 10px,transparent 10px 22px);opacity:.18;}
 .banner:before{left:0;} .banner:after{right:0;transform:scaleX(-1);}
 .banner .kick{font-family:var(--sport);font-size:13px;letter-spacing:.32em;color:var(--orange);font-weight:700;position:relative;}
-h1{font-family:var(--sport);font-size:clamp(30px,6vw,52px);font-weight:700;margin:2px 0 4px;letter-spacing:.04em;text-transform:uppercase;line-height:1.05;
+.banner h1{font-family:var(--sport);font-size:clamp(30px,6vw,52px);font-weight:700;margin:2px 0 4px;letter-spacing:.04em;text-transform:uppercase;line-height:1.05;
   text-shadow:0 3px 0 var(--orange),0 6px 16px rgba(0,0,0,.6);position:relative;}
-.subtitle{color:var(--ink-soft);font-size:15px;margin:8px auto 0;line-height:1.5;max-width:640px;position:relative;}
-.card{background:var(--card);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--line);}
-h2.ct{margin:0 0 10px;font-family:var(--sport);font-size:20px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);}
-h3{margin:14px 0 6px;font-size:14.5px;}
-p{line-height:1.55;margin:0 0 10px;font-size:14.5px;}
-.sub{color:var(--ink-soft);font-size:13.5px;}
-.note{font-size:12.5px;color:var(--ink-soft);line-height:1.55;}
+.banner .subtitle{color:var(--ink-soft);font-size:15px;margin:8px auto 0;line-height:1.5;max-width:640px;position:relative;}
+.mode-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:14px;}
+.mode-btns{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px;}
+.mode-btn{border:1.5px solid transparent;background:transparent;color:var(--ink-soft);padding:8px 14px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;font-family:var(--sport);letter-spacing:.08em;text-transform:uppercase;}
+.mode-btn:hover{color:var(--ink);}
+.mode-btn[aria-pressed="true"]{background:var(--orange);color:var(--bg);}
+.mode-help{margin:0;font-size:14px;color:var(--ink-soft);flex:1 1 260px;line-height:1.45;}
+.mode-help b{color:var(--ink);}
+html.embed .mode-btns{display:none;}
+.foot{font-size:13px;color:var(--ink-soft);line-height:1.55;margin-top:14px;}
+.foot .ins{margin-top:8px;}
+.foot .ins a{font-size:13px;}
+
+/* ======================= STUDENT LAB ======================= */
+#lab input[type=radio]{accent-color:var(--orange);width:17px;height:17px;vertical-align:-3px;}
+#lab .card{background:var(--card);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--line);}
+#lab h2.ct{margin:0 0 10px;font-family:var(--sport);font-size:20px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);}
+#lab h3{margin:14px 0 6px;font-size:15px;}
+#lab p{line-height:1.55;margin:0 0 10px;font-size:15px;}
+#lab ol.steps{margin:0 0 6px;padding-left:22px;line-height:1.6;font-size:15px;}
+#lab .sub{color:var(--ink-soft);font-size:14px;}
+#lab .note{font-size:13px;color:var(--ink-soft);line-height:1.55;}
 .seg{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;flex-wrap:wrap;margin-bottom:16px;}
 .seg button{border:none;background:transparent;padding:9px 14px;border-radius:9px;font-weight:700;font-size:15px;cursor:pointer;color:var(--ink-soft);font-family:var(--sport);letter-spacing:.1em;text-transform:uppercase;}
 .seg button:hover{color:var(--ink);}
-.seg button.on{background:var(--orange);color:var(--bg);}
-.btn{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:9px 16px;font-weight:700;font-size:15px;cursor:pointer;color:var(--ink);font-family:var(--sport);letter-spacing:.08em;text-transform:uppercase;}
-.btn:hover{background:var(--soft);}
-.btn.primary{background:var(--orange);border-color:var(--orange);color:var(--bg);}
-.btn.primary:hover{filter:brightness(1.08);}
-.btn.small{padding:6px 10px;font-size:12.5px;}
-.btn:disabled{opacity:0.45;cursor:not-allowed;}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-.hidden{display:none !important;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;font-size:13.5px;line-height:1.5;}
+.seg button[aria-selected="true"]{background:var(--orange);color:var(--bg);}
+#lab .btn{border:1.5px solid var(--edge);background:var(--card);border-radius:10px;padding:9px 16px;font-weight:700;font-size:15px;cursor:pointer;color:var(--ink);font-family:var(--sport);letter-spacing:.08em;text-transform:uppercase;}
+#lab .btn:hover{background:var(--soft);}
+#lab .btn.primary{background:var(--orange);border-color:var(--orange);color:var(--bg);}
+#lab .btn.primary:hover{filter:brightness(1.08);}
+#lab .btn.small{padding:6px 10px;font-size:13px;}
+#lab .btn:disabled{opacity:0.55;cursor:not-allowed;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;font-size:14px;line-height:1.5;}
 @media (max-width:700px){.grid2{grid-template-columns:1fr;}}
-.grid2 b{display:block;font-size:14px;margin-bottom:1px;}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;}
-.chip{padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);font-size:12.5px;font-weight:700;color:var(--ink-soft);}
-.chip.done{background:var(--ok-bg);border-color:var(--teal);color:var(--teal);}
+.grid2 b{display:block;font-size:14.5px;margin-bottom:1px;}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;padding:0;list-style:none;}
+.chip{padding:6px 12px;border-radius:999px;border:1.5px solid var(--edge);font-size:13px;font-weight:700;color:var(--ink-soft);}
+.chip.done{background:var(--ok-bg);border-color:var(--orange);color:var(--led);}
 .chip.next{border-color:var(--ink);color:var(--ink);}
-.pred{border:1.5px dashed var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;}
-.pred label{display:block;font-size:14px;padding:3px 0;cursor:pointer;}
-.stagehead{display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:13.5px;}
+.pred{border:1.5px dashed var(--edge);border-radius:12px;padding:12px 14px;margin:10px 0;}
+.pred legend{font-weight:700;font-size:15px;padding:0 4px;}
+.pred label{display:block;font-size:15px;padding:4px 0;cursor:pointer;}
+.inline-confirm{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--warn-bg);font-size:14px;}
+.stagehead{display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:14px;flex-wrap:wrap;}
 .stagehead .blkP{color:var(--ink-soft);margin-left:auto;}
-.stage{min-height:280px;border-radius:16px;border:2px solid var(--line);background:var(--soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:18px;user-select:none;-webkit-user-select:none;touch-action:manipulation;outline:none;}
-.stage[data-state="wait"]{background:var(--wait);}
-.stage.go{background:var(--go);border-color:var(--go);color:#fff;}
-.stage.nogo{background:var(--red);border-color:var(--red);color:#fff;}
+.stage{position:relative;min-height:280px;border-radius:16px;border:2px solid var(--edge);background:var(--soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:18px;user-select:none;-webkit-user-select:none;touch-action:manipulation;}
+.stage:focus{outline:none;}
+.stage:focus-visible{outline:3px solid var(--led);outline-offset:3px;}
+.stage[data-state="wait"]{background:var(--navy);}
+.stage.go{background:var(--go);border-color:#fff;color:#fff;}
 .stmsg{font-size:clamp(18px,3.2vw,26px);font-weight:800;line-height:1.3;max-width:560px;}
 .stmsg .instr{font-size:15px;font-weight:500;line-height:1.55;display:block;margin:6px 0 14px;}
+.stage.go .stmsg{font-size:clamp(30px,6vw,46px);letter-spacing:.06em;}
 .boxes{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
-.box{width:92px;height:92px;border-radius:16px;border:3px solid var(--ink-soft);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:var(--ink-soft);cursor:pointer;touch-action:manipulation;}
-.box.lit{background:var(--go);border-color:var(--go);color:#fff;}
-.box.litred{background:var(--red);border-color:var(--red);color:#fff;}
+.box{width:96px;height:96px;border-radius:16px;border:3px solid var(--edge);background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:26px;font-weight:800;color:var(--ink-soft);cursor:pointer;touch-action:manipulation;}
+.box .gl{font-size:24px;line-height:1;}
+.box .bl{font-size:17px;letter-spacing:.06em;}
+.box.lit{background:var(--go);border:4px solid #fff;color:#fff;}
+.box.stop{background:var(--stop);border:5px dashed #fff;color:#fff;}
 .hint{font-size:54px;font-weight:800;line-height:1;min-height:56px;color:var(--ink);}
-.feed{font-size:14px;font-weight:700;min-height:22px;margin:10px 0 0;color:var(--ink-soft);}
-.stage{position:relative;}
-.stage[data-state="feedback"] .stmsg,.stage .stmsg.rt{font-family:var(--digit);}
+.feed{font-size:15px;font-weight:700;min-height:22px;margin:10px 0 0;color:var(--ink-soft);}
+.stage[data-state="feedback"] .stmsg{font-family:var(--digit);}
 .rtnum{font-family:var(--digit);font-size:clamp(40px,8vw,64px);color:var(--led);text-shadow:0 0 14px rgba(255,181,71,.55);line-height:1;}
 .rtnum small{font-size:.4em;margin-left:4px;}
 .cheer{font-family:var(--sport);font-size:clamp(20px,3.6vw,28px);letter-spacing:.12em;text-transform:uppercase;color:var(--orange);margin-top:6px;animation:pop .45s cubic-bezier(.2,1.6,.4,1);}
@@ -84,117 +109,484 @@ p{line-height:1.55;margin:0 0 10px;font-size:14.5px;}
 .badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
 .badge{border:2px solid var(--orange);border-radius:12px;padding:8px 12px;background:linear-gradient(135deg,#2A1A08,var(--card));min-width:150px;}
 .badge .bt{font-family:var(--sport);font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--led);}
-.badge .bd{font-size:12.5px;color:var(--ink-soft);}
-.sumbox{background:var(--soft);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:14px;line-height:1.55;}
-table.t{width:100%;border-collapse:collapse;font-size:13.5px;}
-table.t th{text-align:left;font-size:12px;color:var(--ink-soft);font-weight:700;padding:6px;border-bottom:1.5px solid var(--line);}
-table.t td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top;}
-table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:700;}
-.bar{height:14px;border-radius:7px;background:var(--teal);min-width:2px;}
-.barrow{display:grid;grid-template-columns:170px 1fr 70px;gap:8px;align-items:center;font-size:13px;margin:5px 0;}
-@media (max-width:600px){.barrow{grid-template-columns:110px 1fr 56px;}}
+.badge .bd{font-size:13px;color:var(--ink-soft);}
+#lab table.t{width:100%;border-collapse:collapse;font-size:14px;}
+#lab table.t th{text-align:left;font-size:12.5px;color:var(--ink-soft);font-weight:700;padding:6px;border-bottom:1.5px solid var(--edge);}
+#lab table.t td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top;}
+#lab table.t td.n,#lab table.t th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:700;}
+.tw{overflow-x:auto;}
+.bar{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--orange-hot),var(--orange));min-width:2px;}
+.barrow{display:grid;grid-template-columns:190px 1fr 70px;gap:8px;align-items:center;font-size:14px;margin:5px 0;}
+@media (max-width:600px){.barrow{grid-template-columns:120px 1fr 60px;}}
 .diff{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;}
 @media (max-width:700px){.diff{grid-template-columns:1fr;}}
-.dcard{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;}
+.dcard{border:1.5px solid var(--edge);border-radius:12px;padding:10px 12px;}
 .dcard .v{font-size:22px;font-weight:800;}
-.dcard .l{font-size:12.5px;color:var(--ink-soft);}
-.msg{border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;margin-top:10px;}
-.msg.warn{background:var(--warn-bg);} .msg.ok{background:var(--ok-bg);}
-details{margin-top:6px;} summary{cursor:pointer;font-weight:700;font-size:14px;padding:5px 0;}
-.qa{font-size:13.5px;line-height:1.6;padding:2px 0 8px 4px;color:var(--ink-soft);}
-textarea{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;border:1.5px solid var(--line);border-radius:10px;padding:10px;background:var(--card);color:var(--ink);min-height:84px;}
-input[type=number]{width:84px;font-size:14px;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-family:inherit;}
+.dcard .l{font-size:13px;color:var(--ink-soft);}
+#lab .msg{border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.5;margin-top:10px;}
+#lab .msg.warn{background:var(--warn-bg);} #lab .msg.ok{background:var(--ok-bg);}
+.eq{font-family:Cambria,Georgia,serif;font-style:italic;font-size:18px;text-align:center;margin:8px 0;}
+details{margin-top:6px;} summary{cursor:pointer;font-weight:700;font-size:15px;padding:5px 0;}
+.qa{font-size:14px;line-height:1.6;padding:2px 0 8px 4px;color:var(--ink-soft);}
+#lab textarea{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;border:1.5px solid var(--edge);border-radius:10px;padding:10px;background:var(--card);color:var(--ink);min-height:84px;}
+#lab input[type=number],#lab input[type=text]{font-size:15px;padding:7px 9px;border:1.5px solid var(--edge);border-radius:8px;background:var(--card);color:var(--ink);font-family:inherit;}
+#lab input[type=number]{width:90px;}
+
+/* ======================= INSTRUCTOR BOARD ======================= */
+#board{font-family:var(--sport);letter-spacing:.02em;}
+#board button{font-family:var(--sport);}
+#board .board-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;
+  background:linear-gradient(180deg,var(--navy) 0%,var(--navy-deep) 100%);border:3px solid var(--orange);border-radius:14px;
+  padding:14px 22px;box-shadow:0 0 0 4px var(--navy-ink),0 0 40px rgba(229,114,0,.25),inset 0 0 30px rgba(0,0,0,.4);position:relative;overflow:hidden;}
+#board .board-top:before,#board .board-top:after{content:"";position:absolute;top:0;bottom:0;width:70px;
+  background:repeating-linear-gradient(-55deg,var(--orange) 0 10px,transparent 10px 22px);opacity:.18;}
+#board .board-top:before{left:0;} #board .board-top:after{right:0;transform:scaleX(-1);}
+@media (max-width:700px){#board .board-top{grid-template-columns:1fr;text-align:center;} #board .side.right{text-align:center;}}
+#board .side{position:relative;z-index:1;}
+#board .side .k1{font-size:15px;color:var(--orange);font-weight:700;letter-spacing:.18em;}
+#board .side .k2{font-size:13px;color:var(--mute);letter-spacing:.2em;}
+#board .side.right{text-align:right;}
+#board .title{text-align:center;position:relative;z-index:1;}
+#board .title .pre{font-size:13px;letter-spacing:.5em;color:var(--mute);}
+#board .title h1{margin:0;font-size:clamp(28px,4.6vw,58px);line-height:1;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--ink);text-shadow:0 3px 0 var(--orange),0 6px 18px rgba(0,0,0,.6);}
+#board .title .stripe{height:5px;margin:10px auto 0;width:70%;background:linear-gradient(90deg,transparent,var(--orange) 20%,var(--orange) 80%,transparent);border-radius:3px;}
+#board .clock{font-family:var(--digit);font-size:30px;color:var(--led);text-shadow:0 0 10px rgba(255,181,71,.6);}
+#board .live{font-size:13px;letter-spacing:.25em;color:var(--mute);}
+#board .live .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--orange-hot);margin-right:4px;animation:blink 1.2s 4;}
+@keyframes blink{50%{opacity:.2;}}
+#board .backrow{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:system-ui,"Segoe UI",sans-serif;font-size:14px;color:var(--mute);margin:10px 2px 0;}
+#board .nav{display:flex;gap:8px;margin:14px 0 14px;flex-wrap:wrap;align-items:center;}
+#board .nav [role=tab]{background:var(--navy-deep);border:2px solid var(--mute);color:var(--mute);padding:9px 18px;border-radius:9px;
+  font-size:16px;font-weight:700;letter-spacing:.12em;cursor:pointer;text-transform:uppercase;}
+#board .nav [role=tab]:hover{color:var(--ink);border-color:var(--ink);}
+#board .nav [role=tab][aria-selected="true"]{background:var(--orange);border-color:var(--orange);color:var(--navy-ink);}
+#board .nav .spacer{flex:1;}
+#board .ghost{background:var(--navy-deep);border:2px solid var(--mute);color:var(--ink);border-radius:9px;font-size:13px;padding:8px 12px;font-weight:700;letter-spacing:.1em;cursor:pointer;text-transform:uppercase;}
+#board .ghost.or{border-color:var(--orange);color:var(--orange);}
+#board .navmsg{font-family:system-ui,"Segoe UI",sans-serif;font-size:14px;color:var(--led);min-height:18px;margin:-6px 2px 10px;}
+#board .panel{background:linear-gradient(180deg,rgba(35,45,75,.92),rgba(20,28,51,.95));border:2px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px;}
+#board .ph{display:flex;align-items:center;gap:12px;margin:0 0 12px;flex-wrap:wrap;}
+#board .ph h2{margin:0;font-size:20px;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);}
+#board .ph .sub{color:var(--mute);font-size:14px;letter-spacing:.06em;}
+#board .ph .right{margin-left:auto;}
+#board .divs{display:flex;gap:4px;background:var(--navy-ink);padding:4px;border-radius:10px;border:1px solid var(--line);}
+#board .divs button{background:transparent;border:0;color:var(--mute);padding:6px 12px;border-radius:7px;font-size:13px;font-weight:700;letter-spacing:.12em;cursor:pointer;}
+#board .divs button[aria-pressed="true"]{background:var(--navy);color:var(--led);box-shadow:inset 0 0 0 2px var(--orange);}
+#board .warn{border:2px dashed var(--orange);background:rgba(229,114,0,.08);color:#FFD7A8;border-radius:10px;padding:9px 14px;font-size:15px;letter-spacing:.01em;margin-bottom:12px;font-family:system-ui,"Segoe UI",sans-serif;line-height:1.45;}
+#board .warn.save{border-style:solid;border-color:var(--red);color:#FFD2CC;background:rgba(255,90,78,.1);}
+#board .rulestrip{font-family:system-ui,"Segoe UI",sans-serif;font-size:14px;color:var(--ink-soft);line-height:1.5;margin:8px 2px 0;}
+#board .rulestrip b{color:var(--ink);}
+#board .jumbo{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+@media (max-width:900px){#board .jumbo{grid-template-columns:1fr 1fr;}}
+#board .tile{background:var(--navy-ink);border:2px solid var(--line);border-radius:12px;padding:12px 14px;position:relative;overflow:hidden;}
+#board .tile .lbl{font-size:13px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;}
+#board .tile .big{font-family:var(--digit);font-size:36px;color:var(--led);text-shadow:0 0 12px rgba(255,181,71,.55);line-height:1.15;margin-top:4px;}
+#board .tile .big.none{color:var(--mute);text-shadow:none;}
+#board .tile .who{font-size:16px;color:var(--ink);letter-spacing:.06em;margin-top:2px;}
+#board .tile.leader{border-color:var(--orange);background:linear-gradient(135deg,#2A1A08 0%,var(--navy-ink) 60%);}
+#board .tile.leader .name{font-size:clamp(26px,3vw,38px);font-weight:700;text-transform:uppercase;line-height:1.1;margin-top:4px;}
+#board .tile.leader .meta{display:flex;gap:16px;align-items:baseline;margin-top:4px;flex-wrap:wrap;}
+#board .tile.leader .pts{font-family:var(--digit);font-size:30px;color:var(--led);text-shadow:0 0 12px rgba(255,181,71,.55);}
+#board .tile.leader .gap{color:var(--green);font-size:15px;letter-spacing:.08em;}
+#board .crown{position:absolute;right:12px;top:6px;font-size:34px;opacity:.9;}
+#board table.sb{width:100%;border-collapse:separate;border-spacing:0 6px;}
+#board table.sb th{font-size:13px;letter-spacing:.16em;color:var(--mute);text-align:center;padding:4px 8px;font-weight:700;text-transform:uppercase;}
+#board table.sb th.l{text-align:left;}
+#board table.sb td{background:var(--navy-ink);padding:10px 8px;text-align:center;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+#board table.sb td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px;}
+#board table.sb td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0;}
+#board table.sb tr.r{cursor:pointer;}
+#board table.sb tr.r:hover td{background:#121A36;}
+#board .rk{font-family:var(--digit);font-size:22px;color:var(--ink);width:64px;}
+#board .rk .medal{display:inline-flex;width:38px;height:38px;border-radius:50%;align-items:center;justify-content:center;font-size:18px;color:var(--navy-ink);font-weight:900;}
+#board .m1{background:radial-gradient(circle at 30% 30%,#FFE7A3,#E5A800);box-shadow:0 0 14px rgba(255,200,60,.6);}
+#board .m2{background:radial-gradient(circle at 30% 30%,#FFFFFF,#9EA7B8);}
+#board .m3{background:radial-gradient(circle at 30% 30%,#FFC9A0,#B8642A);}
+#board td.nm{text-align:left !important;}
+#board .rowbtn{background:none;border:0;color:var(--ink);font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;padding:0;text-align:left;}
+#board .rowbtn .car{font-size:14px;color:var(--mute);margin-left:6px;}
+#board td.nm small{display:block;font-size:12.5px;color:var(--mute);letter-spacing:.1em;font-weight:500;}
+#board .chipdev{display:inline-block;font-size:11.5px;letter-spacing:.16em;padding:3px 8px;border-radius:6px;border:1px solid var(--mute);color:var(--mute);}
+#board .dg{font-family:var(--digit);font-size:22px;color:var(--led);text-shadow:0 0 8px rgba(255,181,71,.45);}
+#board .dg.off{color:var(--mute);text-shadow:none;}
+#board .dg.pen{color:var(--red);text-shadow:0 0 8px rgba(255,90,78,.4);}
+#board td.tot{background:linear-gradient(180deg,#2B1A06,#1A1006) !important;border-color:var(--orange) !important;}
+#board td.tot .dg{font-size:30px;color:#FFC867;}
+#board tr.top1 td{border-color:rgba(229,168,0,.8);}
+#board tr.flash td{animation:flash 1.4s ease-out;}
+@keyframes flash{0%{background:#4A2C05;}100%{}}
+#board tr.bd td{background:rgba(11,17,36,.6);border-style:dashed;padding:10px 14px;text-align:left;}
+#board .bdgrid{display:flex;flex-wrap:wrap;gap:8px;}
+#board .bdc{border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:14px;letter-spacing:.04em;background:var(--navy-ink);}
+#board .bdc b{color:var(--orange);font-weight:700;margin-right:6px;}
+#board .bdc .t{font-family:var(--digit);font-size:13px;color:var(--led);}
+#board .bdc .p{color:var(--ink);margin-left:6px;}
+#board .bdc .q{color:var(--mute);margin-left:6px;font-family:system-ui,"Segoe UI",sans-serif;font-size:13px;}
+#board .empty{text-align:center;color:var(--mute);padding:40px 10px;font-size:20px;letter-spacing:.1em;}
+#board .evgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;}
+#board .ev{background:var(--navy-ink);border:2px solid var(--line);border-radius:12px;padding:12px 14px;}
+#board .ev .ex{font-size:12.5px;letter-spacing:.18em;color:var(--mute);}
+#board .ev h3{margin:2px 0 8px;font-size:21px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);}
+#board .ev .best{font-family:var(--digit);font-size:32px;color:var(--led);text-shadow:0 0 12px rgba(255,181,71,.5);}
+#board .ev .best.none{color:var(--mute);text-shadow:none;}
+#board .ev .best small{font-size:14px;color:var(--mute);margin-left:4px;text-shadow:none;}
+#board .ev .raw{font-family:system-ui,"Segoe UI",sans-serif;font-size:13px;color:var(--mute);margin:-2px 0 4px;}
+#board .ev .bw{font-size:17px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;color:var(--orange);}
+#board .ev ol{margin:0;padding:0;list-style:none;border-top:1px solid var(--line);}
+#board .ev li{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(47,58,94,.6);font-size:15px;}
+#board .ev li span:last-child{font-family:var(--digit);font-size:13px;color:var(--led);}
+#board .ev.off{opacity:.6;}
+#board .ev .dq{font-family:system-ui,"Segoe UI",sans-serif;font-size:13px;color:var(--mute);margin-top:6px;}
+#board .cols{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;}
+@media (max-width:980px){#board .cols{grid-template-columns:1fr;}}
+#board label.f,#board .f{display:block;font-size:13px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase;margin-bottom:4px;}
+#board input[type=text],#board input[type=number],#board select,#board textarea{width:100%;background:var(--navy-ink);border:2px solid var(--mute);color:var(--ink);border-radius:8px;
+  padding:8px 10px;font-size:16px;font-family:system-ui,"Segoe UI",sans-serif;}
+#board input:focus-visible,#board select:focus-visible,#board textarea:focus-visible{outline:3px solid var(--orange);outline-offset:2px;border-color:var(--orange);}
+#board textarea{font-family:Consolas,monospace;font-size:13px;min-height:110px;}
+#board input[type=file]{font-family:system-ui,"Segoe UI",sans-serif;font-size:14px;color:var(--ink);background:var(--navy-ink);border:2px solid var(--mute);border-radius:8px;padding:6px;max-width:100%;}
+#board .frow{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:12px;}
+#board .fgrp{border:1px solid var(--line);border-radius:10px;padding:10px 12px 4px;margin-bottom:10px;}
+#board .fgrp .gt{font-size:14px;letter-spacing:.16em;color:var(--orange);margin-bottom:8px;}
+#board .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 10px;margin-bottom:8px;}
+#board .pair{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+#board .fields input{font-family:var(--digit);font-size:15px;color:var(--led);padding:6px 6px;}
+#board .btn{background:var(--navy);border:2px solid var(--mute);color:var(--ink);padding:9px 16px;border-radius:9px;font-size:15px;font-weight:700;letter-spacing:.12em;cursor:pointer;text-transform:uppercase;}
+#board .btn:hover{border-color:var(--ink);}
+#board .btn.go{background:var(--orange);border-color:var(--orange);color:var(--navy-ink);}
+#board .btn.go:hover{filter:brightness(1.1);}
+#board .btn.sm{padding:5px 10px;font-size:13px;}
+#board .btn.danger{border-color:var(--red);color:var(--red);background:transparent;}
+#board .note{font-family:system-ui,"Segoe UI",sans-serif;font-size:13.5px;color:var(--mute);letter-spacing:0;line-height:1.5;}
+#board .note b{color:var(--ink);}
+#board .msg{font-family:system-ui,"Segoe UI",sans-serif;font-size:14px;margin-top:8px;min-height:18px;color:var(--green);}
+#board .msg.bad{color:var(--red-soft);}
+#board table.ro{width:100%;border-collapse:collapse;font-size:15px;}
+#board table.ro th{text-align:left;font-size:12.5px;letter-spacing:.14em;color:var(--mute);padding:6px;border-bottom:2px solid var(--mute);}
+#board table.ro td{padding:7px 6px;border-bottom:1px solid var(--line);}
+#board table.ro td.a{text-align:right;white-space:nowrap;}
+#board table.ro .flag{font-family:system-ui,"Segoe UI",sans-serif;font-size:12.5px;color:#FFD7A8;display:block;letter-spacing:0;}
+#board table.cp{width:100%;border-collapse:collapse;font-family:system-ui,"Segoe UI",sans-serif;font-size:14.5px;}
+#board table.cp th{text-align:left;font-size:12.5px;color:var(--mute);padding:6px;border-bottom:2px solid var(--mute);}
+#board table.cp td{padding:7px 6px;border-bottom:1px solid var(--line);}
+#board table.cp .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+#board .cpbar{display:grid;grid-template-columns:200px 1fr 80px;gap:8px;align-items:center;font-family:system-ui,"Segoe UI",sans-serif;font-size:14px;margin:5px 0;}
+#board .cpbar .bar{height:14px;}
+#board .cpdiff{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:8px;}
+#board .cpdiff div{border:1.5px solid var(--mute);border-radius:12px;padding:10px 12px;font-family:system-ui,"Segoe UI",sans-serif;font-size:14px;}
+#board .cpdiff .v{font-family:var(--digit);font-size:22px;color:var(--led);display:block;}
+#board .set{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media (max-width:700px){#board .set{grid-template-columns:1fr;}}
+#board .evchk{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px 12px;margin:6px 0 10px;}
+#board .evchk label,#board .chk{font-size:15px;letter-spacing:.03em;cursor:pointer;display:flex;align-items:center;gap:7px;}
+#board .evchk input,#board .chk input{accent-color:var(--orange);width:18px;height:18px;}
+#board .drop{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:110px;
+  border:3px dashed var(--orange);border-radius:12px;background:rgba(229,114,0,.06);padding:14px;}
+#board .drop.over{background:rgba(229,114,0,.18);}
+#board .drop .d1{font-size:20px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);}
+#board .confirm{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;font-family:system-ui,"Segoe UI",sans-serif;font-size:14px;color:#FFD7A8;}
+
+/* ---------- ticker (pausable; static under reduced motion) ---------- */
+.ticker{position:fixed;left:0;right:0;bottom:0;height:44px;background:var(--orange);color:var(--navy-ink);overflow:hidden;
+  border-top:3px solid var(--navy-ink);box-shadow:0 -6px 20px rgba(0,0,0,.4);display:flex;align-items:center;z-index:5;font-family:var(--sport);}
+.ticker .tag{background:var(--navy);color:var(--orange);height:100%;display:flex;align-items:center;gap:8px;padding:0 14px;font-weight:700;letter-spacing:.16em;font-size:15px;flex:none;position:relative;z-index:2;border:0;cursor:pointer;font-family:var(--sport);}
+.ticker .tag:focus-visible{outline:3px solid var(--led);outline-offset:-3px;}
+.ticker .tview{overflow:hidden;flex:1;}
+.ticker .track{white-space:nowrap;display:inline-block;animation:scroll 40s linear infinite;font-size:19px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding-left:20px;}
+.ticker.paused .track,.ticker.static .track{animation-play-state:paused;}
+.ticker.static .track{animation:none;}
+.ticker .track span{margin-right:44px;}
+.ticker .track b{color:var(--ink);background:var(--navy);padding:1px 8px;border-radius:5px;margin-right:6px;}
+@keyframes scroll{from{transform:translateX(-50%);}to{transform:translateX(0);}}
+
+/* ---------- winner overlay ---------- */
+#win{position:fixed;inset:0;z-index:20;background:radial-gradient(ellipse at center,rgba(35,45,75,.97),rgba(5,8,18,.98));display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;cursor:pointer;font-family:var(--sport);}
+#win canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+#win .w1{font-size:clamp(20px,3vw,30px);letter-spacing:.5em;color:var(--mute);position:relative;}
+#win .w2{font-size:clamp(60px,12vw,170px);font-weight:700;color:var(--orange);line-height:1;text-shadow:0 6px 0 var(--navy-ink),0 0 50px rgba(229,114,0,.6);position:relative;animation:popBig .8s cubic-bezier(.2,1.6,.4,1);}
+#win .w3{font-size:clamp(36px,6vw,80px);font-weight:700;text-transform:uppercase;color:var(--ink);margin-top:14px;position:relative;letter-spacing:.04em;}
+#win .w4{font-family:var(--digit);font-size:clamp(22px,3vw,34px);color:var(--led);margin-top:10px;position:relative;text-shadow:0 0 14px rgba(255,181,71,.6);}
+#win .w5{font-size:16px;color:var(--mute);margin-top:24px;letter-spacing:.2em;position:relative;}
+#win .wclose{position:relative;margin-top:18px;background:var(--orange);color:var(--navy-ink);border:0;border-radius:9px;padding:10px 20px;font-size:16px;font-weight:700;letter-spacing:.12em;cursor:pointer;font-family:var(--sport);text-transform:uppercase;}
+@keyframes popBig{0%{transform:scale(.2);opacity:0;}100%{transform:scale(1);opacity:1;}}
+
+@media (prefers-reduced-motion: reduce){
+  .cheer,#win .w2,#board tr.flash td{animation:none !important;}
+  #board .live .dot{animation:none;}
+  .ticker .track{animation:none !important;}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="banner">
-    <div class="kick">UVA KINESIOLOGY · BIOMECHANICS</div>
+  <header class="banner" data-show="pre in">
+    <div class="kick">UVA KINESIOLOGY · KINE 3620 · BIOMECHANICS</div>
     <h1>Reaction Time Lab</h1>
-    <p class="subtitle">How fast are your reflexes, Hoos? Run three short experiments, earn your stat line, and see how your reactions connect to agility.</p>
+    <p class="subtitle" data-show="pre">Pre-class: measure your simple and choice reaction time on your own, see Hick’s law in your own numbers, and answer the check questions.</p>
+    <p class="subtitle" data-show="in">How fast are your reflexes, Hoos? Run three short experiments, earn your stat line, and see how your reactions connect to agility.</p>
   </header>
 
-  <div class="seg" id="tabs">
-    <button type="button" data-tab="start" class="on">Start</button>
-    <button type="button" data-tab="e1">1 Simple</button>
-    <button type="button" data-tab="e2">2 Choices</button>
-    <button type="button" data-tab="e3">3 Twists</button>
-    <button type="button" data-tab="res">Results</button>
-    <button type="button" data-tab="ins">Instructor</button>
+  <div class="mode-bar" data-show="pre in">
+    <div class="mode-btns" role="group" aria-label="Activity mode">
+      <button type="button" class="mode-btn" data-mode="pre" aria-pressed="true">Pre-class</button>
+      <button type="button" class="mode-btn" data-mode="in" aria-pressed="false">In-class</button>
+    </div>
+    <p class="mode-help" data-show="pre"><b>Pre-class:</b> work alone. Run the light block and the 1, 2 and 4 box blocks, then answer the check questions on the Results tab. No headphones needed.</p>
+    <p class="mode-help" data-show="in"><b>In-class:</b> the full lab. Predict first, run all three experiments, then save your results code for the class scoreboard.</p>
   </div>
 
-  <!-- START -->
-  <section id="tab-start">
-    <div class="card">
+  <!-- ======================= STUDENT LAB ======================= -->
+  <div id="lab" data-show="pre in">
+  <div class="seg" id="tabs" role="tablist" aria-label="Lab sections">
+    <button type="button" role="tab" id="t-start" data-tab="start" aria-controls="tab-start" aria-selected="true">Start</button>
+    <button type="button" role="tab" id="t-e1" data-tab="e1" aria-controls="tab-e1" aria-selected="false" tabindex="-1">1 Simple</button>
+    <button type="button" role="tab" id="t-e2" data-tab="e2" aria-controls="tab-e2" aria-selected="false" tabindex="-1">2 Choices</button>
+    <button type="button" role="tab" id="t-e3" data-tab="e3" aria-controls="tab-e3" aria-selected="false" tabindex="-1" data-show="in">3 Twists</button>
+    <button type="button" role="tab" id="t-res" data-tab="res" aria-controls="tab-res" aria-selected="false" tabindex="-1">Results</button>
+  </div>
+
+  <section id="tab-start" role="tabpanel" aria-labelledby="t-start">
+    <div class="card" data-show="pre">
+      <h2 class="ct">Pre-class: guided steps (about 8 minutes)</h2>
+      <ol class="steps">
+        <li>Open <b>1 Simple</b>. Make your prediction, then run the <b>light</b> block (1 practice trial, then 8 real trials).</li>
+        <li>Open <b>2 Choices</b>. Make your prediction, then run the <b>1 box</b>, <b>2 box</b> and <b>4 box</b> blocks.</li>
+        <li>Open <b>Results</b>. Write down your light median, your 1 box and 4 box medians, and your cost per doubling (b).</li>
+        <li>Answer the check questions at the bottom of the Results tab. Bring your answers and one question to class.</li>
+      </ol>
+    </div>
+    <div class="card" data-show="in">
       <h2 class="ct">What you will do (about 15 minutes)</h2>
       <p><b>Experiment 1, Simple.</b> Respond to one signal. Is a sound or a light faster?</p>
       <p><b>Experiment 2, Choices.</b> Respond to 1, 2, 3 or 4 possible signals. What does a decision cost?</p>
       <p><b>Experiment 3, Twists.</b> Add rules, fakes and hints. Which one slows you down most?</p>
-      <p>Before each experiment you will make a prediction. Your results page then compares your predictions with what happened and shows what your reaction time means on the field or court.</p>
+      <p>Before each experiment you make a prediction. Your results page compares your predictions with what happened and shows what your reaction time means on the field or court. At the end, save your results for the class scoreboard.</p>
     </div>
     <div class="card">
       <h2 class="ct">Before you begin</h2>
-      <p>Sit comfortably with the page in front of you. Silence notifications. Use the keyboard if you can, because it is the most consistent. A tap on a touchscreen also works.</p>
-      <p>For the sound experiment, use the device speakers or wired headphones. <b>Bluetooth headphones add a delay</b> and will make your sound times look slower than they are. No headphones in a noisy room? You can skip the sound block in Experiment 1.</p>
-      <div class="row"><button class="btn primary" id="beepTest" type="button">Play a test beep</button><span class="note">Set your volume so the beep is clear but not loud.</span></div>
+      <p>Sit comfortably with the page in front of you. Silence notifications. Use the keyboard if you can, because it is the most consistent: the <b>Space bar</b> for one signal and the <b>number keys 1 to 4</b> for the boxes. A tap on a touchscreen also works. Press <b>Esc</b> to stop a block.</p>
+      <p data-show="in">For the sound block, use the device speakers or wired headphones. <b>Bluetooth headphones add a delay</b> and make your sound times look slower than they are. No headphones in a noisy room? You can skip the sound block in Experiment 1.</p>
+      <div class="row" data-show="in"><button class="btn primary" id="beepTest" type="button">Play a test beep</button><span class="note">Set your volume so the beep is clear but not loud.</span></div>
+      <p class="note" style="margin-top:10px">This is a visual and sound timing task. It cannot be done with a screen reader alone. If you use one, do the sound block in In-class mode with the Space bar, and ask your instructor about other options.</p>
     </div>
     <div class="card">
       <h2 class="ct">Words you will see</h2>
       <div class="grid2">
         <div><b>Stimulus</b>The signal you respond to, such as a light or a sound.</div>
         <div><b>Reaction time (RT)</b>The time from the stimulus to your response, in milliseconds (ms). 1000 ms is one second.</div>
-        <div><b>Median</b>The middle value of your trials. It is not thrown off by one odd trial.</div>
+        <div><b>Median</b>The middle value of your trials. One odd trial does not throw it off.</div>
         <div><b>Choice</b>A task where you must pick the right response from several options.</div>
-        <div><b>Anticipation</b>Responding before the signal, or so early that it must be a guess.</div>
-        <div><b>Accuracy</b>How often you picked the right response.</div>
+        <div><b>Early press (false start)</b>Pressing before the signal, or within 100 ms of it, so it must be a guess. The trial repeats. (In the lecture, <i>anticipation</i> means something else: reading cues early, such as an opponent’s hips.)</div>
+        <div><b>Accuracy</b>How often you gave the right response. Wrong boxes, misses and early presses all lower it.</div>
+        <div><b>Hick’s law</b>Choice RT = a + b·log2 n, where n is the number of choices. RT goes up by about the same amount (b) each time the number of choices doubles.</div>
       </div>
-      <div class="msg warn"><b>A note about the numbers.</b> Screens, speakers, and keyboards add a small delay, so your times will be longer than in a research lab. Compare your own conditions with each other on the same device. Do not compare your numbers with a classmate who used a different device.</div>
+      <div class="msg warn"><b>A note about the numbers.</b> Screens, speakers and keyboards add a small delay, so your times will be longer than in a research lab. Compare your own conditions with each other on the same device. Do not compare your numbers with a classmate who used a different device.</div>
     </div>
     <div class="row"><button class="btn primary" data-go="e1" type="button">Start Experiment 1</button></div>
   </section>
 
-  <!-- EXPERIMENTS -->
-  <section id="tab-e1" class="hidden"></section>
-  <section id="tab-e2" class="hidden"></section>
-  <section id="tab-e3" class="hidden"></section>
+  <section id="tab-e1" role="tabpanel" aria-labelledby="t-e1" class="hidden"></section>
+  <section id="tab-e2" role="tabpanel" aria-labelledby="t-e2" class="hidden"></section>
+  <section id="tab-e3" role="tabpanel" aria-labelledby="t-e3" class="hidden"></section>
+  <section id="tab-res" role="tabpanel" aria-labelledby="t-res" class="hidden"></section>
+  </div>
 
-  <!-- RESULTS -->
-  <section id="tab-res" class="hidden"></section>
+  <!-- ======================= INSTRUCTOR BOARD ======================= -->
+  <div id="board" data-show="board" hidden>
+    <header class="board-top">
+      <div class="side"><div class="k1">UVA KINESIOLOGY</div><div class="k2">KINE 3620 · INSTRUCTOR</div></div>
+      <div class="title"><div class="pre">THE ANNUAL</div><h1>Reaction Time Classic</h1><div class="stripe"></div></div>
+      <div class="side right"><div class="clock" id="clock" aria-label="Clock">00:00</div><div class="live"><span class="dot" aria-hidden="true"></span>LIVE</div></div>
+    </header>
+    <div class="backrow"><span>Instructor scoreboard. Students do not need this view. Scores stay in this browser only.</span><a href="?mode=in" id="labLink">Back to the student lab</a></div>
+    <div id="saveWarn"></div>
 
-  <!-- INSTRUCTOR -->
-  <section id="tab-ins" class="hidden">
-    <div class="card">
-      <h2 class="ct">Combine class results (instructor)</h2>
-      <p class="sub">Students copy their results code from the Results tab and submit it, for example in a Canvas quiz or form. Paste the codes here, one per line. Everything is calculated in this browser. Nothing is uploaded.</p>
-      <textarea id="insBox" placeholder="RTLAB1|dev=kb|sv=231|sa=198|..."></textarea>
-      <div class="row" style="margin-top:8px"><button class="btn primary" id="insGo" type="button">Combine</button><button class="btn" id="insClear" type="button">Clear</button></div>
-      <div id="insOut"></div>
+    <div class="nav" id="nav">
+      <div role="tablist" aria-label="Scoreboard sections" id="navTabs" class="row" style="gap:8px">
+        <button type="button" role="tab" id="n-board" data-v="board" aria-controls="v-board" aria-selected="true">Scoreboard</button>
+        <button type="button" role="tab" id="n-events" data-v="events" aria-controls="v-events" aria-selected="false" tabindex="-1">Event Leaders</button>
+        <button type="button" role="tab" id="n-class" data-v="class" aria-controls="v-class" aria-selected="false" tabindex="-1">Class Pattern</button>
+        <button type="button" role="tab" id="n-entry" data-v="entry" aria-controls="v-entry" aria-selected="false" tabindex="-1">Enter Scores</button>
+        <button type="button" role="tab" id="n-rules" data-v="rules" aria-controls="v-rules" aria-selected="false" tabindex="-1">Rules</button>
+      </div>
+      <span class="spacer"></span>
+      <button type="button" class="ghost" id="fsBtn">Full screen</button>
+      <button type="button" class="ghost or" id="winBtn">Crown the champion</button>
     </div>
-  </section>
-  <p class="note">Nothing you do here leaves your device. Closing the page clears your results unless you copy your results code first.</p>
+    <p class="navmsg" id="navMsg" role="status"></p>
+
+    <section id="v-board" role="tabpanel" aria-labelledby="n-board">
+      <div id="mixWarn"></div>
+      <div class="jumbo" id="jumbo"></div>
+      <div class="panel">
+        <div class="ph"><h2>Standings</h2><span class="sub" id="sbSub"></span>
+          <div class="right divs" id="divs" role="group" aria-label="Device division"></div></div>
+        <div id="sbBody"></div>
+        <p class="rulestrip" id="ruleStrip"></p>
+      </div>
+    </section>
+
+    <section id="v-events" role="tabpanel" aria-labelledby="n-events" class="hidden">
+      <div class="panel">
+        <div class="ph"><h2>Event Leaders</h2><span class="sub" id="evSub"></span></div>
+        <div class="evgrid" id="evGrid"></div>
+      </div>
+    </section>
+
+    <section id="v-class" role="tabpanel" aria-labelledby="n-class" class="hidden">
+      <div class="panel">
+        <div class="ph"><h2>Class Pattern</h2><span class="sub">Medians of student medians · the teaching payoff</span></div>
+        <div id="cpOut"></div>
+      </div>
+    </section>
+
+    <section id="v-entry" role="tabpanel" aria-labelledby="n-entry" class="hidden">
+      <div class="cols">
+        <div>
+          <div class="panel">
+            <div class="ph"><h2>Upload files</h2><span class="sub">RTLAB_Name.txt files, a Canvas download, or a saved results CSV</span></div>
+            <div class="drop" id="drop">
+              <span class="d1">Drop student files here</span>
+              <label class="f" for="fileIn">Or choose files (select as many as you like)</label>
+              <input type="file" id="fileIn" multiple accept=".txt,.csv,text/plain,text/csv">
+            </div>
+            <div class="msg" id="fileMsg" role="status"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h2>Bulk paste</h2><span class="sub">One athlete per line: name, then the results code</span></div>
+            <label class="sr-only" for="bulk">Bulk paste: one name and results code per line</label>
+            <textarea id="bulk" placeholder="Jordan Lee, RTLAB2|dev=kb|sv=231|...&#10;Sam Ortiz	RTLAB2|dev=touch|sv=288|..."></textarea>
+            <div class="row" style="margin-top:8px"><button class="btn go" type="button" id="bulkGo">Add all</button>
+              <span class="note">Works with a column copied from Canvas or Excel (name in one column, code in the next). A name already on the board is updated, not duplicated.</span></div>
+            <div class="msg" id="bulkMsg" role="status"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h2 id="formTitle">Add an athlete by hand</h2><span class="sub">Median times in ms and % correct, from the student’s Results tab</span></div>
+            <div class="frow">
+              <div><label class="f" for="fName">Name</label><input type="text" id="fName" placeholder="Student name" autocomplete="off"></div>
+              <div><label class="f" for="fDev">Device</label><select id="fDev"><option value="kb">Keyboard</option><option value="touch">Touch</option><option value="mouse">Mouse</option></select></div>
+            </div>
+            <div style="margin-bottom:12px">
+              <label class="f" for="fCode">Paste their results code (optional, fills the boxes below)</label>
+              <div class="row"><input type="text" id="fCode" placeholder="RTLAB2|dev=kb|sv=231|..." style="flex:1;font-family:Consolas,monospace;font-size:13px"><button class="btn sm" type="button" id="fFill">Fill</button></div>
+            </div>
+            <div id="fGroups"></div>
+            <div class="row" style="margin-top:6px">
+              <button class="btn go" type="button" id="fSave">Add to scoreboard</button>
+              <button class="btn" type="button" id="fCancel">Clear form</button>
+            </div>
+            <div class="msg" id="fMsg" role="status"></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <div class="ph"><h2>Roster</h2><span class="sub" id="roCount"></span></div>
+            <p class="note" style="margin:0 0 8px">The roster shows full names. Switch to the Scoreboard tab before you project.</p>
+            <div id="roster"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h2>Save and back up</h2></div>
+            <p class="note" style="margin:0 0 10px" id="saveState"></p>
+            <div class="row">
+              <button class="btn sm go" type="button" id="saveBoard">Save board (JSON)</button>
+              <span><label class="f" for="loadIn" style="display:inline;margin-right:6px">Load board</label><input type="file" id="loadIn" accept=".json,application/json"></span>
+            </div>
+            <div class="msg" id="loadMsg" role="status"></div>
+            <div class="row" style="margin-top:12px">
+              <button class="btn sm" type="button" id="csvBtn">Save results (CSV)</button>
+              <button class="btn sm" type="button" id="webBtn">Save for website</button>
+              <label class="chk"><input type="checkbox" id="webInit" checked> Initials only on the saved page (recommended)</label>
+            </div>
+            <p class="note" style="margin:8px 0 0">The CSV keeps each student’s results code in column 2, so you can drop the CSV back in under Upload files.</p>
+            <div class="row" style="margin-top:12px">
+              <button class="btn sm" type="button" id="demoBtn">Load sample athletes</button>
+              <span id="resetWrap"><button class="btn sm danger" type="button" id="resetBtn">Clear everything</button></span>
+            </div>
+            <div class="msg" id="toolMsg" role="status"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="v-rules" role="tabpanel" aria-labelledby="n-rules" class="hidden">
+      <div class="panel">
+        <div class="ph"><h2>How scoring works</h2></div>
+        <div class="set">
+          <div><label class="f" for="sMethod">Event score</label>
+            <select id="sMethod"><option value="ies">Adjusted time = median RT ÷ accuracy (recommended)</option><option value="raw">Raw median RT (speed only)</option></select></div>
+          <div><label class="f" for="sFloor">Accuracy floor: below this % correct, no points in that event</label>
+            <input type="number" id="sFloor" min="0" max="100" step="5"></div>
+          <div><label class="f" for="sMode">Points per event</label>
+            <select id="sMode"><option value="meet">Track meet: 10, 8, 6, 5, 4, 3, 2, 1 for the top 8</option><option value="rank">Everyone scores: last place gets 1, each place above gets 1 more</option></select></div>
+          <div><label class="f" for="sPen">Extra penalty per wrong response or early press (points; optional)</label>
+            <input type="number" id="sPen" min="0" max="5" step="0.5"></div>
+        </div>
+        <span class="f" id="evLbl">Events that count</span>
+        <div id="sEvents" role="group" aria-labelledby="evLbl"></div>
+        <label class="chk" style="margin-top:8px"><input type="checkbox" id="sInit"> Show initials only on the scoreboard (recommended for projecting)</label>
+        <div class="note" style="margin-top:14px;font-size:14.5px">
+          <p style="margin:0 0 8px"><b>Why accuracy counts.</b> A fast guess is not a fast reaction. Each event ranks the <b>adjusted time</b> (inverse efficiency): median RT ÷ proportion correct. Wrong boxes, misses and early presses all lower the proportion correct.</p>
+          <p style="margin:0 0 8px"><b>Example.</b> A guesser with a 300 ms median and 75% correct has an adjusted time of 300 ÷ 0.75 = 400 ms. A careful athlete with 340 ms and 100% correct has 340 ms and wins the event. Below the accuracy floor (default 80%), an athlete gets no points in that event.</p>
+          <p style="margin:0 0 8px"><b>Each event</b> is won by the lowest adjusted time. Tied scores split the points for those places. <b>Total</b> = points from every counted event, minus the optional extra penalty. Ties on total go to the lower average adjusted time.</p>
+          <p style="margin:0 0 8px"><b>Sound is off by default.</b> Bluetooth headphones add delay, and some students skip the sound block. Turn it on only if everyone used speakers or wired headphones.</p>
+          <p style="margin:0 0 8px"><b>Older codes.</b> RTLAB1 codes have no accuracy. They are scored on raw time and flagged “no accuracy” in the roster. Ask those students to re-save from the updated lab.</p>
+          <p style="margin:0"><b>Fair racing.</b> Keyboards, touchscreens and mice add different delays. If the class used mixed devices, use the division buttons (Keys, Touch, Mouse) to crown a winner in each division. Announce these rules before the run.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <p data-show="pre in" style="margin:0">Nothing you do here leaves your device. Closing the page clears your results unless you save your results code first.</p>
+    <p class="ins" data-show="pre in">Instructor only: <a href="?mode=board" id="insLink">open the class scoreboard (projector view)</a>. Students do not need this.</p>
+  </footer>
 </div>
+
+<div class="ticker" id="tickerBar" hidden>
+  <button type="button" class="tag" id="tkPause" aria-pressed="false" aria-label="Pause the leaders ticker"><span aria-hidden="true" id="tkIcon">❚❚</span> LEADERS</button>
+  <div class="tview" role="region" aria-label="Event leaders ticker"><div class="track" id="ticker"></div></div>
+</div>
+<div id="win" hidden role="dialog" aria-modal="true" aria-label="Champion announcement"></div>
+<p class="sr-only" aria-live="polite" id="live"></p>
 
 <script>
 (function(){
 'use strict';
-var FAST=/[?&]fast/.test(location.search);
+var params = new URLSearchParams(location.search);
+var FAST = params.has('fast');
+var RM = false; try { RM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
 function $(id){return document.getElementById(id);}
 function rnd(a,b){return a+Math.random()*(b-a);}
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function med(a){if(!a.length)return null;var s=a.slice().sort(function(x,y){return x-y;}),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;}
 function mean(a){if(!a.length)return null;var s=0;a.forEach(function(x){s+=x;});return s/a.length;}
 function rd(x){return x===null||x===undefined||isNaN(x)?'':String(Math.round(x));}
-function sgn(x){return (x>=0?'+':'−')+Math.abs(Math.round(x));}
+function sgn(x){var r=Math.round(x);return (r>0?'+':(r<0?'−':''))+Math.abs(r);}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function num(x){return typeof x==='number'&&isFinite(x);}
+function f1(x){x=Math.round(x*10)/10;return Number.isInteger(x)?String(x):x.toFixed(1);}
+function say(t){var l=$('live');l.textContent='';setTimeout(function(){l.textContent=t;},40);}
+function download(name,text,type){
+  try{var blob=new Blob([text],{type:type}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(a.href);},800);return true;}catch(e){return false;}
+}
+// Checksum for results codes: sum of character codes mod 97, two digits. Hand-edited codes are flagged, not rejected.
+function checksum(s){var t=0;for(var i=0;i<s.length;i++)t+=s.charCodeAt(i);t%=97;return (t<10?'0':'')+t;}
+var KEYS=['sv','sa','c1','c2','c3','c4','dir','rev','gng','nc','chg','hv','hi'];
+var MODE='pre';
 
-/* ---------- data ---------- */
-var D={r:{},done:{},skip:{},pred:{},inp:{kb:0,touch:0,mouse:0}};
-function R(k){if(!D.r[k])D.r[k]={rts:[],err:0,ant:0,miss:0,inhib:0,n:0};return D.r[k];}
+/* =====================================================================
+   STUDENT LAB
+   ===================================================================== */
+var D={r:{},done:{},skip:{},pred:{},inp:{kb:0,touch:0,mouse:0},name:''};
+function R(k){if(!D.r[k])D.r[k]={rts:[],err:0,early:0,miss:0,inhib:0,n:0};return D.r[k];}
 
 /* ---------- audio ---------- */
 var AC=null;
 function ac(){
-  if(!AC){var C=window.AudioContext||window.webkitAudioContext;if(C)AC=new C();}
-  if(AC&&AC.state==='suspended')AC.resume();
+  try{if(!AC){var C=window.AudioContext||window.webkitAudioContext;if(C)AC=new C();}
+    if(AC&&AC.state==='suspended')AC.resume();}catch(e){}
   return AC;
 }
 function beep(){
@@ -210,49 +602,67 @@ function beep(){
 $('beepTest').addEventListener('click',function(){beep();});
 
 /* ---------- experiment definitions ---------- */
+var KEYHELP=' Use the number keys, or tap a box.';
 var BLK={
-  sv:{key:'sv',type:'simple-v',n:8,fp:[1.5,4],title:'Light',instr:'Wait for the screen to turn green. Then press the Space bar (or tap the screen) as fast as you can. Do not press early.'},
+  sv:{key:'sv',type:'simple-v',n:8,fp:[1.5,4],title:'Light',instr:'Wait for the screen to turn green and show GO. Then press the Space bar (or tap the screen) as fast as you can. Do not press early.'},
   sa:{key:'sa',type:'simple-a',n:8,fp:[1.5,4],title:'Sound',instr:'Wait for the beep. Then press the Space bar (or tap the screen) as fast as you can. Do not press early. Make sure your sound is on.'},
-  c1:{key:'c1',type:'choice',nopts:1,n:10,fp:[1,2.5],title:'1 box',instr:'There is one box. When it lights up, press 1 or tap it.'},
-  c2:{key:'c2',type:'choice',nopts:2,n:10,fp:[1,2.5],title:'2 boxes',instr:'There are two boxes. When one lights up, press its number (1 or 2) or tap it.'},
-  c3:{key:'c3',type:'choice',nopts:3,n:12,fp:[1,2.5],title:'3 boxes',instr:'There are three boxes. When one lights up, press its number (1, 2 or 3) or tap it.'},
-  c4:{key:'c4',type:'choice',nopts:4,n:12,fp:[1,2.5],title:'4 boxes',instr:'There are four boxes. When one lights up, press its number (1, 2, 3 or 4) or tap it.'},
-  dir:{key:'dir',type:'choice',nopts:2,n:10,fp:[1,2.5],title:'Same side',instr:'Two boxes. Respond to the box that lights up. Press 1 or tap the left box, or press 2 or tap the right box.'},
-  rev:{key:'rev',type:'rev',nopts:2,n:10,fp:[1,2.5],title:'Opposite side',instr:'Two boxes. Respond to the OPPOSITE box. If the left box lights up, press 2 or tap the right box. If the right box lights up, press 1 or tap the left box.'},
-  gng:{key:'gng',type:'gng',nopts:2,n:12,fp:[1,2.5],title:'Go or stop',instr:'Two boxes. A GREEN box means go: press the box that lights up. A RED box means stop: do nothing and wait.'},
-  chg:{key:'chg',type:'chg',nopts:2,n:12,fp:[1,2.5],title:'Late change',instr:'Two boxes. A box lights up, but sometimes the light jumps to the other box after a moment. Respond to the box where the light ends up.'},
-  hint:{key:'hint',type:'hint',nopts:2,n:14,fp:[0.9,0.9],title:'Hint arrow',instr:'Two boxes. An arrow gives a hint about which box will light up. The hint is right most of the time, but not always. Respond to the box that lights up.'}
+  c1:{key:'c1',type:'choice',nopts:1,n:10,fp:[1,2.5],title:'1 box',instr:'There is one box. When it lights up (green with a dot), press 1.'+KEYHELP},
+  c2:{key:'c2',type:'choice',nopts:2,n:10,fp:[1,2.5],title:'2 boxes',instr:'There are two boxes. When one lights up (green with a dot), press its number, 1 or 2.'+KEYHELP},
+  c3:{key:'c3',type:'choice',nopts:3,n:12,fp:[1,2.5],title:'3 boxes',instr:'There are three boxes. When one lights up (green with a dot), press its number, 1, 2 or 3.'+KEYHELP},
+  c4:{key:'c4',type:'choice',nopts:4,n:12,fp:[1,2.5],title:'4 boxes',instr:'There are four boxes. When one lights up (green with a dot), press its number, 1, 2, 3 or 4.'+KEYHELP},
+  dir:{key:'dir',type:'choice',nopts:2,n:10,fp:[1,2.5],title:'Same side',instr:'Two boxes. Respond to the box that lights up: press 1 for the left box or 2 for the right box.'+KEYHELP},
+  rev:{key:'rev',type:'rev',nopts:2,n:10,fp:[1,2.5],title:'Opposite side',instr:'Two boxes. Respond to the OPPOSITE box. If the left box lights up, press 2 (right). If the right box lights up, press 1 (left).'+KEYHELP},
+  gng:{key:'gng',type:'gng',nopts:2,n:12,fp:[1,2.5],title:'Go or stop',instr:'Two boxes. A green box marked GO means go: press that box. A red box marked STOP with a dashed border means stop: do nothing and wait.'+KEYHELP},
+  chg:{key:'chg',type:'chg',nopts:2,n:12,fp:[1,2.5],title:'Late change',instr:'Two boxes. A box lights up, but sometimes the light jumps to the other box after a moment. Respond to the box where the light ends up.'+KEYHELP},
+  // Random foreperiod like every other block, so the hint effect is not mixed up with being able to time the signal.
+  hint:{key:'hint',type:'hint',nopts:2,n:14,fp:[1,2.5],title:'Hint arrow',instr:'Two boxes. An arrow shows during the wait and gives a hint about which box will light up. The hint is right most of the time, but not always. Respond to the box that lights up.'+KEYHELP}
 };
+var PRE={e1:['sv'],e2:['c1','c2','c4']};
+var E2OPTS=['It will stay about the same','It will go up by the same amount with every added box','It will go up, but by less with each added box'];
+var HICK_ANSWER=E2OPTS[2];
 var EXP={
   e1:{name:'Experiment 1: Simple reaction time',blocks:['sv','sa'],
-    intro:'One signal, one response. You will do two blocks in random order: a light and a sound. Each block has one practice trial and then 8 real trials. The wait before each signal changes every time, so you cannot guess.',
-    pred:{q:'Before you start: which signal do you think you will respond to faster?',opts:['Light','Sound','About the same']}},
+    intro:{in:'One signal, one response. You will do two blocks in random order: a light and a sound. Each block has one practice trial and then 8 real trials. The wait before each signal changes every time, so you cannot time it.',
+           pre:'One signal, one response. In Pre-class mode you do the light block only, so you do not need headphones. One practice trial, then 8 real trials. The wait before each signal changes every time, so you cannot time it.'},
+    pred:{in:{q:'Before you start: which signal do you think you will respond to faster?',opts:['Light','Sound','About the same']},
+          pre:{q:'Before you start: lab studies of young adults report about 190 ms to a light. What will your time on this device be?',opts:['Faster than 190 ms','About 190 ms','Slower than 190 ms']}}},
   e2:{name:'Experiment 2: Choice reaction time',blocks:['c1','c2','c3','c4'],
-    intro:'Now you must choose. Boxes numbered 1 to 4 appear and one lights up. You will do four blocks in random order, with 1, 2, 3 and 4 boxes.',
-    pred:{q:'Before you start: as the number of boxes goes up, what will happen to your reaction time?',opts:['It will stay about the same','It will go up a little','It will keep going up with every added box']}},
+    intro:{in:'Now you must choose. Boxes numbered 1 to 4 appear and one lights up. You will do four blocks in random order, with 1, 2, 3 and 4 boxes.',
+           pre:'Now you must choose. Boxes numbered 1 to 4 appear and one lights up. You will do three blocks in random order, with 1, 2 and 4 boxes. Going from 1 to 2 boxes is one doubling. Going from 2 to 4 boxes is another doubling.'},
+    pred:{in:{q:'Before you start: as the number of boxes goes up, what will happen to your reaction time?',opts:E2OPTS},
+          pre:{q:'Before you start: as the number of boxes goes up, what will happen to your reaction time?',opts:E2OPTS}}},
   e3:{name:'Experiment 3: Twists',blocks:['dir','rev','gng','chg','hint'],
-    intro:'Five blocks with two boxes each, in random order. The first rule is the plain version. The other four add a twist that is like something an athlete faces: a reversed rule, a stop signal, a feint, and a hint that is sometimes wrong.',
-    pred:{q:'Before you start: which twist do you think will slow you down the most?',opts:['Opposite side','Go or stop','Late change','Hint arrow']}}
+    intro:{in:'Five blocks with two boxes each, in random order. The first rule is the plain version. The other four add a twist like something an athlete faces: a reversed rule, a stop signal, a feint, and a hint that is sometimes wrong.'},
+    pred:{in:{q:'Before you start: which twist do you think will slow you down the most?',opts:['Opposite side','Go or stop','Late change','Hint arrow']}}}
 };
-var order={};   // randomized block order per experiment
+var order={};
 Object.keys(EXP).forEach(function(k){order[k]=shuffle(EXP[k].blocks.slice());});
+function blocksFor(id){var p=PRE[id];return order[id].filter(function(b){return MODE!=='pre'||!p||p.indexOf(b)>=0;});}
+function mkey(id){return id+'_'+(MODE==='pre'&&EXP[id].pred.pre?'pre':'in');}
 
 /* ---------- stage and trial engine ---------- */
 var cur=null;
 function buildStage(host){
-  host.innerHTML='<div class="stagehead"><b class="blkT"></b><span class="blkP"></span><button class="btn small blkQ hidden" type="button">Stop block</button></div>'+
-    '<div class="stage" tabindex="0" data-state="idle"><div class="stmsg"></div><div class="hint"></div><div class="boxes"></div></div><p class="feed" aria-live="polite"></p>';
+  host.innerHTML='<div class="stagehead"><b class="blkT"></b><span class="blkP"></span><button class="btn small blkQ hidden" type="button">Stop block (Esc)</button></div>'+
+    '<div class="stage" tabindex="0" role="application" aria-label="Reaction task area. Press the Space bar or the number keys 1 to 4 to respond. Press Esc to stop the block." data-state="idle"><div class="stmsg"></div><div class="hint" aria-hidden="true"></div><div class="boxes" aria-hidden="true"></div></div><p class="feed" aria-live="polite"></p>';
   var u={host:host,T:host.querySelector('.blkT'),P:host.querySelector('.blkP'),Q:host.querySelector('.blkQ'),st:host.querySelector('.stage'),msg:host.querySelector('.stmsg'),hint:host.querySelector('.hint'),boxes:host.querySelector('.boxes'),feed:host.querySelector('.feed')};
-  u.st.addEventListener('pointerdown',function(e){if(cur&&cur.ui===u&&(cur.cfg.type==='simple-v'||cur.cfg.type==='simple-a')){e.preventDefault();resp(0,e.timeStamp,e.pointerType);}});
+  u.st.addEventListener('pointerdown',function(e){if(cur&&cur.ui===u&&(cur.cfg.type==='simple-v'||cur.cfg.type==='simple-a')&&!e.target.closest('button')){e.preventDefault();resp(0,e.timeStamp,e.pointerType);}});
   u.Q.addEventListener('click',function(){stopBlock();});
   u.msg.textContent='Press Start next block above to begin.';
   return u;
 }
 function clearTimers(){if(!cur)return;['timer','miss','chgT','nogoT','nextT'].forEach(function(k){if(cur[k]){clearTimeout(cur[k]);cur[k]=null;}});}
-function setBoxes(n,lit,red){
+// kind: '' (plain, unlit), 'lit' (choice), 'go' (go or stop: go), 'stop'. Lit boxes carry a shape and text, not only colour.
+function setBoxes(n,lit,kind){
   var b=cur.ui.boxes;b.innerHTML='';
   for(var i=0;i<n;i++){
-    var d=document.createElement('div');d.className='box'+(i===lit?(red?' litred':' lit'):'');d.textContent=String(i+1);d.setAttribute('role','button');d.setAttribute('aria-label','Box '+(i+1));
+    var d=document.createElement('div'),cls='box',inner='<span class="bn">'+(i+1)+'</span>';
+    if(i===lit){
+      if(kind==='stop'){cls+=' stop';inner='<span class="gl">✕</span><span class="bl">STOP</span>';}
+      else if(kind==='go'){cls+=' lit';inner='<span class="gl">●</span><span class="bl">GO '+(i+1)+'</span>';}
+      else {cls+=' lit';inner='<span class="gl">●</span><span class="bn">'+(i+1)+'</span>';}
+    }
+    d.className=cls;d.innerHTML=inner;
     (function(ix){d.addEventListener('pointerdown',function(e){e.preventDefault();resp(ix,e.timeStamp,e.pointerType);});})(i);
     b.appendChild(d);
   }
@@ -264,7 +674,7 @@ function genTrials(cfg){
   else if(cfg.type==='choice'||cfg.type==='rev'){t.push({p:true,box:Math.floor(Math.random()*np)});balanced().forEach(function(b){t.push({box:b});});}
   else if(cfg.type==='gng'){t.push({p:true,box:0});var g=[];for(i=0;i<n;i++)g.push({box:i%2,nogo:i>=9});shuffle(g).forEach(function(x){t.push(x);});}
   else if(cfg.type==='chg'){t.push({p:true,box:1,change:false});var c=[];for(i=0;i<n;i++)c.push({box:i%2,change:i<4});shuffle(c).forEach(function(x){t.push(x);});}
-  else if(cfg.type==='hint'){t.push({p:true,box:0,valid:true});var h=[];for(i=0;i<n;i++)h.push({box:i%2,valid:i>=4});shuffle(h).forEach(function(x){if(!x.valid)x.hintBox=1-x.box;else x.hintBox=x.box;t.push(x);});t[0].hintBox=0;}
+  else if(cfg.type==='hint'){t.push({p:true,box:0,valid:true,hintBox:0});var h=[];for(i=0;i<n;i++)h.push({box:i%2,valid:i>=4});shuffle(h).forEach(function(x){x.hintBox=x.valid?x.box:1-x.box;t.push(x);});}
   return t;
 }
 function resetKeys(id){(id==='chg'?['nc','chg']:(id==='hint'?['hv','hi']:[id])).forEach(function(k){delete D.r[k];});}
@@ -273,47 +683,46 @@ function startBlock(ui,id,after){
   ui.T.textContent=cfg.title;ui.P.textContent='';ui.Q.classList.remove('hidden');ui.feed.textContent='';
   ui.st.className='stage';ui.st.dataset.state='idle';ui.hint.textContent='';
   ui.boxes.innerHTML='';
-  ui.msg.innerHTML='<span class="instr"></span><button class="btn primary" type="button" id="goBlk">Start block</button>';
+  ui.msg.innerHTML='<span class="instr"></span><button class="btn primary" type="button">Start block</button>';
   ui.msg.querySelector('.instr').textContent=cfg.instr+' The first trial is practice.';
-  $('goBlk').addEventListener('click',function(){nextTrial();});
-  ui.st.focus();
+  var b=ui.msg.querySelector('button');
+  b.addEventListener('click',function(){ui.st.focus({preventScroll:true});nextTrial();});
+  b.focus({preventScroll:true});
 }
 function stopBlock(){
   if(!cur)return;clearTimers();var ui=cur.ui;cur=null;
   ui.st.className='stage';ui.st.dataset.state='idle';ui.msg.textContent='Block stopped. Start it again when you are ready.';ui.boxes.innerHTML='';ui.hint.textContent='';ui.Q.classList.add('hidden');ui.T.textContent='';ui.P.textContent='';
+  say('Block stopped.');
 }
 function nextTrial(){
   if(!cur)return;var c=cur,ui=c.ui,cfg=c.cfg;clearTimers();
   if(c.idx>=c.trials.length){return endBlock();}
-  var tr=c.trials[c.idx];c.tr=tr;c.state='wait';c.t0=null;c.changed=false;ui.feed.textContent='';
+  var tr=c.trials[c.idx];c.tr=tr;c.state='wait';c.t0=null;c.changed=false;
   ui.st.className='stage';ui.st.dataset.state='wait';ui.hint.textContent='';ui.msg.textContent=tr.p?'Practice: get ready':'Get ready';
   ui.P.textContent=tr.p?'Practice trial':'Trial '+(c.real+1)+' of '+cfg.n;
   if(cfg.type==='simple-v'||cfg.type==='simple-a'){ui.boxes.innerHTML='';}
-  else{setBoxes(cfg.nopts,-1);}
-  var fp=FAST?(cfg.type==='hint'?150:rnd(60,120)):rnd(cfg.fp[0],cfg.fp[1])*1000;
-  if(cfg.type==='hint'){ui.hint.textContent=tr.hintBox===0?'←':'→';ui.msg.textContent='';}
+  else{setBoxes(cfg.nopts,-1,'');}
+  var fp=FAST?rnd(60,120):rnd(cfg.fp[0],cfg.fp[1])*1000;
+  // The hint arrow stays up for the whole (random) foreperiod.
+  if(cfg.type==='hint'){ui.hint.textContent=tr.hintBox===0?'←':'→';ui.msg.textContent=tr.p?'Practice: watch the hint':'Hint';}
   c.timer=setTimeout(showStim,fp);
 }
-function paintT0(){
-  var c=cur;requestAnimationFrame(function(){if(cur===c&&c.state==='stim')c.t0=performance.now();});
-}
+function paintT0(){var c=cur;requestAnimationFrame(function(){if(cur===c&&c.state==='stim')c.t0=performance.now();});}
 function showStim(){
   if(!cur)return;var c=cur,ui=c.ui,cfg=c.cfg,tr=c.tr;c.timer=null;c.state='stim';
   ui.st.dataset.state='stim';
   var missMs=FAST?900:2000;
   if(cfg.type==='simple-v'){ui.st.classList.add('go');ui.msg.textContent='GO!';paintT0();}
   else if(cfg.type==='simple-a'){ui.msg.textContent='Listen';c.t0=beep();}
-  else if(cfg.type==='choice'){ui.msg.textContent='';setBoxes(cfg.nopts,tr.box);paintT0();}
-  else if(cfg.type==='rev'){ui.msg.textContent='';setBoxes(2,tr.box);paintT0();}
-  else if(cfg.type==='hint'){ui.msg.textContent='';setBoxes(2,tr.box);paintT0();}
-  else if(cfg.type==='gng'){ui.msg.textContent='';setBoxes(2,tr.box,tr.nogo);paintT0();
+  else if(cfg.type==='choice'||cfg.type==='rev'||cfg.type==='hint'){ui.msg.textContent='';setBoxes(cfg.nopts,tr.box,'lit');paintT0();}
+  else if(cfg.type==='gng'){ui.msg.textContent='';setBoxes(2,tr.box,tr.nogo?'stop':'go');paintT0();
     if(tr.nogo){c.nogoT=setTimeout(nogoOK,FAST?200:1100);}}
-  else if(cfg.type==='chg'){ui.msg.textContent='';setBoxes(2,tr.box);
+  else if(cfg.type==='chg'){ui.msg.textContent='';setBoxes(2,tr.box,'lit');
     if(tr.change){c.t0=null;c.chgT=setTimeout(doChange,FAST?80:220);}else{paintT0();}}
   if(cfg.type!=='gng'||!tr.nogo)c.miss=setTimeout(onMiss,missMs);
 }
 function doChange(){
-  if(!cur||cur.state!=='stim')return;var c=cur;c.chgT=null;c.changed=true;setBoxes(2,1-c.tr.box);
+  if(!cur||cur.state!=='stim')return;var c=cur;c.chgT=null;c.changed=true;setBoxes(2,1-c.tr.box,'lit');
   requestAnimationFrame(function(){if(cur===c&&c.state==='stim')c.t0=performance.now();});
 }
 function feedback(text,ms){
@@ -325,19 +734,20 @@ function nogoOK(){
   if(!cur||cur.state!=='stim')return;var c=cur;c.nogoT=null;
   if(!c.tr.p){R('gng').inhib++;R('gng').n++;}
   c.idx++;if(!c.tr.p)c.real++;
-  c.ui.st.classList.remove('nogo');feedback('Good. You held back.',700);
+  setBoxes(2,-1,'');feedback('Good. You held back.',700);
 }
 function onMiss(){
   if(!cur||cur.state!=='stim')return;var c=cur;c.miss=null;c.streak=0;
   if(!c.tr.p){var o=R(realKey());o.miss++;o.n++;}
   c.idx++;if(!c.tr.p)c.real++;
+  c.ui.st.classList.remove('go');
   feedback('Too slow. Try to respond faster.',900);
 }
-function anticipation(){
+function earlyPress(){
   var c=cur;clearTimers();c.streak=0;
-  if(!c.tr.p){R(c.cfg.type==='chg'?'chg':(c.cfg.type==='hint'?(c.tr.valid?'hv':'hi'):c.cfg.key)).ant++;}
-  c.ui.hint.textContent='';c.ui.msg.textContent='Too soon! Wait for the signal.';
-  c.state='feedback';c.ui.st.dataset.state='feedback';c.ui.feed.textContent='Anticipation. That trial will repeat.';
+  if(!c.tr.p){R(realKey()).early++;}
+  c.ui.hint.textContent='';c.ui.st.classList.remove('go');c.ui.msg.textContent='Too soon! Wait for the signal.';
+  c.state='feedback';c.ui.st.dataset.state='feedback';c.ui.feed.textContent='Early press (false start). That trial will repeat.';
   c.nextT=setTimeout(function(){if(cur===c)nextTrial();},FAST?40:1200);
 }
 function expected(c){
@@ -350,13 +760,13 @@ function expected(c){
 function resp(idx,ts,src){
   if(!cur)return;var c=cur;
   var kind=(src==='key')?'kb':(src==='touch'||src==='pen'?'touch':'mouse');
-  if(c.state==='wait'){D.inp[kind]++;anticipation();return;}
+  if(c.state==='wait'){D.inp[kind]++;earlyPress();return;}
   if(c.state!=='stim')return;
   D.inp[kind]++;
   var cfg=c.cfg,tr=c.tr;
   if(cfg.type==='gng'&&tr.nogo){
     clearTimers();c.streak=0;if(!tr.p){var o=R('gng');o.err++;o.n++;}
-    c.idx++;if(!tr.p)c.real++;c.ui.st.classList.remove('nogo');feedback('That was a STOP signal. You should not respond.',1100);return;
+    c.idx++;if(!tr.p)c.real++;setBoxes(2,-1,'');feedback('That was a STOP signal. You should not respond.',1100);return;
   }
   if(cfg.type==='chg'&&tr.change&&!c.changed){
     clearTimers();c.streak=0;if(!tr.p){var o2=R('chg');o2.err++;o2.n++;}
@@ -364,7 +774,7 @@ function resp(idx,ts,src){
   }
   if(c.t0===null||c.t0===undefined)return;
   var rt=ts-c.t0;
-  if(rt<100){anticipation();return;}
+  if(rt<100){earlyPress();return;}
   clearTimers();
   var key=realKey(),o3=R(key),ok=(idx===expected(c));
   if(cfg.type==='simple-v'||cfg.type==='simple-a')ok=true;
@@ -379,22 +789,24 @@ function resp(idx,ts,src){
   else if(c.streak>=4&&c.streak%4===0)line=c.streak+' in a row!';
   else line=CHEERS[Math.floor(Math.random()*CHEERS.length)];
   c.ui.msg.innerHTML='<div class="rtnum">'+Math.round(rt)+'<small>ms</small></div><div class="cheer'+(isBest?' best':'')+'">'+line+'</div>';
-  feedback('',900);
+  feedback(Math.round(rt)+' ms. '+line,900);
 }
 var CHEERS=['Wahoo!','Quick hands!','Hoos fast!','Nice!','Locked in!','Sharp!','Smooth!','Good rep!','Ready!','On it!'];
 function endBlock(){
   var c=cur,ui=c.ui;cur=null;ui.st.className='stage';ui.st.dataset.state='idle';ui.boxes.innerHTML='';ui.hint.textContent='';
   ui.msg.innerHTML='<div class="cheer">Block complete. Wahoowa!</div>'+(c.best!==undefined?'<div class="streak" style="margin-top:8px">BLOCK BEST</div><div class="rtnum">'+Math.round(c.best)+'<small>ms</small></div>':'');ui.Q.classList.add('hidden');ui.P.textContent='';ui.feed.textContent='';
+  say('Block complete.'+(c.best!==undefined?' Block best '+Math.round(c.best)+' ms.':''));
   D.done[c.id]=true;if(c.after)c.after();
 }
 document.addEventListener('keydown',function(e){
   if(!cur||e.repeat)return;
-  if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'))return;
+  if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
   var t=cur.cfg.type,k=e.key;
+  if(k==='Escape'){e.preventDefault();stopBlock();return;}
   if(cur.state==='idle')return;
   if(t==='simple-v'||t==='simple-a'){if(k===' '||k==='Enter'){e.preventDefault();resp(0,e.timeStamp,'key');}return;}
   var ix=-1;
-  if(k>='1'&&k<='4')ix=Number(k)-1;
+  if(k>='1'&&k<='4'&&k.length===1)ix=Number(k)-1;
   else if(k==='ArrowLeft')ix=0;else if(k==='ArrowRight')ix=cur.cfg.nopts>1?1:0;
   if(ix>=0){
     if(ix>=cur.cfg.nopts)return;
@@ -405,59 +817,81 @@ document.addEventListener('keydown',function(e){
 /* ---------- experiment panels ---------- */
 var UI={};
 function buildExp(id){
-  var ex=EXP[id],host=$('tab-'+id);
-  var h='<div class="card"><h2 class="ct">'+ex.name+'</h2><p>'+ex.intro+'</p>'+
-    '<div class="pred"><b>'+ex.pred.q+'</b>'+ex.pred.opts.map(function(o,i){return '<label><input type="radio" name="pred-'+id+'" value="'+o+'"> '+o+'</label>';}).join('')+'</div>'+
-    '<div class="chips" id="chips-'+id+'"></div>'+
+  var ex=EXP[id],host=$('tab-'+id),pre=MODE==='pre';
+  var intro=(pre&&ex.intro.pre)||ex.intro.in,pr=(pre&&ex.pred.pre)||ex.pred.in,nm='pred-'+id+'-'+(pre?'pre':'in'),chosen=D.pred[mkey(id)];
+  var nb=blocksFor(id).length;
+  var h='<div class="card"><h2 class="ct">'+ex.name+'</h2><p>'+intro+'</p>'+
+    '<fieldset class="pred"><legend>'+pr.q+'</legend>'+pr.opts.map(function(o){return '<label><input type="radio" name="'+nm+'" value="'+esc(o)+'"'+(chosen===o?' checked':'')+'> '+esc(o)+'</label>';}).join('')+'</fieldset>'+
+    '<ul class="chips" id="chips-'+id+'" aria-label="Blocks in this experiment ('+nb+')"></ul>'+
     '<div class="row"><button class="btn primary" id="next-'+id+'" type="button">Start next block</button>'+
-    (id==='e1'?'<button class="btn" id="skipSa" type="button">No headphones? Skip the sound block</button>':'')+'</div></div>'+
+    (id==='e1'&&!pre?'<button class="btn" id="skipSa" type="button">No headphones? Skip the sound block</button>':'')+'</div>'+
+    (id==='e1'&&!pre?'<div class="inline-confirm hidden" id="skipAsk" role="group" aria-label="Confirm skipping the sound block"><p style="margin:0 0 8px">Skip the sound block? You will still do the light block, but you will not get a light versus sound comparison.</p><div class="row"><button class="btn primary small" id="skipYes" type="button">Yes, skip it</button><button class="btn small" id="skipNo" type="button">No, keep it</button></div></div>':'')+
+    '</div>'+
     '<div class="card"><div id="stage-'+id+'"></div></div>'+
-    '<div class="card hidden" id="sum-'+id+'"><h2 class="ct">What you found</h2><div id="sumbody-'+id+'"></div><div class="row" style="margin-top:10px"><button class="btn primary" data-go="'+(id==='e1'?'e2':id==='e2'?'e3':'res')+'" type="button">'+(id==='e3'?'See all results':'Next experiment')+'</button></div></div>';
+    '<div class="card hidden" id="sum-'+id+'"><h2 class="ct">What you found</h2><div id="sumbody-'+id+'"></div><div class="row" style="margin-top:10px"><button class="btn primary" data-go="'+nextOf(id)+'" type="button">'+(nextOf(id)==='res'?'See all results':'Next experiment')+'</button></div></div>';
   host.innerHTML=h;
   UI[id]=buildStage($('stage-'+id));
-  host.querySelectorAll('input[type=radio]').forEach(function(r){r.addEventListener('change',function(){D.pred[id]=r.value;});});
+  host.querySelectorAll('input[type=radio]').forEach(function(r){r.addEventListener('change',function(){D.pred[mkey(id)]=r.value;});});
   $('next-'+id).addEventListener('click',function(){
-    if(cur)return;var nb=order[id].filter(function(b){return !D.done[b];})[0];
-    if(!nb)return;ac();startBlock(UI[id],nb,function(){refreshExp(id);});
-    UI[id].host.scrollIntoView({block:'center',behavior:'smooth'});
+    if(cur)return;var b=blocksFor(id).filter(function(x){return !D.done[x];})[0];
+    if(!b)return;ac();startBlock(UI[id],b,function(){refreshExp(id);});
+    try{UI[id].host.scrollIntoView({block:'center',behavior:RM?'auto':'smooth'});}catch(e){}
   });
-  if(id==='e1')$('skipSa').addEventListener('click',function(){
-    if(cur||D.done.sa)return;
-    if(!confirm('Skip the sound block? You will still do the light block, but you will not get a light versus sound comparison.'))return;
-    delete D.r.sa;D.done.sa=true;D.skip.sa=true;refreshExp('e1');
-  });
+  if(id==='e1'&&!pre){
+    $('skipSa').addEventListener('click',function(){if(cur||D.done.sa)return;$('skipAsk').classList.remove('hidden');$('skipYes').focus();});
+    $('skipNo').addEventListener('click',function(){$('skipAsk').classList.add('hidden');$('skipSa').focus();});
+    $('skipYes').addEventListener('click',function(){delete D.r.sa;D.done.sa=true;D.skip.sa=true;$('skipAsk').classList.add('hidden');refreshExp('e1');say('Sound block skipped.');$('next-e1').focus();});
+  }
   refreshExp(id);
 }
+function nextOf(id){if(id==='e1')return 'e2';if(id==='e2')return MODE==='pre'?'res':'e3';return 'res';}
 function refreshExp(id){
-  var ch=$('chips-'+id),h='',nextFound=false;
-  order[id].forEach(function(b,i){
+  var ch=$('chips-'+id),h='',nextFound=false,list=blocksFor(id);
+  list.forEach(function(b,i){
     var cls='chip';if(D.done[b])cls+=' done';else if(!nextFound){cls+=' next';nextFound=true;}
-    h+='<span class="'+cls+'">Block '+(i+1)+': '+BLK[b].title+(D.done[b]?(D.skip[b]?' (skipped)':' (done)'):'')+'</span>';
+    h+='<li class="'+cls+'">Block '+(i+1)+': '+BLK[b].title+(D.done[b]?(D.skip[b]?' (skipped)':' (✓ done)'):(cls.indexOf('next')>=0?' (next)':''))+'</li>';
   });
   ch.innerHTML=h;
-  if(id==='e1')$('skipSa').classList.toggle('hidden',!!D.done.sa);
-  var all=order[id].every(function(b){return D.done[b];});
+  if($('skipSa'))$('skipSa').classList.toggle('hidden',!!D.done.sa);
+  var all=list.every(function(b){return D.done[b];});
   $('next-'+id).disabled=all;
-  if(all){$('next-'+id).textContent='All blocks done';$('sum-'+id).classList.remove('hidden');renderSummary(id);}
+  $('next-'+id).textContent=all?'All blocks done':'Start next block';
+  $('sum-'+id).classList.toggle('hidden',!all);
+  if(all)renderSummary(id);
 }
 function medOf(k){var r=D.r[k];return r&&r.rts.length>=3?med(r.rts):null;}
-function accOf(k){var r=D.r[k];if(!r||!r.n)return null;return r.rts.length/r.n*100;}
+// Accuracy = correct / (all real trials + early presses). Early presses count against you because they repeat until you wait.
+function accOf(k){var r=D.r[k];if(!r)return null;var att=r.n+r.early;if(!att)return null;return (r.rts.length+(k==='gng'?r.inhib:0))/att*100;}
+// Hick's law fit: RT = a + b·log2 n, least squares on the blocks you ran (needs 2 or more).
+function hick(){
+  var pts=[];[['c1',1],['c2',2],['c3',3],['c4',4]].forEach(function(p){var m=medOf(p[0]);if(m!==null)pts.push([Math.log(p[1])/Math.LN2,m]);});
+  if(pts.length<2)return null;
+  var n=pts.length,sx=0,sy=0,sxx=0,sxy=0;pts.forEach(function(p){sx+=p[0];sy+=p[1];sxx+=p[0]*p[0];sxy+=p[0]*p[1];});
+  var den=n*sxx-sx*sx;if(!den)return null;var b=(n*sxy-sx*sy)/den;return {b:b,a:(sy-b*sx)/n,n:n};
+}
+function hickText(H){
+  if(!H)return '';
+  if(Math.round(H.b)<=0)return '<p>Your reaction time <b>did not rise</b> with more choices in this run (b = '+sgn(H.b)+' ms per doubling). With only a few trials per block, noise can hide the effect. Run the blocks again, or compare with the class pattern in class.</p>';
+  return '<p>Each time the number of choices <b>doubles</b>, your reaction time went up by about <b>'+Math.round(H.b)+' ms</b>. Going from 1 to 2 boxes is one doubling. Going from 2 to 4 boxes adds two boxes but is still only one doubling. So RT goes up, but by less with each added box. This is Hick’s law.</p>'+
+    '<p class="eq">RT = a + b·log<sub>2</sub> n</p><p class="note">Your fit: a = '+Math.round(H.a)+' ms (your 1 box time, because log<sub>2</sub> 1 = 0) and b = '+Math.round(H.b)+' ms per doubling, from '+H.n+' blocks.</p>';
+}
 function renderSummary(id){
-  var b=$('sumbody-'+id),h='';
+  var b=$('sumbody-'+id),h='',pre=MODE==='pre',p=D.pred[mkey(id)];
   if(id==='e1'){
     var v=medOf('sv'),a=medOf('sa');
-    h='<p>Median reaction time: <b>light '+(v===null?'n/a':rd(v)+' ms')+'</b> and <b>sound '+(D.skip.sa?'skipped':(a===null?'n/a':rd(a)+' ms'))+'</b>.</p>';
-    if(v!==null&&a!==null)h+='<p>You responded <b>'+Math.abs(Math.round(v-a))+' ms '+(a<v?'faster to the sound':(a>v?'faster to the light':'the same'))+'</b>. In lab studies sound is usually a bit faster, because the hearing system passes signals along quickly. Device delays can hide or exaggerate this, so look at your own pattern.</p>';
-    if(D.pred.e1)h+='<p class="note">Your prediction: '+D.pred.e1+'.</p>';
+    if(pre){
+      h='<p>Your median reaction time to the light: <b>'+(v===null?'n/a':rd(v)+' ms')+'</b>.</p><p>Lab studies of young adults report about 190 ms to a light. Phones and laptops usually read slower, because the screen, the keyboard and the browser each add a little delay.</p>';
+    } else {
+      h='<p>Median reaction time: <b>light '+(v===null?'n/a':rd(v)+' ms')+'</b> and <b>sound '+(D.skip.sa?'skipped':(a===null?'n/a':rd(a)+' ms'))+'</b>.</p>';
+      if(v!==null&&a!==null)h+='<p>You responded <b>'+(Math.round(v-a)===0?'the same to both':Math.abs(Math.round(v-a))+' ms '+(a<v?'faster to the sound':'faster to the light'))+'</b>. In lab studies sound is usually a bit faster, because the hearing system passes signals along quickly. Device delays can hide or exaggerate this, so look at your own pattern.</p>';
+    }
   } else if(id==='e2'){
-    var ks=['c1','c2','c3','c4'];h='<p>Median reaction time by number of boxes:</p>'+barsFor(ks.map(function(k){return {l:BLK[k].title,v:medOf(k)};}));
-    var s=hick();if(s!==null)h+='<p>Each time the number of choices <b>doubles</b>, your reaction time went up by about <b>'+Math.round(s)+' ms</b>. This is called Hick’s law. More options means more time to decide.</p>';
-    if(D.pred.e2)h+='<p class="note">Your prediction: '+D.pred.e2+'.</p>';
+    var ks=blocksFor('e2').slice().sort();
+    h='<p>Median reaction time by number of boxes:</p>'+barsFor(ks.map(function(k){return {l:BLK[k].title,v:medOf(k)};}))+hickText(hick());
   } else {
-    var ks3=['dir','rev','gng','chg','hv','hi'];
-    h='<p>Median reaction time:</p>'+barsFor([{l:'Same side',v:medOf('dir')},{l:'Opposite side',v:medOf('rev')},{l:'Go (green)',v:medOf('gng')},{l:'Late change: no change',v:medOf('nc')},{l:'Late change: after the jump',v:medOf('chg')},{l:'Hint was right',v:medOf('hv')},{l:'Hint was wrong',v:medOf('hi')}]);
-    if(D.pred.e3)h+='<p class="note">Your prediction: '+D.pred.e3+'.</p>';
+    h='<p>Median reaction time:</p>'+barsFor([{l:'Same side',v:medOf('dir')},{l:'Opposite side',v:medOf('rev')},{l:'Go (go trials)',v:medOf('gng')},{l:'Late change: no change',v:medOf('nc')},{l:'Late change: after the jump',v:medOf('chg')},{l:'Hint was right',v:medOf('hv')},{l:'Hint was wrong',v:medOf('hi')}]);
   }
+  if(p)h+='<p class="note">Your prediction: '+esc(p)+'.</p>';
   b.innerHTML=h;
 }
 function barsFor(items){
@@ -465,48 +899,54 @@ function barsFor(items){
   if(!mx)return '<p class="note">Not enough valid trials yet.</p>';
   return items.map(function(i){return '<div class="barrow"><span>'+i.l+'</span><span>'+(i.v===null?'':'<div class="bar" style="width:'+Math.max(2,i.v/mx*100)+'%"></div>')+'</span><b>'+(i.v===null?'n/a':rd(i.v)+' ms')+'</b></div>';}).join('');
 }
-function hick(){
-  var pts=[];[['c1',0],['c2',1],['c3',Math.log(3)/Math.log(2)],['c4',2]].forEach(function(p){var m=medOf(p[0]);if(m!==null)pts.push([p[1],m]);});
-  if(pts.length<3)return null;
-  var n=pts.length,sx=0,sy=0,sxx=0,sxy=0;pts.forEach(function(p){sx+=p[0];sy+=p[1];sxx+=p[0]*p[0];sxy+=p[0]*p[1];});
-  var den=n*sxx-sx*sx;if(!den)return null;return (n*sxy-sx*sy)/den;
-}
 
 /* ---------- results ---------- */
+function devOf(){var m=D.inp;if(m.touch>m.kb&&m.touch>=m.mouse)return 'touch';if(m.mouse>m.kb&&m.mouse>m.touch)return 'mouse';return 'kb';}
+// RTLAB2|dev=..|<13 medians>|<key>_a=<% correct>|early=..|err=..|ck=NN
 function codeStr(){
-  var dev='kb',m=D.inp;if(m.touch>m.kb&&m.touch>=m.mouse)dev='touch';else if(m.mouse>m.kb&&m.mouse>m.touch)dev='mouse';
-  var keys=['sv','sa','c1','c2','c3','c4','dir','rev','gng','nc','chg','hv','hi'];
-  var parts=['RTLAB1','dev='+dev];keys.forEach(function(k){parts.push(k+'='+rd(medOf(k)));});
-  var ant=0,err=0;Object.keys(D.r).forEach(function(k){ant+=D.r[k].ant;err+=D.r[k].err;});
-  parts.push('ant='+ant);parts.push('err='+err);
-  return parts.join('|');
+  var parts=['RTLAB2','dev='+devOf()];
+  KEYS.forEach(function(k){parts.push(k+'='+rd(medOf(k)));});
+  KEYS.forEach(function(k){var a=accOf(k);if(a!==null)parts.push(k+'_a='+Math.round(a));});
+  var early=0,err=0;Object.keys(D.r).forEach(function(k){early+=D.r[k].early;err+=D.r[k].err+D.r[k].miss;});
+  parts.push('early='+early);parts.push('err='+err);
+  var s=parts.join('|');return s+'|ck='+checksum(s);
 }
 var NAMES={sv:'Simple: light',sa:'Simple: sound',c1:'Choice: 1 box',c2:'Choice: 2 boxes',c3:'Choice: 3 boxes',c4:'Choice: 4 boxes',dir:'Same side (2 boxes)',rev:'Opposite side',gng:'Go or stop (go trials)',nc:'Late change: light stays',chg:'Late change: light jumps',hv:'Hint was right',hi:'Hint was wrong'};
+function qa(q,a){return '<details><summary>'+q+'</summary><div class="qa">'+a+'</div></details>';}
+function checkQs(){
+  return '<div class="card"><h2 class="ct">Check yourself</h2>'+
+    qa('Your 1 box median is 300 ms and your cost per doubling is b = 60 ms. Use RT = a + b·log2 n to predict your 4 box and 8 box medians.','a = 300 ms, because log2 1 = 0. 4 boxes: 300 + 60 × 2 = 420 ms. 8 boxes: 300 + 60 × 3 = 480 ms. Going from 4 to 8 boxes adds 4 boxes but only 60 ms, about 15 ms per added box. The first added box (1 to 2) cost the full 60 ms.')+
+    qa('Why does reaction time go up by less with each added box?','Hick’s law says RT grows with log2 n. Each doubling of the choices adds about the same time (b). Adding one box to 4 boxes is much less than a doubling, so it adds much less time than adding one box to 1 box.')+
+    qa('A phone app reports 280 ms to a light, but lab studies report about 190 ms. List two reasons the numbers could differ.','Screens refresh only every few ms and can lag. Keyboards, touchscreens and browsers add input delay. You may be tired, distracted or unpracticed. Some apps time the whole movement, not just the reaction.')+
+    qa('You are running at 5 m/s and your 4 box reaction time is 0.42 s. How far do you travel before you start to react?','distance = speed × reaction time = 5.00 m/s × 0.42 s = 2.10 m.')+
+    qa('Why does the lab report your median instead of your mean?','One very slow or very fast trial pulls the mean a long way but barely moves the median.')+
+    '<p class="note" style="margin-top:10px">Bring your answers and one question to class.</p></div>';
+}
 function renderResults(){
-  var host=$('tab-res'),keys=Object.keys(NAMES),any=keys.some(function(k){return medOf(k)!==null;});
-  if(!any){host.innerHTML='<div class="card"><h2 class="ct">Results</h2><p>Complete at least one experiment to see your results here.</p></div>';return;}
-  var h='<div class="card"><h2 class="ct">Your reaction times</h2><table class="t"><tr><th>Condition</th><th class="n">Median (ms)</th><th class="n">Best (ms)</th><th class="n">Correct</th><th class="n">Wrong</th><th class="n">Too early</th></tr>';
+  var host=$('tab-res'),pre=MODE==='pre',keys=KEYS.filter(function(k){return !pre||k==='sv'||PRE.e2.indexOf(k)>=0;}),any=keys.some(function(k){return medOf(k)!==null;});
+  if(!any){host.innerHTML='<div class="card"><h2 class="ct">Results</h2><p>Complete at least one experiment to see your results here.</p></div>'+(pre?checkQs():'');return;}
+  var h='<div class="card"><h2 class="ct">Your reaction times</h2><div class="tw"><table class="t"><tr><th scope="col">Condition</th><th scope="col" class="n">Median (ms)</th><th scope="col" class="n">Best (ms)</th><th scope="col" class="n">Correct</th><th scope="col" class="n">Wrong or slow</th><th scope="col" class="n">Early presses</th><th scope="col" class="n">Accuracy</th></tr>';
   keys.forEach(function(k){
-    var r=D.r[k];if(!r||!r.n&&!r.ant)return;
-    var best=r.rts.length?Math.min.apply(null,r.rts):null,accTxt=r.n?r.rts.length+(k==='gng'?r.inhib:0)+' of '+r.n:'';
-    if(k==='gng'){accTxt=(r.rts.length+r.inhib)+' of '+r.n;}
-    h+='<tr><td>'+NAMES[k]+'</td><td class="n">'+(medOf(k)===null?'n/a':rd(medOf(k)))+'</td><td class="n">'+rd(best)+'</td><td class="n">'+accTxt+'</td><td class="n">'+(r.err+r.miss)+'</td><td class="n">'+r.ant+'</td></tr>';
+    var r=D.r[k];if(!r||!r.n&&!r.early)return;
+    var best=r.rts.length?Math.min.apply(null,r.rts):null,correct=r.rts.length+(k==='gng'?r.inhib:0),acc=accOf(k);
+    h+='<tr><td>'+NAMES[k]+'</td><td class="n">'+(medOf(k)===null?'n/a':rd(medOf(k)))+'</td><td class="n">'+rd(best)+'</td><td class="n">'+(r.n?correct+' of '+r.n:'')+'</td><td class="n">'+(r.err+r.miss)+'</td><td class="n">'+r.early+'</td><td class="n">'+(acc===null?'':Math.round(acc)+'%')+'</td></tr>';
   });
-  h+='</table><p class="note" style="margin-top:8px">The median is the middle of your valid trials. Wrong means the wrong box, a response to a stop signal, or a response that was too slow.</p></div>';
+  h+='</table></div><p class="note" style="margin-top:8px">The median is the middle of your valid trials. Wrong or slow means the wrong box, a response to a stop signal, or a response that took more than 2 s. Accuracy = correct ÷ (trials + early presses).</p></div>';
   // badges
-  var bg=[],allRts=[],totErr=0,totAnt=0;
-  Object.keys(D.r).forEach(function(k){allRts=allRts.concat(D.r[k].rts);totErr+=D.r[k].err+D.r[k].miss;totAnt+=D.r[k].ant;});
+  var bg=[],allRts=[],totErr=0,totEarly=0;
+  Object.keys(D.r).forEach(function(k){allRts=allRts.concat(D.r[k].rts);totErr+=D.r[k].err+D.r[k].miss;totEarly+=D.r[k].early;});
   if(allRts.length)bg.push(['Quick Draw','Fastest single reaction: '+Math.round(Math.min.apply(null,allRts))+' ms']);
   if(D.done.sv&&D.done.sa&&medOf('sa')!==null&&medOf('sv')!==null)bg.push(medOf('sa')<medOf('sv')?['Ears On','Faster to sound than light']:['Eagle Eye','Faster to light than sound']);
   if(D.r.gng&&D.r.gng.n&&!D.r.gng.err)bg.push(['Ice Veins','Never fooled by a stop signal']);
   if(D.r.chg&&D.r.chg.n&&!D.r.chg.err)bg.push(['Unfakeable','Waited out every late change']);
-  if(['e1','e2','e3'].every(function(x){return order[x].every(function(b){return D.done[b];});}))bg.push(['Full Season','Finished all three experiments']);
-  if(allRts.length&&!totErr&&!totAnt)bg.push(['Clean Sheet','No wrong, slow, or early responses']);
+  if(['e1','e2','e3'].every(function(x){return blocksFor(x).every(function(b){return D.done[b];});})&&!pre)bg.push(['Full Season','Finished all three experiments']);
+  if(allRts.length&&!totErr&&!totEarly)bg.push(['Clean Sheet','No wrong, slow or early responses']);
   if(bg.length)h='<div class="card"><h2 class="ct">Your badges</h2><div class="badges">'+bg.map(function(b){return '<div class="badge"><div class="bt">'+b[0]+'</div><div class="bd">'+b[1]+'</div></div>';}).join('')+'</div></div>'+h;
   // differences
-  var d=[],s,v;
+  var d=[],H=hick();
   var sv=medOf('sv'),sa=medOf('sa');if(sv!==null&&sa!==null)d.push([sgn(sv-sa)+' ms','Light minus sound','If positive, you were faster to the sound.']);
-  s=hick();if(s!==null)d.push(['+'+Math.round(s)+' ms','Cost of each doubling of choices','From your 1, 2, 3 and 4 box blocks.']);
+  if(H)d.push([sgn(H.b)+' ms','Cost of each doubling of choices (b)',Math.round(H.b)>0?'From your fit RT = a + b·log2 n, with a = '+Math.round(H.a)+' ms.':'Your RT did not rise with more choices this time. With only a few trials, noise can hide the effect.']);
+  var c1=medOf('c1'),c4=medOf('c4');if(c1!==null&&c4!==null)d.push([sgn(c4-c1)+' ms','4 boxes minus 1 box','Two doublings of the number of choices.']);
   var dr=medOf('dir'),rv=medOf('rev');if(dr!==null&&rv!==null)d.push([sgn(rv-dr)+' ms','Opposite side minus same side','The cost of translating a cue into the opposite response.']);
   var gn=medOf('gng');if(dr!==null&&gn!==null)d.push([sgn(gn-dr)+' ms','Go trials with a stop signal possible, minus plain two-box','The cost of holding back. Stop errors: '+(D.r.gng?D.r.gng.err:0)+'.']);
   var nc=medOf('nc'),ch=medOf('chg');if(nc!==null&&ch!==null)d.push([sgn(ch-nc)+' ms','After a late change minus no change','Time to change your mind. Wrong first moves: '+(D.r.chg?D.r.chg.err:0)+'.']);
@@ -514,91 +954,613 @@ function renderResults(){
   if(hv!==null&&hi!==null)d.push([sgn(hi-hv)+' ms','Wrong hint minus right hint','The price of being fooled.']);
   if(d.length){h+='<div class="card"><h2 class="ct">What changed your reaction time</h2><div class="diff">'+d.map(function(x){return '<div class="dcard"><div class="v">'+x[0]+'</div><b>'+x[1]+'</b><div class="l">'+x[2]+'</div></div>';}).join('')+'</div></div>';}
   // predictions
-  var pr='';
-  if(D.pred.e1&&sv!==null&&sa!==null){var f=sa<sv?'Sound':(sv<sa?'Light':'About the same');pr+='<p><b>Experiment 1.</b> You predicted: '+D.pred.e1+'. Faster for you: '+f+'.</p>';}
-  if(D.pred.e2&&s!==null)pr+='<p><b>Experiment 2.</b> You predicted: '+D.pred.e2+'. Your reaction time rose about '+Math.round(s)+' ms with each doubling of choices.</p>';
-  if(D.pred.e3){var tw=[['Opposite side',rv!==null&&dr!==null?rv-dr:null],['Go or stop',gn!==null&&dr!==null?gn-dr:null],['Late change',nc!==null&&ch!==null?ch-nc:null],['Hint arrow',hv!==null&&hi!==null?hi-hv:null]].filter(function(x){return x[1]!==null;});
-    if(tw.length){tw.sort(function(a,b){return b[1]-a[1];});pr+='<p><b>Experiment 3.</b> You predicted: '+D.pred.e3+'. The biggest cost for you was: '+tw[0][0]+' (+'+Math.round(tw[0][1])+' ms).</p>';}}
+  var pr='',p1=D.pred[mkey('e1')],p2=D.pred[mkey('e2')],p3=D.pred[mkey('e3')];
+  if(pre&&p1&&sv!==null)pr+='<p><b>Experiment 1.</b> You predicted: '+esc(p1)+'. Your light median: '+rd(sv)+' ms'+(sv>200?', slower than the lab value of about 190 ms, as most devices are.':'.')+'</p>';
+  if(!pre&&p1&&sv!==null&&sa!==null){var f=sa<sv?'Sound':(sv<sa?'Light':'About the same');pr+='<p><b>Experiment 1.</b> You predicted: '+esc(p1)+'. Faster for you: '+f+'.</p>';}
+  if(p2&&H)pr+='<p><b>Experiment 2.</b> You predicted: '+esc(p2)+'. Hick’s law predicts: '+HICK_ANSWER.toLowerCase()+' (about the same rise each time the choices double). '+(Math.round(H.b)>0?'Your rise was about '+Math.round(H.b)+' ms per doubling.':'Your times did not rise this run, so noise hid the effect.')+'</p>';
+  if(!pre&&p3){var tw=[['Opposite side',rv!==null&&dr!==null?rv-dr:null],['Go or stop',gn!==null&&dr!==null?gn-dr:null],['Late change',nc!==null&&ch!==null?ch-nc:null],['Hint arrow',hv!==null&&hi!==null?hi-hv:null]].filter(function(x){return x[1]!==null;});
+    if(tw.length){tw.sort(function(a,b){return b[1]-a[1];});pr+='<p><b>Experiment 3.</b> You predicted: '+esc(p3)+'. The biggest cost for you was: '+tw[0][0]+' ('+sgn(tw[0][1])+' ms).</p>';}}
   if(pr)h+='<div class="card"><h2 class="ct">Your predictions</h2>'+pr+'</div>';
   // distance
   h+='<div class="card"><h2 class="ct">What reaction time means for agility</h2><p>While you decide, your body keeps moving. The distance you travel before you start to react is <b>speed × reaction time</b>.</p>'+
-     '<div class="row" style="margin-bottom:8px"><label>Your speed (m/s) <input type="number" id="spd" value="5" min="1" max="10" step="0.5"></label><span class="note">Walking 1.5, jogging 3, running 5, sprinting 8</span></div><div id="distOut"></div>'+
-     '<h3>Think about it</h3>'+
+     '<div class="row" style="margin-bottom:8px"><label for="spd">Your speed (m/s)</label><input type="number" id="spd" value="5" min="1" max="10" step="0.5"><span class="note">Walking 1.5, jogging 3, running 5, near-sprint 7</span></div><div id="distOut" aria-live="polite"></div>';
+  if(!pre){
+    h+='<h3>Think about it</h3>'+
      qa('Why do reactive agility tests tell coaches more than pre-planned drills?','In a planned drill the athlete already knows where to go, so there is almost no decision cost. In a reactive drill the athlete must also perceive the cue and choose a response. The costs you measured here (more choices, rules, fakes) are added on top of how fast the athlete can cut.')+
      qa('How could an athlete shrink the cost of many choices?','By reading cues earlier, such as an opponent’s hips and shoulders, by learning the common patterns of a sport so that fewer options need a decision, and by practicing the same scenes until the response becomes automatic.')+
      qa('Why is a wrong hint or a fake so costly?','Acting on a guess is fast when the guess is right and slow when it is wrong, because you must stop, re-decide and start a new movement. That is why defenders and attackers use fakes.')+
-     qa('Why compare your own conditions instead of comparing numbers with a classmate?','Screens, keyboards, speakers and phones add different delays. Those delays are about the same inside one device, so the differences between your conditions stay meaningful.')+'</div>';
-  // code
-  var code=codeStr();
-  h+='<div class="card"><h2 class="ct">Class contest: save your results for the scoreboard</h2><p class="sub">Type your name, then save the file and turn it in where your instructor tells you. The file holds your name and your median times only.</p>'+
-     '<div class="row"><label for="sbName" style="font-size:14px;font-weight:700">Your name</label><input type="text" id="sbName" maxlength="40" autocomplete="off" style="flex:1;min-width:180px;font-size:15px;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-family:inherit"><button class="btn primary" id="dlSb" type="button">Save for scoreboard</button></div><p class="note" id="sbMsg" style="margin:8px 0 0"></p></div>';
-  h+='<div class="card"><h2 class="ct">Your results code</h2><p class="sub">If your instructor asks for it, copy this code and paste it where you are told. It contains your median times only. It has no name.</p><textarea id="codeBox" readonly>'+code+'</textarea>'+
-     '<div class="row" style="margin-top:8px"><button class="btn primary" id="copyCode" type="button">Copy code</button><button class="btn" id="dlCsv" type="button">Save as a spreadsheet</button><span class="note" id="copyMsg"></span></div></div>';
+     qa('Why compare your own conditions instead of comparing numbers with a classmate?','Screens, keyboards, speakers and phones add different delays. Those delays are about the same inside one device, so the differences between your conditions stay meaningful.');
+  }
+  h+='</div>';
+  if(pre)h+=checkQs();
+  else {
+    h+='<div class="card"><h2 class="ct">Class contest: save your results for the scoreboard</h2><p class="sub">Type your name or a nickname, then save the file and turn it in where your instructor tells you. The file holds your name, your median times and your accuracy only. The board ranks accuracy as well as speed, so guessing does not pay.</p>'+
+     '<div class="row"><label for="sbName" style="font-size:15px;font-weight:700">Your name or nickname</label><input type="text" id="sbName" maxlength="40" autocomplete="off" style="flex:1;min-width:180px"><button class="btn primary" id="dlSb" type="button">Save for scoreboard</button></div><p class="note" id="sbMsg" role="status" style="margin:8px 0 0"></p>'+
+     '<div id="sbLineWrap" class="hidden" style="margin-top:8px"><label for="sbLine" class="note">If no file appeared (some embedded pages block downloads), copy this line and turn it in instead:</label><textarea id="sbLine" readonly></textarea><div class="row" style="margin-top:6px"><button class="btn small" id="copyLine" type="button">Copy line</button><span class="note" id="copyLineMsg" role="status"></span></div></div></div>';
+    h+='<div class="card"><h2 class="ct">Your results code</h2><p class="sub">If your instructor asks for it, copy this code and paste it where you are told. It contains your median times and accuracy only. It has no name.</p><label for="codeBox" class="sr-only">Your results code</label><textarea id="codeBox" readonly></textarea>'+
+     '<div class="row" style="margin-top:8px"><button class="btn primary" id="copyCode" type="button">Copy code</button><button class="btn" id="dlCsv" type="button">Save as a spreadsheet</button><span class="note" id="copyMsg" role="status"></span></div></div>';
+  }
   host.innerHTML=h;
   function dist(){
-    var sp=Number($('spd').value)||0,rows=[['Light (simple)',sv],['Sound (simple)',sa],['4 choices',medOf('c4')],['Opposite side',rv],['After a late change',ch]].filter(function(r){return r[1]!==null;});
-    $('distOut').innerHTML='<table class="t"><tr><th>Reaction</th><th class="n">Time (ms)</th><th class="n">Distance traveled (m)</th></tr>'+rows.map(function(r){return '<tr><td>'+r[0]+'</td><td class="n">'+rd(r[1])+'</td><td class="n">'+(sp*r[1]/1000).toFixed(2)+'</td></tr>';}).join('')+'</table>';
+    var sp=Number($('spd').value)||0,rows=[['Light (simple)',sv],['Sound (simple)',sa],['1 box',c1],['4 boxes',c4],['Opposite side',rv],['After a late change',ch]].filter(function(r){return r[1]!==null;});
+    $('distOut').innerHTML='<table class="t"><tr><th scope="col">Reaction</th><th scope="col" class="n">Time (ms)</th><th scope="col" class="n">Distance traveled (m)</th></tr>'+rows.map(function(r){return '<tr><td>'+r[0]+'</td><td class="n">'+rd(r[1])+'</td><td class="n">'+(sp*r[1]/1000).toFixed(2)+'</td></tr>';}).join('')+'</table>';
   }
   $('spd').addEventListener('input',dist);dist();
+  if(pre)return;
+  var code=codeStr();$('codeBox').value=code;
   $('sbName').value=D.name||'';
   $('sbName').addEventListener('input',function(){D.name=this.value;});
   $('dlSb').addEventListener('click',function(){
-    var nm=$('sbName').value.replace(/[|\r\n,]+/g,' ').replace(/\s+/g,' ').trim();
-    if(!nm){$('sbMsg').textContent='Type your name first.';$('sbName').focus();return;}
-    var fn='RTLAB_'+(nm.replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'results')+'.txt';
-    var blob=new Blob([nm+', '+codeStr()+'\n'],{type:'text/plain'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);},500);
-    $('sbMsg').textContent='Saved as '+fn+'. Check your Downloads folder.';
+    var nm=$('sbName').value.replace(/[|\r\n,;"\t]+/g,' ').replace(/\s+/g,' ').trim();
+    if(!nm){$('sbMsg').textContent='Type your name or a nickname first.';$('sbName').focus();return;}
+    var fn='RTLAB_'+(nm.replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'results')+'.txt',line=nm+', '+codeStr();
+    var ok=download(fn,line+'\n','text/plain');
+    $('sbMsg').textContent=ok?'Saved as '+fn+'. Check your Downloads folder.':'The download was blocked. Copy the line below instead.';
+    $('sbLine').value=line;$('sbLineWrap').classList.remove('hidden');
   });
-  $('copyCode').addEventListener('click',function(){
-    var box=$('codeBox');box.select();var ok=false;
+  function copyFrom(box,msg){
+    box.focus();box.select();var ok=false;
     try{ok=document.execCommand('copy');}catch(e){}
-    if(!ok&&navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(code).then(function(){$('copyMsg').textContent='Copied.';},function(){$('copyMsg').textContent='Select the code and copy it by hand.';});}
-    else{$('copyMsg').textContent=ok?'Copied.':'Select the code and copy it by hand.';}
-  });
+    if(ok){msg.textContent='Copied.';return;}
+    try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(box.value).then(function(){msg.textContent='Copied.';},function(){msg.textContent='Select the text and copy it by hand (Ctrl+C or Cmd+C).';});return;}}catch(e){}
+    msg.textContent='Select the text and copy it by hand (Ctrl+C or Cmd+C).';
+  }
+  $('copyLine').addEventListener('click',function(){copyFrom($('sbLine'),$('copyLineMsg'));});
+  $('copyCode').addEventListener('click',function(){copyFrom($('codeBox'),$('copyMsg'));});
   $('dlCsv').addEventListener('click',function(){
-    var rows=['condition,median_ms,valid_trials,wrong_or_slow,too_early'];
-    Object.keys(NAMES).forEach(function(k){var r=D.r[k];if(r)rows.push('"'+NAMES[k]+'",'+rd(medOf(k))+','+r.rts.length+','+(r.err+r.miss)+','+r.ant);});
-    var blob=new Blob([rows.join('\n')],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='reaction-time-results.csv';document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);},500);
+    var rows=['condition,median_ms,valid_trials,wrong_or_slow,early_presses,accuracy_pct'];
+    KEYS.forEach(function(k){var r=D.r[k];if(r)rows.push('"'+NAMES[k]+'",'+rd(medOf(k))+','+r.rts.length+','+(r.err+r.miss)+','+r.early+','+rd(accOf(k)));});
+    var ok=download('reaction-time-results.csv',rows.join('\n'),'text/csv');
+    $('copyMsg').textContent=ok?'Spreadsheet saved.':'The download was blocked here. Copy the code instead.';
   });
 }
-function qa(q,a){return '<details><summary>'+q+'</summary><div class="qa">'+a+'</div></details>';}
 
-/* ---------- instructor combiner ---------- */
-function parseCode(line){
-  var at=line.indexOf('RTLAB1|');if(at<0)return null;line=line.slice(at).trim();var o={};line.split('|').slice(1).forEach(function(p){var i=p.indexOf('=');if(i>0)o[p.slice(0,i)]=p.slice(i+1);});return o;
-}
-function combine(){
-  var codes=$('insBox').value.split(/\r?\n/).map(parseCode).filter(function(x){return x;});
-  var out=$('insOut');if(!codes.length){out.innerHTML='<div class="msg warn">No valid codes found. Each line should start with RTLAB1.</div>';return;}
-  var keys=Object.keys(NAMES),rows='',items=[],stats={};
-  keys.forEach(function(k){
-    var v=codes.map(function(c){return c[k]===''||c[k]===undefined?NaN:Number(c[k]);}).filter(function(x){return !isNaN(x);});
-    stats[k]=v.length?med(v):null;
-    if(v.length){rows+='<tr><td>'+NAMES[k]+'</td><td class="n">'+rd(med(v))+'</td><td class="n">'+rd(mean(v))+'</td><td class="n">'+rd(Math.min.apply(null,v))+' to '+rd(Math.max.apply(null,v))+'</td><td class="n">'+v.length+'</td></tr>';items.push({l:NAMES[k],v:med(v)});}
-  });
-  var dev={};codes.forEach(function(c){dev[c.dev]=(dev[c.dev]||0)+1;});
-  var diffs=[];
-  function df(a,b,l){if(stats[a]!==null&&stats[b]!==null)diffs.push('<div class="dcard"><div class="v">'+sgn(stats[a]-stats[b])+' ms</div><b>'+l+'</b></div>');}
-  df('sv','sa','Light minus sound');df('c4','c1','4 choices minus 1 box');df('rev','dir','Opposite side minus same side');df('gng','dir','Go trials minus plain two-box');df('chg','nc','After a late change minus no change');df('hi','hv','Wrong hint minus right hint');
-  out.innerHTML='<h3>'+codes.length+' result code'+(codes.length===1?'':'s')+' combined</h3><p class="note">Devices: '+Object.keys(dev).map(function(k){return k+' '+dev[k];}).join(', ')+'. Medians of student medians are shown.</p>'+
-    '<table class="t"><tr><th>Condition</th><th class="n">Class median (ms)</th><th class="n">Class mean (ms)</th><th class="n">Range (ms)</th><th class="n">Students</th></tr>'+rows+'</table>'+
-    '<h3>Class pattern</h3>'+barsFor(items)+(diffs.length?'<h3>Class differences</h3><div class="diff">'+diffs.join('')+'</div>':'');
-}
-$('insGo').addEventListener('click',combine);
-$('insClear').addEventListener('click',function(){$('insBox').value='';$('insOut').innerHTML='';});
-
-/* ---------- tabs ---------- */
-function showTab(t){
-  document.querySelectorAll('#tabs button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-tab')===t);});
-  ['start','e1','e2','e3','res','ins'].forEach(function(x){$('tab-'+x).classList.toggle('hidden',x!==t);});
+/* ---------- lab tabs (ARIA tabs with arrow keys) ---------- */
+var labTab='start';
+function showTab(t,focus){
+  if(t==='e3'&&MODE==='pre')t='res';
+  labTab=t;
+  document.querySelectorAll('#tabs [role=tab]').forEach(function(b){var on=b.getAttribute('data-tab')===t;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;if(on&&focus)b.focus();});
+  ['start','e1','e2','e3','res'].forEach(function(x){$('tab-'+x).classList.toggle('hidden',x!==t);});
   if(t==='res')renderResults();
-  window.scrollTo({top:0});
+  try{window.scrollTo({top:0});}catch(e){}
 }
+function tabKeys(list,select){
+  list.addEventListener('keydown',function(e){
+    if(cur)return;
+    var tabs=[].filter.call(list.querySelectorAll('[role=tab]'),function(b){return !b.hidden;}),i=tabs.indexOf(document.activeElement),j=-1;
+    if(i<0)return;
+    if(e.key==='ArrowRight')j=(i+1)%tabs.length;else if(e.key==='ArrowLeft')j=(i-1+tabs.length)%tabs.length;else if(e.key==='Home')j=0;else if(e.key==='End')j=tabs.length-1;
+    if(j<0)return;e.preventDefault();select(tabs[j]);
+  });
+}
+tabKeys($('tabs'),function(b){if(cur)stopBlock();showTab(b.getAttribute('data-tab'),true);});
 document.addEventListener('click',function(e){
-  var b=e.target.closest('[data-tab]');if(b&&b.parentNode&&b.parentNode.id==='tabs'){if(cur)stopBlock();showTab(b.getAttribute('data-tab'));return;}
-  var g=e.target.closest('[data-go]');if(g){if(cur)stopBlock();showTab(g.getAttribute('data-go'));}
+  var b=e.target.closest('#tabs [data-tab]');if(b){if(cur)stopBlock();showTab(b.getAttribute('data-tab'));return;}
+  var g=e.target.closest('#lab [data-go]');if(g){if(cur)stopBlock();showTab(g.getAttribute('data-go'),true);}
 });
-['e1','e2','e3'].forEach(buildExp);
+var labBuiltFor=null;
+function buildLab(){
+  if(labBuiltFor===MODE)return;
+  if(cur)stopBlock();
+  ['e1','e2','e3'].forEach(buildExp);labBuiltFor=MODE;
+  showTab(labTab);
+}
+
+/* =====================================================================
+   INSTRUCTOR SCOREBOARD (?mode=board). State lives only in this browser.
+   ===================================================================== */
+var boardReady=false;
+function initBoard(){
+if(boardReady)return;boardReady=true;
+var KEY='rt-lab-board-v2',OLDKEY='rt-classic-scoreboard-v1';
+var EV=[
+  {k:'sv',n:'Light',x:1},{k:'sa',n:'Sound',x:1},
+  {k:'c1',n:'1 Box',x:2},{k:'c2',n:'2 Boxes',x:2},{k:'c3',n:'3 Boxes',x:2},{k:'c4',n:'4 Boxes',x:2},
+  {k:'dir',n:'Same Side',x:3},{k:'rev',n:'Opposite Side',x:3},{k:'gng',n:'Go or Stop',x:3},
+  {k:'nc',n:'Late Change: Stays',x:3},{k:'chg',n:'Late Change: Jumps',x:3},{k:'hv',n:'Hint Right',x:3},{k:'hi',n:'Hint Wrong',x:3}
+];
+var EXN={1:'Exp 1 · Simple',2:'Exp 2 · Choices',3:'Exp 3 · Twists'};
+var DEVN={kb:'KEYS',touch:'TOUCH',mouse:'MOUSE'};
+var DEF_EVENTS=['sv','c2','c4','rev','gng','chg','hi'];   // sound is off by default (Bluetooth delay, skipped blocks)
+var MEET=[10,8,6,5,4,3,2,1];
+function evByK(k){for(var i=0;i<EV.length;i++)if(EV[i].k===k)return EV[i];return null;}
+
+/* ---------- state (localStorage only inside try/catch; Save board / Load board as the dependable backup) ---------- */
+function fresh(){return {students:[],cfg:{mode:'meet',method:'ies',floor:80,pen:0,events:DEF_EVENTS.slice(),div:'all',initials:true},seq:1};}
+function norm(s){
+  var f=fresh();if(!s||!Array.isArray(s.students))return f;
+  var c=s.cfg||{};
+  f.cfg.mode=c.mode==='rank'?'rank':'meet';f.cfg.method=c.method==='raw'?'raw':'ies';
+  f.cfg.floor=num(Number(c.floor))&&c.floor!==undefined?Math.max(0,Math.min(100,Number(c.floor))):80;
+  // Old (RTLAB1-era) boards used a 0.5 point error penalty; the adjusted time replaces it, so it starts at 0 unless this board set it.
+  f.cfg.pen=num(Number(c.pen))&&c.pen!==undefined&&c.method!==undefined?Math.max(0,Number(c.pen)):0;
+  if(Array.isArray(c.events))f.cfg.events=c.events.filter(function(k){return evByK(k);});
+  f.cfg.div=DEVN[c.div]?c.div:'all';f.cfg.initials=c.initials===undefined?true:!!c.initials;
+  var seq=1;
+  f.students=s.students.filter(function(x){return x&&typeof x.name==='string';}).map(function(x){
+    var id=num(x.id)?x.id:seq;seq=Math.max(seq,id+1);
+    var v={},a={};Object.keys(x.v||{}).forEach(function(k){if(evByK(k)&&num(Number(x.v[k])))v[k]=Number(x.v[k]);});
+    Object.keys(x.a||{}).forEach(function(k){if(evByK(k)&&num(Number(x.a[k])))a[k]=Number(x.a[k]);});
+    return {id:id,name:x.name,dev:DEVN[x.dev]?x.dev:'kb',v:v,a:a,err:Number(x.err)||0,early:Number(x.early!==undefined?x.early:x.ant)||0,ver:x.ver||(Object.keys(a).length?2:1),ck:x.ck||null};
+  });
+  f.seq=Math.max(num(s.seq)?s.seq:1,seq);
+  return f;
+}
+var canSave=false;
+try{localStorage.setItem('__rtlab_test','1');localStorage.removeItem('__rtlab_test');canSave=true;}catch(e){canSave=false;}
+var S=(function(){
+  try{var raw=localStorage.getItem(KEY);if(raw)return norm(JSON.parse(raw));
+    var old=localStorage.getItem(OLDKEY);if(old){var o=JSON.parse(old);if(o&&o.cfg)o.cfg.initials=true;return norm(o);}}catch(e){}
+  return fresh();
+})();
+var lastSaved=null;
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S));canSave=true;lastSaved=new Date();}catch(e){canSave=false;}
+  showSaveState();
+}
+function showSaveState(){
+  $('saveWarn').innerHTML=canSave?'':'<div class="warn save" role="alert"><b>This browser is not saving the board.</b> It may be a private window, an embedded page or a blocked-storage setting. Use <b>Save board</b> on the Enter Scores tab before you close this page, and <b>Load board</b> to restore it.</div>';
+  $('saveState').innerHTML=canSave?('The board saves itself in this browser'+(lastSaved?' (last saved '+lastSaved.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})+')':'')+'. That copy can vanish if the cache is cleared or you switch browsers, so also use <b>Save board</b> for a backup file.'):'<b>Not saving in this browser.</b> Save board is the only way to keep these scores.';
+}
+function dn(name){if(!S.cfg.initials)return name;return initialsOf(name);}
+function initialsOf(name){return name.trim().split(/\s+/).map(function(w){return w.charAt(0).toUpperCase()+'.';}).join(' ');}
+
+/* ---------- code parsing (one parser for RTLAB1 and RTLAB2) ---------- */
+function findCode(str){var m=/RTLAB([12])\|/.exec(str);return m?{at:m.index,ver:Number(m[1])}:null;}
+function parseCode(str){
+  var f=findCode(str);if(!f)return null;
+  var code=str.slice(f.at).split(/[\s,";]/)[0],o={ver:f.ver,v:{},a:{},err:0,early:0,dev:'kb',ck:null};
+  var ckAt=code.indexOf('|ck=');
+  if(ckAt>=0)o.ck=checksum(code.slice(0,ckAt))===code.slice(ckAt+4,ckAt+6)?'ok':'bad';else if(f.ver===2)o.ck='missing';
+  code.split('|').slice(1).forEach(function(p){
+    var j=p.indexOf('=');if(j<1)return;var k=p.slice(0,j),val=p.slice(j+1),x=Number(val);
+    if(k==='dev'){if(DEVN[val])o.dev=val;}
+    else if(k==='err'){o.err=x||0;}
+    else if(k==='ant'||k==='early'){o.early=x||0;}
+    else if(/_a$/.test(k)){var b=k.slice(0,-2);if(evByK(b)&&val!==''&&isFinite(x))o.a[b]=Math.max(0,Math.min(100,x));}
+    else if(evByK(k)&&val!==''&&isFinite(x)&&x>0)o.v[k]=x;
+  });
+  return o;
+}
+function buildCode(s){
+  var parts=['RTLAB2','dev='+s.dev];
+  KEYS.forEach(function(k){parts.push(k+'='+(num(s.v[k])?Math.round(s.v[k]):''));});
+  KEYS.forEach(function(k){if(num(s.a[k]))parts.push(k+'_a='+Math.round(s.a[k]));});
+  parts.push('early='+(s.early||0));parts.push('err='+(s.err||0));
+  var str=parts.join('|');
+  // Keep the "may have been edited" flag through a CSV round trip: a flagged code gets a checksum that cannot match.
+  return str+'|ck='+(s.ck==='bad'?'xx':checksum(str));
+}
+
+/* ---------- scoring: adjusted time (inverse efficiency) with an accuracy floor ---------- */
+function activeEvents(){return EV.filter(function(e){return S.cfg.events.indexOf(e.k)>=0;});}
+function pool(){var d=S.cfg.div;return S.students.filter(function(s){return d==='all'||s.dev===d;});}
+function placePts(p,n){return S.cfg.mode==='meet'?(MEET[p]||0):(n-p);}
+function evScore(s,k){
+  var t=s.v[k];if(!num(t))return null;var a=num(s.a&&s.a[k])?s.a[k]:null,fl=Number(S.cfg.floor)||0;
+  if(a!==null&&a<fl)return {dq:true,t:t,a:a};
+  var sc=(S.cfg.method==='ies'&&a!==null)?(a>0?t*100/a:1e9):t;
+  return {t:t,a:a,sc:sc};
+}
+function eventOrder(list,k){return list.filter(function(r){return r.es[k]&&!r.es[k].dq;}).sort(function(a,b){return a.es[k].sc-b.es[k].sc;});}
+function score(){
+  var res=pool().map(function(s){var es={};EV.forEach(function(e){es[e.k]=evScore(s,e.k);});return {s:s,es:es,ev:{},ex:{1:0,2:0,3:0},n:0,dq:0,sumT:0,pen:0,total:0};});
+  activeEvents().forEach(function(e){
+    var arr=eventOrder(res,e.k),i=0;
+    res.forEach(function(r){if(r.es[e.k]&&r.es[e.k].dq)r.dq++;});
+    while(i<arr.length){
+      var j=i;while(j+1<arr.length&&arr[j+1].es[e.k].sc===arr[i].es[e.k].sc)j++;
+      var tot=0,p;for(p=i;p<=j;p++)tot+=placePts(p,arr.length);
+      var each=tot/(j-i+1);
+      for(p=i;p<=j;p++){var r=arr[p];r.ev[e.k]={pts:each,place:i+1};r.ex[e.x]+=each;r.n++;r.sumT+=r.es[e.k].sc;}
+      i=j+1;
+    }
+  });
+  res.forEach(function(r){r.pen=(Number(S.cfg.pen)||0)*((r.s.err||0)+(r.s.early||0));r.total=r.ex[1]+r.ex[2]+r.ex[3]-r.pen;r.avg=r.n?r.sumT/r.n:Infinity;});
+  res.sort(function(a,b){return (b.total-a.total)||(a.avg-b.avg)||a.s.name.localeCompare(b.s.name);});
+  return res;
+}
+function ies(){return S.cfg.method==='ies';}
+function scTxt(x){return Math.round(x.sc)+(ies()&&x.a!==null?' ms adj.':' ms');}
+function ruleText(){
+  return ies()?'<b>Scoring.</b> Each event ranks the <b>adjusted time</b> = median RT ÷ accuracy, so a fast guess does not beat a careful response. Example: 300 ms at 75% correct = 400 ms adjusted; 340 ms at 100% = 340 ms, which wins. Below '+f1(Number(S.cfg.floor)||0)+'% correct in an event = no points in that event.'+(Number(S.cfg.pen)?' Extra penalty: '+f1(Number(S.cfg.pen))+' points per wrong response or early press.':'')
+    :'<b>Scoring.</b> Each event ranks the raw median RT. Below '+f1(Number(S.cfg.floor)||0)+'% correct in an event = no points in that event.'+(Number(S.cfg.pen)?' Penalty: '+f1(Number(S.cfg.pen))+' points per wrong response or early press.':'');
+}
+
+/* ---------- render: scoreboard ---------- */
+var openRow=null,prevOrder=[];
+function renderBoard(){
+  var res=score(),act=activeEvents(),exUsed={1:0,2:0,3:0};act.forEach(function(e){exUsed[e.x]++;});
+  var devs={};S.students.forEach(function(s){devs[s.dev]=(devs[s.dev]||0)+1;});
+  $('divs').innerHTML=['all','kb','touch','mouse'].filter(function(d){return d==='all'||devs[d]||S.cfg.div===d;}).map(function(d){
+    return '<button type="button" data-div="'+d+'" aria-pressed="'+(S.cfg.div===d)+'">'+(d==='all'?'ALL':DEVN[d])+(d==='all'?'':' ('+(devs[d]||0)+')')+'</button>';}).join('');
+  var mixed=Object.keys(devs).length>1&&S.cfg.div==='all';
+  $('mixWarn').innerHTML=mixed?'<div class="warn"><b>Mixed devices on the board.</b> Keyboards, touchscreens and mice add different delays, so times are not a fair race across devices. Use the division buttons to crown a winner for each device.</div>':'';
+  $('sbSub').textContent=act.length+' events · '+(ies()?'adjusted time':'raw time')+' · '+(S.cfg.mode==='meet'?'track meet scoring':'everyone scores')+(S.cfg.div==='all'?'':' · '+DEVN[S.cfg.div]+' division');
+  $('ruleStrip').innerHTML=ruleText();
+  var j='';
+  if(res.length&&res[0].n){
+    var L=res[0],gap=res[1]?L.total-res[1].total:null;
+    j+='<div class="tile leader"><span class="crown" aria-hidden="true">👑</span><div class="lbl">Leader</div><div class="name">'+esc(dn(L.s.name))+'</div><div class="meta"><span class="pts">'+f1(L.total)+' PTS</span>'+(gap!==null?'<span class="gap">'+(gap>0?'+'+f1(gap)+' AHEAD':'TIED AT THE TOP')+'</span>':'')+'</div></div>';
+  } else j+='<div class="tile leader"><div class="lbl">Leader</div><div class="name" style="color:var(--mute)">Awaiting athletes</div></div>';
+  function fastest(k,label){
+    var arr=eventOrder(res,k);
+    if(!arr.length)return '<div class="tile"><div class="lbl">'+label+'</div><div class="big none">–</div><div class="who">&nbsp;</div></div>';
+    var x=arr[0].es[k];
+    return '<div class="tile"><div class="lbl">'+label+'</div><div class="big">'+Math.round(x.sc)+'<span style="font-size:16px"> ms'+(ies()&&x.a!==null?' adj.':'')+'</span></div><div class="who">'+esc(dn(arr[0].s.name))+'</div></div>';
+  }
+  j+=fastest('sv','Best light')+fastest('c4','Best 4 boxes')+'<div class="tile"><div class="lbl">Athletes</div><div class="big">'+res.length+'</div><div class="who">'+(S.cfg.div==='all'?'All divisions':DEVN[S.cfg.div]+' division')+'</div></div>';
+  $('jumbo').innerHTML=j;
+  if(!res.length){$('sbBody').innerHTML='<div class="empty">NO ATHLETES YET<br><span class="note">Add results on the Enter Scores tab.</span></div>';renderTicker(res);return;}
+  var newOrder=res.map(function(r){return r.s.id;});
+  var h='<div class="tw"><table class="sb"><tr><th scope="col">Rk</th><th scope="col" class="l">Athlete</th><th scope="col">Div</th>'+
+    [1,2,3].map(function(x){return '<th scope="col">'+EXN[x].replace(' · ','<br><span style="letter-spacing:.06em;font-weight:500">')+'</span></th>';}).join('')+
+    '<th scope="col">Penalty</th><th scope="col">Total</th></tr>';
+  res.forEach(function(r,i){
+    var pos=i+1,moved=!RM&&prevOrder.length&&prevOrder.indexOf(r.s.id)!==i,open=openRow===r.s.id;
+    var rk=pos<=3&&r.n?'<span class="medal m'+pos+'">'+pos+'</span>':pos;
+    h+='<tr class="r'+(pos===1&&r.n?' top1':'')+(moved?' flash':'')+'" data-id="'+r.s.id+'"><td class="rk">'+rk+'</td>'+
+      '<td class="nm"><button type="button" class="rowbtn" data-id="'+r.s.id+'" aria-expanded="'+open+'" aria-controls="bd-'+r.s.id+'">'+esc(dn(r.s.name))+'<span class="car" aria-hidden="true">'+(open?'▲':'▼')+'</span></button><small>'+r.n+' of '+act.length+' events'+(r.n?' · avg '+Math.round(r.avg)+' ms'+(ies()?' adj.':''):'')+(r.dq?' · '+r.dq+' below floor':'')+'</small></td>'+
+      '<td><span class="chipdev">'+DEVN[r.s.dev]+'</span></td>'+
+      [1,2,3].map(function(x){return '<td><span class="dg'+(exUsed[x]?'':' off')+'">'+(exUsed[x]?f1(r.ex[x]):'–')+'</span></td>';}).join('')+
+      '<td><span class="dg '+(r.pen?'pen':'off')+'">'+(r.pen?'−'+f1(r.pen):'0')+'</span></td>'+
+      '<td class="tot"><span class="dg">'+f1(r.total)+'</span></td></tr>';
+    if(open){
+      h+='<tr class="bd" id="bd-'+r.s.id+'"><td colspan="8"><div class="bdgrid">'+act.map(function(e){var x=r.es[e.k],p=r.ev[e.k];
+        if(!x)return '<span class="bdc"><b>'+esc(e.n)+'</b><span class="q">no time</span></span>';
+        return '<span class="bdc"><b>'+esc(e.n)+'</b><span class="t">'+Math.round(x.t)+' ms</span><span class="q">'+(x.a===null?'no accuracy':Math.round(x.a)+'% correct')+'</span>'+
+          (x.dq?'<span class="q">below floor · 0 pts</span>':'<span class="p">'+(ies()&&x.a!==null?Math.round(x.sc)+' adj. · ':'')+'#'+p.place+' · '+f1(p.pts)+' pts</span>')+'</span>';}).join('')+
+        '<span class="bdc"><b>Errors</b>'+(r.s.err||0)+' wrong or slow · '+(r.s.early||0)+' early</span></div></td></tr>';
+    }
+  });
+  h+='</table></div><p class="note" style="margin:6px 2px 0">Select an athlete’s name to see their event-by-event breakdown.</p>';
+  $('sbBody').innerHTML=h;
+  prevOrder=newOrder;
+  renderTicker(res);
+}
+$('sbBody').addEventListener('click',function(e){var t=e.target.closest('.rowbtn')||e.target.closest('tr.r');if(!t)return;var id=Number(t.getAttribute('data-id'));openRow=openRow===id?null:id;renderBoard();
+  var b=document.querySelector('#sbBody .rowbtn[data-id="'+id+'"]');if(b)b.focus();});
+$('divs').addEventListener('click',function(e){var b=e.target.closest('[data-div]');if(!b)return;S.cfg.div=b.getAttribute('data-div');openRow=null;prevOrder=[];save();renderAll();
+  var nb=document.querySelector('#divs [data-div="'+S.cfg.div+'"]');if(nb)nb.focus();});
+
+/* ---------- ticker (pause button; static under reduced motion) ---------- */
+var tkPaused=false;
+$('tickerBar').classList.toggle('static',RM);
+$('tkPause').hidden=false;
+$('tkPause').addEventListener('click',function(){
+  if(RM)return;tkPaused=!tkPaused;$('tickerBar').classList.toggle('paused',tkPaused);this.setAttribute('aria-pressed',String(tkPaused));
+  this.setAttribute('aria-label',tkPaused?'Play the leaders ticker':'Pause the leaders ticker');$('tkIcon').textContent=tkPaused?'▶':'❚❚';
+});
+if(RM){$('tkPause').setAttribute('aria-label','Leaders ticker (motion is off because your system asks for reduced motion)');$('tkIcon').textContent='';}
+function renderTicker(res){
+  var items=activeEvents().map(function(e){var a=eventOrder(res,e.k);return a.length?'<span><b>'+esc(e.n)+'</b>'+esc(dn(a[0].s.name))+' · '+scTxt(a[0].es[e.k])+'</span>':'';}).filter(Boolean);
+  if(!items.length)items=['<span><b>WAHOOWA</b>Enter scores to light up the board</span>'];
+  var one=items.join(''),rep='<span aria-hidden="true" style="margin:0">'+one+'</span>';
+  $('ticker').innerHTML=one+(RM?'':rep+rep+rep);
+  $('ticker').style.animationDuration=Math.max(25,items.length*7)+'s';
+}
+
+/* ---------- events view ---------- */
+function renderEvents(){
+  var res=score(),on=S.cfg.events;
+  $('evSub').textContent='Lowest '+(ies()?'adjusted time (median ÷ accuracy)':'median RT')+' wins each event';
+  $('evGrid').innerHTML=EV.map(function(e){
+    var a=eventOrder(res,e.k),top=a[0],dq=res.filter(function(r){return r.es[e.k]&&r.es[e.k].dq;}).length,off=on.indexOf(e.k)<0;
+    return '<div class="ev'+(off?' off':'')+'"><div class="ex">'+EXN[e.x].toUpperCase()+(off?' · NOT SCORED':'')+'</div><h3>'+esc(e.n)+'</h3>'+
+      (top?'<div class="best">'+Math.round(top.es[e.k].sc)+'<small>'+(ies()&&top.es[e.k].a!==null?'ms adj.':'ms')+'</small></div><div class="raw">median '+Math.round(top.es[e.k].t)+' ms · '+(top.es[e.k].a===null?'no accuracy':Math.round(top.es[e.k].a)+'% correct')+'</div><div class="bw">'+esc(dn(top.s.name))+'</div>'
+        :'<div class="best none">–</div><div class="bw">&nbsp;</div>')+
+      '<ol>'+a.slice(1,5).map(function(r,i){return '<li><span>'+(i+2)+'. '+esc(dn(r.s.name))+'</span><span>'+scTxt(r.es[e.k])+'</span></li>';}).join('')+'</ol>'+
+      (dq?'<div class="dq">'+dq+' below the '+f1(Number(S.cfg.floor)||0)+'% accuracy floor</div>':'')+'</div>';
+  }).join('');
+}
+
+/* ---------- class pattern (was the Lab's Instructor tab) ---------- */
+function renderClass(){
+  var list=pool(),out=$('cpOut');
+  if(!list.length){out.innerHTML='<p class="note">No athletes yet. Add results on the Enter Scores tab.</p>';return;}
+  var stats={},rows='',items=[];
+  EV.forEach(function(e){
+    var v=list.map(function(s){return s.v[e.k];}).filter(num),ac=list.map(function(s){return s.a[e.k];}).filter(num);
+    stats[e.k]=v.length?med(v):null;
+    if(v.length){rows+='<tr><td>'+NAMES[e.k]+'</td><td class="n">'+rd(med(v))+'</td><td class="n">'+rd(mean(v))+'</td><td class="n">'+rd(Math.min.apply(null,v))+' to '+rd(Math.max.apply(null,v))+'</td><td class="n">'+(ac.length?rd(med(ac))+'%':'–')+'</td><td class="n">'+v.length+'</td></tr>';items.push({l:NAMES[e.k],v:med(v)});}
+  });
+  var dev={};list.forEach(function(s){dev[s.dev]=(dev[s.dev]||0)+1;});
+  var mx=0;items.forEach(function(i){if(i.v>mx)mx=i.v;});
+  var bars=items.map(function(i){return '<div class="cpbar"><span>'+i.l+'</span><span><div class="bar" style="width:'+Math.max(2,i.v/mx*100)+'%"></div></span><b>'+rd(i.v)+' ms</b></div>';}).join('');
+  var diffs=[];
+  function df(a,b,l){if(stats[a]!==null&&stats[b]!==null)diffs.push('<div><span class="v">'+sgn(stats[a]-stats[b])+' ms</span>'+l+'</div>');}
+  df('sv','sa','Light minus sound');df('c4','c1','4 boxes minus 1 box');
+  var pts=[];[['c1',1],['c2',2],['c3',3],['c4',4]].forEach(function(p){if(stats[p[0]]!==null)pts.push([Math.log(p[1])/Math.LN2,stats[p[0]]]);});
+  if(pts.length>=2){var n=pts.length,sx=0,sy=0,sxx=0,sxy=0;pts.forEach(function(p){sx+=p[0];sy+=p[1];sxx+=p[0]*p[0];sxy+=p[0]*p[1];});var den=n*sxx-sx*sx;
+    if(den){var b=(n*sxy-sx*sy)/den,a=(sy-b*sx)/n;diffs.push('<div><span class="v">'+sgn(b)+' ms</span>Class cost per doubling of choices (b). Fit RT = a + b·log2 n with a = '+Math.round(a)+' ms.</div>');}}
+  df('rev','dir','Opposite side minus same side');df('gng','dir','Go trials minus plain two-box');df('chg','nc','After a late change minus no change');df('hv','dir','Right hint minus no hint');df('hi','hv','Wrong hint minus right hint');
+  out.innerHTML='<p class="note">'+list.length+' student'+(list.length===1?'':'s')+(S.cfg.div==='all'?'':' in the '+DEVN[S.cfg.div]+' division')+'. Devices: '+Object.keys(dev).map(function(k){return DEVN[k]+' '+dev[k];}).join(', ')+'. No names are shown on this tab.</p>'+
+    '<h3 style="color:var(--orange);letter-spacing:.12em;text-transform:uppercase;margin:14px 0 6px">Class differences</h3><div class="cpdiff">'+(diffs.join('')||'<div>Not enough data yet.</div>')+'</div>'+
+    '<h3 style="color:var(--orange);letter-spacing:.12em;text-transform:uppercase;margin:16px 0 6px">Class pattern</h3>'+bars+
+    '<div class="tw" style="margin-top:12px"><table class="cp"><tr><th scope="col">Condition</th><th scope="col" class="n">Class median (ms)</th><th scope="col" class="n">Class mean (ms)</th><th scope="col" class="n">Range (ms)</th><th scope="col" class="n">Median accuracy</th><th scope="col" class="n">Students</th></tr>'+rows+'</table></div>';
+}
+
+/* ---------- entry form ---------- */
+var editing=null;
+$('fGroups').innerHTML=[1,2,3].map(function(x){
+  return '<div class="fgrp"><div class="gt">'+EXN[x].toUpperCase()+'</div><div class="fields">'+
+    EV.filter(function(e){return e.x===x;}).map(function(e){return '<div><span class="f" id="fl-'+e.k+'">'+esc(e.n)+'</span><div class="pair"><input type="number" min="0" step="1" id="f-'+e.k+'" placeholder="ms" aria-label="'+esc(e.n)+' median, ms"><input type="number" min="0" max="100" step="1" id="fa-'+e.k+'" placeholder="%" aria-label="'+esc(e.n)+' percent correct"></div></div>';}).join('')+
+    (x===3?'<div><label class="f" for="f-err">Wrong or slow</label><input type="number" min="0" step="1" id="f-err" placeholder="0"></div><div><label class="f" for="f-early">Early presses</label><input type="number" min="0" step="1" id="f-early" placeholder="0"></div>':'')+
+    '</div></div>';
+}).join('');
+function fillForm(o){
+  EV.forEach(function(e){$('f-'+e.k).value=num(o.v[e.k])?Math.round(o.v[e.k]):'';$('fa-'+e.k).value=o.a&&num(o.a[e.k])?Math.round(o.a[e.k]):'';});
+  $('f-err').value=o.err||'';$('f-early').value=o.early||'';if(o.dev)$('fDev').value=o.dev;
+}
+function clearForm(){editing=null;$('fName').value='';$('fCode').value='';fillForm({v:{},a:{},err:0,early:0,dev:'kb'});$('formTitle').textContent='Add an athlete by hand';$('fSave').textContent='Add to scoreboard';}
+function flash(id,t,bad){var m=$(id);m.textContent=t;m.classList.toggle('bad',!!bad);}
+$('fFill').addEventListener('click',function(){var o=parseCode($('fCode').value);if(!o){flash('fMsg','That does not look like a results code. It should start with RTLAB2| (or RTLAB1|).',true);return;}fillForm(o);
+  flash('fMsg','Boxes filled from the code.'+(o.ck==='bad'?' Warning: the checksum does not match, so the code may have been edited.':'')+' Check the name, then save.',o.ck==='bad');});
+$('fCancel').addEventListener('click',function(){clearForm();$('fMsg').textContent='';});
+$('fSave').addEventListener('click',function(){
+  var name=$('fName').value.replace(/[\r\n\t"]+/g,' ').trim();if(!name){flash('fMsg','Add a name first.',true);$('fName').focus();return;}
+  var v={},a={};EV.forEach(function(e){var x=Number($('f-'+e.k).value),y=$('fa-'+e.k).value;if($('f-'+e.k).value!==''&&x>0)v[e.k]=x;if(y!==''&&isFinite(Number(y)))a[e.k]=Math.max(0,Math.min(100,Number(y)));});
+  if(!Object.keys(v).length){flash('fMsg','Enter at least one time, or paste a results code.',true);return;}
+  var rec={name:name,dev:$('fDev').value,v:v,a:a,err:Number($('f-err').value)||0,early:Number($('f-early').value)||0,ver:Object.keys(a).length?2:1,ck:'hand'};
+  var target=editing!==null?findId(editing):findName(name);
+  if(target){Object.assign(target,rec);flash('fMsg',name+' updated.');}
+  else{rec.id=S.seq++;S.students.push(rec);flash('fMsg',name+' is on the board.');}
+  save();clearForm();renderAll();$('fName').focus();
+});
+function findId(id){for(var i=0;i<S.students.length;i++)if(S.students[i].id===id)return S.students[i];return null;}
+function findName(n){n=n.toLowerCase();for(var i=0;i<S.students.length;i++)if(S.students[i].name.toLowerCase()===n)return S.students[i];return null;}
+// Adds every line that holds an RTLAB1 or RTLAB2 code (student files, bulk paste, or this board's own CSV).
+function ingest(text,tally,fallback){
+  text.split(/\r?\n/).forEach(function(line){
+    if(!line.trim())return;var o=parseCode(line);if(!o){tally.skip++;return;}
+    var name=line.slice(0,findCode(line).at).replace(/["\t,;:|\-\s]+$/,'').replace(/^["\s]+/,'').replace(/""/g,'"').trim();
+    if(!name)name=fallback||('Athlete '+S.seq);
+    if(o.ck==='bad')tally.bad.push(name);
+    var rec={name:name,dev:o.dev,v:o.v,a:o.a,err:o.err,early:o.early,ver:o.ver,ck:o.ck},t=findName(name);
+    if(t){Object.assign(t,rec);tally.upd++;}else{rec.id=S.seq++;S.students.push(rec);tally.added++;}
+  });
+}
+function newTally(){return {added:0,upd:0,skip:0,bad:[]};}
+function tallyText(t,unit){return t.added+' added, '+t.upd+' updated'+(t.skip?', '+t.skip+' '+unit+(t.skip===1?'':'s')+' skipped (no results code found)':'')+'.'+(t.bad.length?' Checksum mismatch (code may have been edited): '+t.bad.join(', ')+'.':'');}
+$('bulkGo').addEventListener('click',function(){
+  var t=newTally();ingest($('bulk').value,t);
+  save();renderAll();flash('bulkMsg',tallyText(t,'line'),!t.added&&!t.upd);
+  if(t.added||t.upd)$('bulk').value='';
+});
+// Name from a file name, e.g. "RTLAB_Jordan_Lee.txt" or a Canvas download "leejordan_12345_67890_RTLAB_Jordan_Lee-1.txt"
+function nameFromFile(fn){
+  return fn.replace(/\.[^.]+$/,'').replace(/^(late_)?[a-z]+_\d+_\d+_/i,'').replace(/^RTLAB_?/i,'').replace(/-\d+$/,'').replace(/_+/g,' ').trim();
+}
+function readFiles(list){
+  var files=Array.prototype.slice.call(list||[]);if(!files.length)return;
+  var t=newTally(),bad=[],left=files.length;
+  files.forEach(function(f){
+    var r=new FileReader();
+    r.onload=function(){var lines=String(r.result||'').split(/\r?\n/).filter(function(l){return findCode(l);});
+      if(!lines.length)bad.push(f.name);else ingest(lines.join('\n'),t,nameFromFile(f.name));
+      done();};
+    r.onerror=function(){bad.push(f.name);done();};
+    r.readAsText(f);
+  });
+  function done(){if(--left)return;save();renderAll();
+    flash('fileMsg',files.length+' file'+(files.length===1?'':'s')+' read: '+tallyText(t,'line')+(bad.length?' Skipped (no results code inside): '+bad.join(', '):''),!t.added&&!t.upd);
+    $('fileIn').value='';}
+}
+$('fileIn').addEventListener('change',function(){readFiles(this.files);});
+['dragenter','dragover'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.add('over');});});
+['dragleave','drop'].forEach(function(ev){$('drop').addEventListener(ev,function(e){e.preventDefault();$('drop').classList.remove('over');});});
+$('drop').addEventListener('drop',function(e){readFiles(e.dataTransfer&&e.dataTransfer.files);});
+['dragover','drop'].forEach(function(ev){window.addEventListener(ev,function(e){if(MODE==='board'&&(!e.target.closest||!e.target.closest('#drop')))e.preventDefault();});});
+
+var askDel=null;
+function renderRoster(){
+  $('roCount').textContent=S.students.length+' athlete'+(S.students.length===1?'':'s');
+  if(!S.students.length){$('roster').innerHTML='<p class="note">Nobody yet.</p>';return;}
+  var list=S.students.slice().sort(function(a,b){return a.name.localeCompare(b.name);});
+  $('roster').innerHTML='<div class="tw"><table class="ro"><tr><th scope="col">Name</th><th scope="col">Device</th><th scope="col">Times</th><th scope="col"><span class="sr-only">Actions</span></th></tr>'+list.map(function(s){
+    var flag=s.ck==='bad'?'checksum mismatch: code may have been edited':(s.ver===1||!Object.keys(s.a||{}).length?'no accuracy (old RTLAB1 code or hand entry)':'');
+    return '<tr><td>'+esc(s.name)+(flag?'<span class="flag">'+flag+'</span>':'')+'</td><td><span class="chipdev">'+DEVN[s.dev]+'</span></td><td>'+Object.keys(s.v).length+' of '+EV.length+'</td>'+
+      '<td class="a">'+(askDel===s.id?'<span class="confirm">Remove '+esc(s.name)+'? <button class="btn sm danger" type="button" data-delyes="'+s.id+'">Yes, remove</button><button class="btn sm" type="button" data-delno="'+s.id+'">No</button></span>'
+        :'<button class="btn sm" type="button" data-ed="'+s.id+'">Edit</button> <button class="btn sm danger" type="button" data-del="'+s.id+'" aria-label="Remove '+esc(s.name)+'">✕</button>')+'</td></tr>';}).join('')+'</table></div>';
+}
+$('roster').addEventListener('click',function(e){
+  var ed=e.target.closest('[data-ed]'),del=e.target.closest('[data-del]'),yes=e.target.closest('[data-delyes]'),no=e.target.closest('[data-delno]');
+  if(ed){var s=findId(Number(ed.getAttribute('data-ed')));if(!s)return;editing=s.id;$('fName').value=s.name;$('fCode').value='';fillForm(s);
+    $('formTitle').textContent='Edit '+s.name;$('fSave').textContent='Save changes';$('fMsg').textContent='';$('fName').focus();}
+  if(del){askDel=Number(del.getAttribute('data-del'));renderRoster();var y=document.querySelector('[data-delyes="'+askDel+'"]');if(y)y.focus();}
+  if(no){var id0=askDel;askDel=null;renderRoster();var d0=document.querySelector('[data-del="'+id0+'"]');if(d0)d0.focus();}
+  if(yes){var d=findId(Number(yes.getAttribute('data-delyes')));askDel=null;if(d){S.students=S.students.filter(function(x){return x!==d;});if(editing===d.id)clearForm();save();renderAll();say(d.name+' removed.');}}
+});
+
+/* ---------- save, load, export ---------- */
+$('saveBoard').addEventListener('click',function(){
+  var d=new Date(),stamp=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  var ok=download('reaction-time-board-'+stamp+'.json',JSON.stringify({format:'rtlab-board',version:2,saved:d.toISOString(),board:S},null,1),'application/json');
+  flash('loadMsg',ok?'Board saved as a JSON file ('+S.students.length+' athletes). Keep it with your class files.':'The download was blocked here. Open this page in its own browser tab to save the board.',!ok);
+});
+var pending=null;
+$('loadIn').addEventListener('change',function(){
+  var f=this.files&&this.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){
+    try{var j=JSON.parse(String(r.result||''));var b=norm(j&&j.board?j.board:j);if(!b.students.length&&!(j&&(j.board||j.students)))throw new Error('x');
+      pending=b;
+      $('loadMsg').innerHTML='<span class="confirm">Replace the current board ('+S.students.length+' athletes) with the file ('+b.students.length+' athletes)? <button class="btn sm go" type="button" id="loadYes">Replace</button><button class="btn sm" type="button" id="loadNo">Cancel</button></span>';
+      $('loadMsg').classList.remove('bad');$('loadYes').focus();
+    }catch(e){pending=null;flash('loadMsg','That file is not a saved board. Use a JSON file from Save board.',true);}
+    $('loadIn').value='';
+  };
+  r.readAsText(f);
+});
+$('loadMsg').addEventListener('click',function(e){
+  if(e.target.id==='loadYes'&&pending){S=pending;pending=null;save();clearForm();openRow=null;prevOrder=[];syncRules();renderAll();flash('loadMsg','Board loaded: '+S.students.length+' athletes.');$('saveBoard').focus();}
+  else if(e.target.id==='loadNo'){pending=null;flash('loadMsg','Load cancelled. Nothing changed.');}
+});
+$('csvBtn').addEventListener('click',function(){
+  var res=score(),byId={};res.forEach(function(r,i){byId[r.s.id]={r:r,rank:i+1};});
+  var head=['name','code','device'].concat(EV.map(function(e){return e.k+'_ms';}),EV.map(function(e){return e.k+'_pct_correct';}),['wrong_or_slow','early','points_exp1','points_exp2','points_exp3','penalty','total','rank']);
+  var rows=[head.join(',')];
+  S.students.forEach(function(s){var b=byId[s.id];
+    rows.push(['"'+s.name.replace(/"/g,'""')+'"',buildCode(s),s.dev].concat(EV.map(function(e){return num(s.v[e.k])?Math.round(s.v[e.k]):'';}),EV.map(function(e){return num(s.a[e.k])?Math.round(s.a[e.k]):'';}),[s.err||0,s.early||0],
+      b?[f1(b.r.ex[1]),f1(b.r.ex[2]),f1(b.r.ex[3]),f1(b.r.pen),f1(b.r.total),b.rank]:['','','','','','']).join(','));});
+  var ok=download('reaction-time-classic-results.csv',rows.join('\n'),'text/csv');
+  flash('toolMsg',ok?'CSV saved. It stays on this computer. You can drop it back in under Upload files.':'The download was blocked here. Open this page in its own browser tab.',!ok);
+});
+var resetAsk=false;
+function drawReset(){
+  $('resetWrap').innerHTML=resetAsk?'<span class="confirm">Clear every athlete and reset the rules? This cannot be undone. <button class="btn sm danger" type="button" id="resetYes">Yes, clear</button><button class="btn sm" type="button" id="resetNo">No</button></span>':'<button class="btn sm danger" type="button" id="resetBtn">Clear everything</button>';
+}
+$('resetWrap').addEventListener('click',function(e){
+  if(e.target.id==='resetBtn'){resetAsk=true;drawReset();$('resetNo').focus();}
+  else if(e.target.id==='resetNo'){resetAsk=false;drawReset();$('resetBtn').focus();}
+  else if(e.target.id==='resetYes'){resetAsk=false;S=fresh();save();clearForm();openRow=null;prevOrder=[];syncRules();renderAll();drawReset();flash('toolMsg','Board cleared.');$('resetBtn').focus();}
+});
+$('demoBtn').addEventListener('click',function(){
+  var names=['Speedy Sam','Quick Quinn','Rapid Riley','Swift Sasha','Nimble Noor','Flash Finley','Jet Jordan','Zippy Zoe','Blaze Bailey','Guessing Gus'];
+  var base={sv:255,sa:225,c1:290,c2:370,c3:415,c4:450,dir:370,rev:430,gng:420,nc:380,chg:500,hv:330,hi:470};
+  names.forEach(function(n,i){
+    if(findName(n))return;var guess=n==='Guessing Gus',skill=guess?-70:(Math.random()-.5)*70,v={},a={};
+    Object.keys(base).forEach(function(k){v[k]=Math.round(base[k]+skill+(Math.random()-.5)*60);
+      a[k]=guess?(k==='sv'||k==='sa'||k==='c1'?82+Math.round(Math.random()*8):60+Math.round(Math.random()*22)):(88+Math.round(Math.random()*12));});
+    S.students.push({id:S.seq++,name:n,dev:i<7?'kb':'touch',v:v,a:a,err:guess?14:Math.floor(Math.random()*4),early:guess?6:Math.floor(Math.random()*2),ver:2,ck:'ok'});
+  });
+  save();renderAll();flash('toolMsg','Sample athletes loaded (made-up names). Guessing Gus is fast but inaccurate, to show how the accuracy rule works.');
+});
+$('webBtn').addEventListener('click',function(){
+  var res=score().filter(function(r){return r.n;});
+  if(!res.length){flash('toolMsg','Add some athletes first.',true);return;}
+  var useInit=$('webInit').checked,nm=function(n){return useInit?initialsOf(n):n;};
+  var act=activeEvents(),exUsed={1:0,2:0,3:0};act.forEach(function(e){exUsed[e.x]++;});
+  var d=new Date(),dateTxt=d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  var div=S.cfg.div==='all'?'All divisions':DEVN[S.cfg.div]+' division';
+  var W=res[0];
+  var rows=res.map(function(r,i){
+    return '<tr'+(i<3?' class="p'+(i+1)+'"':'')+'><td class="rk">'+(i+1)+'</td><td class="nm">'+esc(nm(r.s.name))+'</td><td>'+DEVN[r.s.dev]+'</td>'+
+      [1,2,3].map(function(x){return '<td class="n">'+(exUsed[x]?f1(r.ex[x]):'–')+'</td>';}).join('')+
+      '<td class="n pen">'+(r.pen?'−'+f1(r.pen):'0')+'</td><td class="n tot">'+f1(r.total)+'</td></tr>';}).join('');
+  var leaders=act.map(function(e){var a=eventOrder(res,e.k);if(!a.length)return '';
+    return '<div class="ev"><div class="ex">'+EXN[e.x]+'</div><div class="en">'+esc(e.n)+'</div><div class="et">'+scTxt(a[0].es[e.k])+'</div><div class="ew">'+esc(nm(a[0].s.name))+'</div></div>';}).join('');
+  var css='*{box-sizing:border-box}body{margin:0;padding:24px 16px 40px;background:#0B1124;color:#F4F6FB;font-family:"Oswald","Bahnschrift","Arial Narrow",Impact,sans-serif;letter-spacing:.02em}'+
+    '.w{max-width:1000px;margin:0 auto}.top{text-align:center;border:3px solid #E57200;border-radius:14px;padding:16px;background:linear-gradient(180deg,#232D4B,#141C33)}'+
+    '.k{color:#E57200;letter-spacing:.3em;font-size:13px}h1{margin:4px 0;font-size:clamp(28px,5vw,48px);text-transform:uppercase;text-shadow:0 3px 0 #E57200}'+
+    '.sub{color:#8D97B5;font-family:system-ui,"Segoe UI",sans-serif;font-size:14px}.champ{margin:18px 0;text-align:center;border:2px solid #E57200;border-radius:14px;padding:16px;background:linear-gradient(135deg,#2A1A08,#0B1124)}'+
+    '.champ .l{color:#8D97B5;letter-spacing:.3em;font-size:13px}.champ .n{font-size:clamp(30px,5vw,46px);text-transform:uppercase}.champ .p{font-family:Consolas,monospace;color:#FFB547;font-size:22px}'+
+    'h2{color:#E57200;letter-spacing:.14em;text-transform:uppercase;font-size:20px;margin:24px 0 10px}.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:16px}'+
+    'th{color:#8D97B5;font-size:12px;letter-spacing:.16em;text-transform:uppercase;padding:8px 6px;border-bottom:2px solid #8D97B5;text-align:center}th.l{text-align:left}'+
+    'td{padding:9px 6px;border-bottom:1px solid #2F3A5E;text-align:center}td.nm{text-align:left;text-transform:uppercase;font-weight:700}td.n{font-family:Consolas,monospace;color:#FFB547}'+
+    'td.pen{color:#FF5A4E}td.tot{font-size:19px;color:#FFC867}td.rk{font-family:Consolas,monospace}tr.p1 td{background:rgba(229,168,0,.14)}tr.p2 td{background:rgba(200,205,215,.08)}tr.p3 td{background:rgba(184,100,42,.12)}'+
+    '.evs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}.ev{border:2px solid #2F3A5E;border-radius:12px;padding:10px 12px;background:#141C33}'+
+    '.ex{color:#8D97B5;font-size:12px;letter-spacing:.2em;text-transform:uppercase}.en{font-size:18px;text-transform:uppercase}.et{font-family:Consolas,monospace;color:#FFB547;font-size:22px}.ew{color:#E57200;text-transform:uppercase}'+
+    '.note{color:#A9B3CF;font-family:system-ui,"Segoe UI",sans-serif;font-size:14px;line-height:1.5;margin-top:22px}';
+  var html='<!DOCTYPE html>\n<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'+
+    '<title>Reaction Time Classic Results</title><style>'+css+'</style></head><body><div class="w">'+
+    '<div class="top"><div class="k">UVA KINESIOLOGY · KINE 3620</div><h1>Reaction Time Classic</h1><div class="sub">Final standings · '+esc(dateTxt)+' · '+esc(div)+'</div></div>'+
+    '<div class="champ"><div class="l">CHAMPION</div><div class="n">'+esc(nm(W.s.name))+'</div><div class="p">'+f1(W.total)+' POINTS</div></div>'+
+    '<h2>Standings</h2><div class="tw"><table><tr><th>Rk</th><th class="l">Athlete</th><th>Device</th><th>Exp 1<br>Simple</th><th>Exp 2<br>Choices</th><th>Exp 3<br>Twists</th><th>Penalty</th><th>Total</th></tr>'+rows+'</table></div>'+
+    '<h2>Event leaders</h2><div class="evs">'+leaders+'</div>'+
+    '<p class="note">'+(ies()?'Each event ranked the adjusted time (median reaction time ÷ proportion correct), so accuracy counted as well as speed. ':'Each event ranked the median reaction time. ')+
+    'Athletes below '+f1(Number(S.cfg.floor)||0)+'% correct in an event scored no points in it. Points: '+(S.cfg.mode==='meet'?'track meet scoring, 10, 8, 6, 5, 4, 3, 2, 1 for the top 8':'everyone scores, last place 1 point and each place above 1 more')+'. '+
+    (Number(S.cfg.pen)?'Extra penalty: '+f1(Number(S.cfg.pen))+' points per wrong response or early press. ':'')+'Events counted: '+act.map(function(e){return esc(e.n);}).join(', ')+'. '+
+    'Keyboards, touchscreens and mice add different delays, so compare times within a device type.</p></div></body></html>';
+  var ok=download('reaction-time-classic-results.html',html,'text/html');
+  flash('toolMsg',ok?'Results page saved'+(useInit?' with initials only.':' with full names. Check before you post it.'):'The download was blocked here. Open this page in its own browser tab.',!ok);
+});
+
+/* ---------- rules ---------- */
+function syncRules(){
+  $('sMode').value=S.cfg.mode;$('sMethod').value=S.cfg.method;$('sFloor').value=S.cfg.floor;$('sPen').value=S.cfg.pen;$('sInit').checked=!!S.cfg.initials;
+  $('sEvents').innerHTML=[1,2,3].map(function(x){return '<div class="fgrp"><div class="gt">'+EXN[x].toUpperCase()+'</div><div class="evchk">'+
+    EV.filter(function(e){return e.x===x;}).map(function(e){return '<label><input type="checkbox" data-ev="'+e.k+'"'+(S.cfg.events.indexOf(e.k)>=0?' checked':'')+'> '+esc(e.n)+'</label>';}).join('')+'</div></div>';}).join('')+
+    '<div class="row" style="margin-bottom:6px"><button class="btn sm" type="button" id="evDef">Default 7 events (no sound)</button><button class="btn sm" type="button" id="evAll">All 13 events</button></div>';
+}
+$('sMode').addEventListener('change',function(){S.cfg.mode=this.value;save();renderAll();});
+$('sMethod').addEventListener('change',function(){S.cfg.method=this.value;save();renderAll();});
+$('sFloor').addEventListener('input',function(){var p=Number(this.value);S.cfg.floor=isFinite(p)?Math.max(0,Math.min(100,p)):80;save();renderAll();});
+$('sPen').addEventListener('input',function(){var p=Number(this.value);S.cfg.pen=isFinite(p)&&p>=0?p:0;save();renderAll();});
+$('sInit').addEventListener('change',function(){S.cfg.initials=this.checked;save();renderAll();});
+$('sEvents').addEventListener('change',function(e){var c=e.target.closest('[data-ev]');if(!c)return;var k=c.getAttribute('data-ev');
+  S.cfg.events=S.cfg.events.filter(function(x){return x!==k;});if(c.checked)S.cfg.events.push(k);save();renderAll();});
+$('sEvents').addEventListener('click',function(e){
+  if(e.target.id==='evDef'){S.cfg.events=DEF_EVENTS.slice();}else if(e.target.id==='evAll'){S.cfg.events=EV.map(function(x){return x.k;});}else return;
+  var id=e.target.id;save();syncRules();renderAll();$(id).focus();});
+
+/* ---------- nav, clock, fullscreen ---------- */
+var view='board';
+function renderAll(){renderBoard();if(view==='events')renderEvents();if(view==='class')renderClass();renderRoster();}
+function showView(b,focus){
+  view=b.getAttribute('data-v');
+  document.querySelectorAll('#navTabs [role=tab]').forEach(function(x){var on=x===b;x.setAttribute('aria-selected',String(on));x.tabIndex=on?0:-1;});
+  if(focus)b.focus();
+  ['board','events','class','entry','rules'].forEach(function(v){$('v-'+v).classList.toggle('hidden',v!==view);});
+  prevOrder=[];renderAll();
+}
+$('navTabs').addEventListener('click',function(e){var b=e.target.closest('[data-v]');if(b)showView(b);});
+tabKeys($('navTabs'),function(b){showView(b,true);});
+function tick(){var d=new Date(),h=d.getHours()%12||12,m=d.getMinutes();$('clock').textContent=h+':'+(m<10?'0':'')+m;}
+tick();setInterval(tick,5000);
+if(!document.fullscreenEnabled||!document.documentElement.requestFullscreen)$('fsBtn').hidden=true;
+$('fsBtn').addEventListener('click',function(){
+  try{if(document.fullscreenElement){document.exitFullscreen();}else{document.documentElement.requestFullscreen().catch(function(){});}}catch(e){}
+});
+
+/* ---------- champion (dialog, Esc to close, no confetti under reduced motion) ---------- */
+var confettiRun=null,winReturn=null;
+$('winBtn').addEventListener('click',function(){
+  var res=score();if(!res.length||!res[0].n){flash('navMsg','Add some athletes first (Enter Scores tab).',true);return;}
+  $('navMsg').textContent='';
+  var W=res[0],tie=res[1]&&res[1].total===W.total,w=$('win');winReturn=this;
+  w.innerHTML=(RM?'':'<canvas id="cf" aria-hidden="true"></canvas>')+'<div class="w1">'+(S.cfg.div==='all'?'YOUR CHAMPION':DEVN[S.cfg.div]+' DIVISION CHAMPION')+'</div><div class="w2">WAHOOWA!</div>'+
+    '<div class="w3">'+esc(dn(W.s.name))+'</div><div class="w4">'+f1(W.total)+' POINTS · AVG '+Math.round(W.avg)+' MS'+(ies()?' ADJ.':'')+'</div>'+
+    (tie?'<div class="w5" style="color:var(--led)">Tied on points with '+esc(dn(res[1].s.name))+'. Won on lower average time.</div>':'')+
+    '<button type="button" class="wclose" id="winClose">Close (Esc)</button>';
+  w.hidden=false;$('winClose').focus();if(!RM)confetti($('cf'));
+});
+function closeWin(){var w=$('win');if(w.hidden)return;w.hidden=true;w.innerHTML='';if(confettiRun)cancelAnimationFrame(confettiRun);confettiRun=null;if(winReturn)winReturn.focus();}
+$('win').addEventListener('click',closeWin);
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('win').hidden){e.preventDefault();closeWin();}else if(e.key==='Tab'&&!$('win').hidden){e.preventDefault();$('winClose').focus();}});
+function confetti(cv){
+  var ctx=cv.getContext('2d'),W=cv.width=innerWidth,H=cv.height=innerHeight,cols=['#E57200','#F84C1E','#FFFFFF','#FFB547','#4A5A8C'],P=[];
+  for(var i=0;i<260;i++)P.push({x:Math.random()*W,y:-Math.random()*H,r:4+Math.random()*7,c:cols[i%cols.length],vy:2+Math.random()*4,vx:(Math.random()-.5)*2.5,a:Math.random()*6,va:(Math.random()-.5)*.25});
+  var t0=performance.now();
+  (function f(now){ctx.clearRect(0,0,W,H);P.forEach(function(p){p.y+=p.vy;p.x+=p.vx+Math.sin(p.a)*.6;p.a+=p.va;if(p.y>H+20&&(now||0)-t0<5000){p.y=-20;p.x=Math.random()*W;}
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.fillStyle=p.c;ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);ctx.restore();});
+    confettiRun=requestAnimationFrame(f);})();
+}
+
+syncRules();clearForm();drawReset();showSaveState();renderAll();
+}
+
+/* =====================================================================
+   MODE SWITCH: ?mode=pre | in | board, plus ?embed=1 for the Unit 3 Explorer
+   ===================================================================== */
+if (params.get('embed') === '1') {
+  document.documentElement.classList.add('embed');
+  // Tell the Unit 3 Explorer how tall this page is (postMessage works from file:// and srcdoc too). Sizing only; no state.
+  if (window.parent !== window) {
+    var sendHeight = function () {
+      var cs = getComputedStyle(document.body);
+      var h = Math.ceil(document.body.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom));
+      try { window.parent.postMessage({ unit2Height: h, unit3Height: h }, '*'); } catch (e) { /* no parent */ }
+    };
+    window.addEventListener('load', function () { sendHeight(); setTimeout(sendHeight, 800); });
+    if (window.ResizeObserver) new ResizeObserver(sendHeight).observe(document.body);
+  }
+}
+function setMode(m){
+  MODE=m;
+  document.querySelectorAll('.mode-btn').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-mode')===m));});
+  document.querySelectorAll('[data-show]').forEach(function(el){el.hidden=el.getAttribute('data-show').split(' ').indexOf(m)<0;});
+  document.documentElement.setAttribute('data-mode',m);
+  document.title=m==='board'?'Reaction Time Classic Scoreboard':'Reaction Time Lab';
+  try { var u = new URL(location.href); u.searchParams.set('mode', m); history.replaceState(history.state, '', u.href); } catch (e) { /* file:// or srcdoc in some browsers */ }
+  if(m==='board'){if(cur)stopBlock();initBoard();$('tickerBar').hidden=false;}
+  else {$('tickerBar').hidden=true;var w=$('win');if(!w.hidden){w.hidden=true;w.innerHTML='';}buildLab();}
+}
+document.querySelectorAll('.mode-btn').forEach(function(b){b.addEventListener('click',function(){setMode(b.getAttribute('data-mode'));});});
+$('insLink').addEventListener('click',function(e){e.preventDefault();setMode('board');try{window.scrollTo({top:0});}catch(x){}$('n-board').focus();});
+$('labLink').addEventListener('click',function(e){e.preventDefault();setMode('in');try{window.scrollTo({top:0});}catch(x){}});
+var pm=params.get('mode');
+setMode(pm==='in'?'in':(pm==='board'?'board':'pre'));
 })();
 </script>
 </body>
