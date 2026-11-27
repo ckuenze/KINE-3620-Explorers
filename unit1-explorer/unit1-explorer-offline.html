@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 1 Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158; --line:#D8DED7; --focus:#1F6B9E;
+    --blue:#1F6B9E; --orange:#B34B0B; --green:#2E7D32; --red:#B71C1C; --amber:#E8B23D; --bone:#C9B99A; --muscle:#C96A6A;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:24px 16px 60px;}
+  .wrap{max-width:1060px;margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;}
+  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 16px;line-height:1.5;}
+  .tabs{display:flex;gap:4px;flex-wrap:wrap;background:#E9ECE8;padding:4px;border-radius:11px;margin-bottom:16px;}
+  .tab{border:none;background:transparent;padding:9px 14px;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer;color:var(--ink-soft);font-family:'Inter',sans-serif;}
+  .tab .n{display:inline-block;font-size:11.5px;font-weight:700;margin-right:5px;}
+  .tab[aria-selected="true"]{background:var(--ink);color:#fff;}
+  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06),0 8px 24px rgba(27,36,32,0.05);margin-bottom:16px;min-width:0;}
+  h2{margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:19px;}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0 0 14px;line-height:1.5;}
+  .sub a{color:var(--focus);font-weight:600;}
+  .grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;}
+  @media (max-width:760px){ .grid2{grid-template-columns:1fr;} }
+  canvas{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);border-radius:12px;}
+  .control{margin-bottom:6px;}
+  .control-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .control-label{font-weight:700;font-size:13.5px;}
+  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;white-space:nowrap;}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:#7D867D;border-radius:4px;margin:12px 0 8px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--amber);border:2px solid var(--ink);cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--amber);border:2px solid var(--ink);cursor:pointer;}
+  select{font:inherit;font-size:14px;padding:8px 10px;border:1.5px solid #7D867D;border-radius:9px;background:#fff;width:100%;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+  .row > *{flex:1 1 180px;}
+  .btn{font-weight:700;font-size:13.5px;border:none;border-radius:9px;padding:9px 14px;cursor:pointer;background:var(--ink);color:#fff;font-family:'Inter',sans-serif;}
+  .btn.ghost{background:#fff;color:var(--ink);border:1.5px solid #7D867D;}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px;}
+  .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px;}
+  .stat > div{background:#FBFCFA;border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+  .stat .k{font-size:12px;color:var(--ink-soft);font-weight:700;}
+  .stat .v{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;margin-top:2px;}
+  .big{font-size:15px;line-height:1.6;}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-weight:700;font-size:13px;}
+  .pos{background:#DCEBF5;color:var(--blue);} .neg{background:#FBE6D3;color:#8F3B07;}
+  .note{font-size:12.5px;color:var(--ink-soft);line-height:1.55;margin-top:10px;}
+  .explain{background:#FBFCFA;border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  iframe{width:100%;height:1500px;border:0;border-radius:12px;background:#fff;}
+  [hidden]{display:none !important;}
+  :focus-visible{outline:3px solid var(--focus);outline-offset:3px;}
+  input[type=range]:focus-visible{outline:3px solid var(--focus);outline-offset:4px;}
+
+  /* Pre-class / In-class mode (same spec as the Unit 2 and 3 explorers) */
+  .mode-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 14px;}
+  .mode-label{font-size:13px;font-weight:700;color:var(--ink-soft);}
+  .mode-btns{display:inline-flex;gap:4px;background:#E9ECE8;padding:4px;border-radius:11px;}
+  .mode-btn{font:inherit;font-weight:700;font-size:14px;border:0;background:transparent;color:var(--ink-soft);padding:8px 14px;border-radius:8px;cursor:pointer;}
+  .mode-btn[aria-pressed="true"]{background:var(--ink);color:#fff;}
+  .mode-help{margin:0;font-size:14px;color:var(--ink-soft);flex:1 1 260px;line-height:1.45;}
+  .guide{background:#fff;border:1px solid var(--line);border-left:4px solid #2F6F63;border-radius:12px;padding:14px 18px;margin:0 0 16px;}
+  .guide[data-show="in"]{border-left-color:#9A4F1E;}
+  .guide h3{font-family:'Space Grotesk',sans-serif;font-size:16px;margin:0 0 6px;}
+  .guide h4{font-size:14.5px;margin:12px 0 4px;}
+  .guide ol,.guide ul{margin:4px 0 0;padding-left:22px;line-height:1.55;font-size:14.5px;}
+  .guide li{margin-bottom:3px;}
+  .guide details{margin:4px 0;font-size:14.5px;line-height:1.5;} .guide summary{cursor:pointer;font-weight:600;}
+  .guide details p{margin:4px 0 8px 18px;color:#33392f;}
+  html.embed body{padding-top:8px;}
+  html.embed .mode-btns, html.embed .mode-label{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Unit 1 Explorer</h1>
+  <p class="subtitle">KINE 3620 · One tab per lecture. Signs follow our class system: +x right, +y anterior, +z superior, and the right-hand rule. Angles are in radians.</p>
+
+  <div class="mode-bar">
+    <span class="mode-label" aria-hidden="true">Mode:</span>
+    <div class="mode-btns" role="group" aria-label="Activity mode">
+      <button type="button" class="mode-btn" data-mode="pre" aria-pressed="true">Pre-class</button>
+      <button type="button" class="mode-btn" data-mode="in" aria-pressed="false">In-class</button>
+    </div>
+    <p class="mode-help" data-show="pre"><b>Pre-class:</b> work alone through the guided steps, then answer the check questions for the reading's "Before class" list.</p>
+    <p class="mode-help" data-show="in" hidden><b>In-class:</b> partner activity. Predict first, test it with the tool, then talk through the discussion questions.</p>
+  </div>
+
+  <div class="tabs" id="tabs" role="tablist" aria-label="Unit 1 lectures">
+    <button class="tab" role="tab" id="t-signs" aria-controls="tab-signs" aria-selected="true" data-tab="signs"><span class="n">L1</span>Signs</button>
+    <button class="tab" role="tab" id="t-linear" aria-controls="tab-linear" aria-selected="false" tabindex="-1" data-tab="linear"><span class="n">L2</span>Linear</button>
+    <button class="tab" role="tab" id="t-angular" aria-controls="tab-angular" aria-selected="false" tabindex="-1" data-tab="angular"><span class="n">L3</span>Angular</button>
+    <button class="tab" role="tab" id="t-plate" aria-controls="tab-plate" aria-selected="false" tabindex="-1" data-tab="plate"><span class="n">L4–5</span>Force plate</button>
+    <button class="tab" role="tab" id="t-torque" aria-controls="tab-torque" aria-selected="false" tabindex="-1" data-tab="torque"><span class="n">L6</span>Torque</button>
+    <button class="tab" role="tab" id="t-pull" aria-controls="tab-pull" aria-selected="false" tabindex="-1" data-tab="pull"><span class="n">L7</span>Angle of pull</button>
+  </div>
+
+  <!-- L1 SIGNS -->
+  <section id="tab-signs" class="card" role="tabpanel" aria-labelledby="t-signs" tabindex="0">
+    <h2>What sign does this motion get?</h2>
+    <p class="sub">Pick a joint motion and a side. Then point your right thumb along the + end of the axis and check the curl.</p>
+
+    <div class="guide" data-show="pre">
+      <h3>Pre-class: guided steps</h3>
+      <ol>
+        <li>Pick <b>Shoulder flexion / extension</b>, then <b>Hip abduction / adduction</b>, <b>Trunk or head (C2) rotation</b> and <b>Wrist ulnar / radial deviation</b>. Write down the plane and axis for each.</li>
+        <li>Pick <b>Elbow flexion / extension</b> (right side), <b>Shoulder abduction / adduction</b> (left side) and <b>Hip internal / external rotation</b> (right side). Which direction is + for each?</li>
+        <li>Pick <b>Knee flexion / extension</b> and switch between Right side and Left side. Do the same for <b>Knee varus / valgus</b>. Which one flips?</li>
+        <li>Answer five <b>Quick check</b> questions below. Point your right thumb along the + axis before you answer.</li>
+      </ol>
+      <h4>Check yourself</h4>
+      <details><summary>Name the plane and axis for shoulder flexion, hip abduction, trunk rotation and wrist ulnar deviation.</summary><p>Shoulder flexion: sagittal plane, x (mediolateral) axis. Hip abduction: frontal plane, y (anteroposterior) axis. Trunk rotation: transverse plane, z (longitudinal) axis. Wrist ulnar deviation: frontal plane, y (anteroposterior) axis.</p></details>
+      <details><summary>Give the sign of right elbow flexion, left shoulder abduction, right hip external rotation, and turning your head to the right (C2).</summary><p>Right elbow flexion: +. Left shoulder abduction: +. Right hip external rotation: − (on the right side, internal rotation is +). Turning the head right: − (for midline segments, turning left is +).</p></details>
+      <details><summary>Knee flexion gets the same sign on both legs, but knee valgus does not. Why?</summary><p>Flexion is about the x axis. The thumb points right for both knees, and the curl swings both shanks forward, so extension is + and flexion is − on both sides. Valgus is about the y axis. The curl swings the distal shank toward the left, which is medial (varus) on the right leg and lateral (valgus) on the left leg. So valgus is − on the right and + on the left.</p></details>
+    </div>
+
+    <div class="guide" data-show="in" hidden>
+      <h3>In-class: partner challenge</h3>
+      <ol>
+        <li><b>Predict:</b> stand up and do one movement in each plane. Your partner names the plane, the axis and the sign. <b>Then test:</b> pick that motion here.</li>
+        <li><b>Predict:</b> for hip abduction/adduction, hip internal/external rotation, C2 rotation, L5 flexion/extension and wrist ulnar/radial deviation, which direction is + on the right side? <b>Then test:</b> check each one, then switch to the left side.</li>
+        <li><b>Predict:</b> hip flexion is +. Is trunk (L5) flexion + too? <b>Then test:</b> pick <b>Trunk (L5) flexion / extension</b>.</li>
+        <li><b>Predict:</b> during a landing, a teammate's left knee collapses into valgus. Which plane, which axis, and what sign? <b>Then test:</b> <b>Knee varus / valgus</b>, left side.</li>
+      </ol>
+      <h4>Discuss</h4>
+      <ul>
+        <li>Why do frontal- and transverse-plane signs flip between the right and left sides, while sagittal-plane signs don't?</li>
+        <li>A published figure plots knee flexion as +. What do you check before you read its curves?</li>
+      </ul>
+    </div>
+
+    <div class="row">
+      <label><div class="control-label">Motion</div><select id="sMotion"></select></label>
+      <label><div class="control-label">Side</div><select id="sSide"><option value="R">Right side</option><option value="L">Left side</option></select></label>
+    </div>
+    <div class="explain big" id="sOut" aria-live="polite"></div>
+    <h2 style="margin-top:20px;">Quick check</h2>
+    <p class="sub">Is it positive or negative? Answer, then check.</p>
+    <div class="explain big" id="qPrompt" aria-live="polite"></div>
+    <div class="chips"><button class="btn" id="qPos">Positive (+)</button><button class="btn" id="qNeg">Negative (−)</button><button class="btn ghost" id="qNext">New question</button></div>
+    <div class="big" id="qFeedback" aria-live="polite"></div>
+  </section>
+
+  <!-- L2 / L3 GRAPH LINKER -->
+  <section id="tab-linear" class="card" role="tabpanel" aria-labelledby="t-linear" tabindex="0" hidden>
+    <h2>Position, velocity, and acceleration: Bolt’s 100 m</h2>
+    <p class="sub">The Kinematics Graph Linker, opened on the sprint. Velocity is the slope of position; acceleration is the slope of velocity. <a href="../kinematics-graph-linker/?scen=bolt" data-solo="?scen=bolt" target="_blank" rel="noopener">Open it in its own window</a>.</p>
+
+    <div class="guide" data-show="pre">
+      <h3>Pre-class: guided steps</h3>
+      <ol>
+        <li>Press <b>Play</b>. Where is the position curve flattest, and where is it steepest? Steeper means faster.</li>
+        <li>Turn on <b>Segment averages</b>. Read the five 20 m average velocities on the velocity graph. Which segment is fastest?</li>
+        <li>Turn on <b>Average (secant)</b>. Drag t₁ to 7.92 s and t₂ to 9.58 s (the 80 m and 100 m splits). The line under the result gives the official-split average for that segment. The smooth model leaves out his late slowdown, so its secant is a little higher.</li>
+        <li>Switch the scenario to <b>Build your own</b> and press <b>Slowing down, still moving forward</b>. Velocity stays + for a while, but acceleration is −.</li>
+      </ol>
+      <h4>Check yourself</h4>
+      <details><summary>What was Bolt’s average velocity from 80 m to 100 m? Faster or slower than from 60 m to 80 m?</summary><p>v = Δx ÷ Δt = 20 m ÷ (9.58 − 7.92) s = 20 ÷ 1.66 = 12.05 m/s. That is slower than 60–80 m (20 ÷ 1.61 = 12.42 m/s). He slowed down over the last 20 m.</p></details>
+      <details><summary>A truck moving in +y slows from 10 m/s to 6 m/s in 10 s. What is its acceleration? Speeding up or slowing down?</summary><p>a = (6 − 10) ÷ 10 = −0.40 m/s². Velocity is + and acceleration is −. Opposite signs, so it is slowing down.</p></details>
+      <details><summary>Can an object have zero velocity and a nonzero acceleration at the same instant?</summary><p>Yes. At the bottom of a squat or the top of a jump, the COM’s velocity is 0 for an instant, but its acceleration is not 0, because the velocity is changing direction.</p></details>
+    </div>
+
+    <div class="guide" data-show="in" hidden>
+      <h3>In-class: partner challenge</h3>
+      <ol>
+        <li><b>Predict:</b> was Bolt running at 10.44 m/s for the whole race? <b>Then test:</b> drag the secant to 0 and 9.58 s (slope 10.44 m/s), then scrub the time cursor and compare the tangent.</li>
+        <li><b>Predict:</b> which 20 m segment was fastest? <b>Then test:</b> turn on <b>Segment averages</b>.</li>
+        <li><b>Predict:</b> in <b>Build your own</b>, with v₀ = +8 m/s and a = −2 m/s², when does the velocity reach 0, and what happens after that? <b>Then test:</b> press <b>Slowing down, still moving forward</b> and scrub.</li>
+      </ol>
+      <h4>Discuss</h4>
+      <ul>
+        <li>Is 10.44 m/s Bolt’s speed, his velocity, or both?</li>
+        <li>A runner loses a 100 m race. Did they accelerate less out of the blocks, or slow down more at the end? How would the graphs show each?</li>
+      </ul>
+    </div>
+
+    <iframe data-src="../kinematics-graph-linker/?scen=bolt" title="Kinematics Graph Linker, sprint"></iframe>
+  </section>
+  <section id="tab-angular" class="card" role="tabpanel" aria-labelledby="t-angular" tabindex="0" hidden>
+    <h2>θ, ω, and α: an elbow curl</h2>
+    <p class="sub">The Kinematics Graph Linker, opened on the elbow curl. Keep the units in radians. <a href="../kinematics-graph-linker/?scen=curl" data-solo="?scen=curl" target="_blank" rel="noopener">Open it in its own window</a>.</p>
+
+    <div class="guide" data-show="pre">
+      <h3>Pre-class: guided steps</h3>
+      <ol>
+        <li>Switch <b>Angle units</b> to Degrees, then back to Radians. The curl goes from −30° to +30°, which is −0.52 rad to +0.52 rad. Stay in radians from here on.</li>
+        <li>Press <b>Play</b>. Where is the θ curve steepest? That is where ω is largest.</li>
+        <li>Scrub to 1.50 s. ω is at its peak, and α crosses 0.</li>
+        <li>Turn on <b>Average (secant)</b>. With t₁ = 0 and t₂ = 3 s, its slope is the average ω, π/9 ≈ 0.35 rad/s. The peak ω is higher, about 0.65 rad/s.</li>
+      </ol>
+      <h4>Check yourself</h4>
+      <details><summary>Convert 72° to radians, and 1.4 rad to degrees.</summary><p>72 × (π ÷ 180) = 1.26 rad. 1.4 × (180 ÷ π) = 80.21°.</p></details>
+      <details><summary>A right knee goes from −0.17 to −1.75 rad in 1.5 s (squat) and from −0.26 to −1.31 rad in 0.20 s (landing). Find Δθ and ω for each.</summary><p>Squat: Δθ = −1.75 − (−0.17) = −1.58 rad, ω = −1.58 ÷ 1.5 = −1.05 rad/s. Landing: Δθ = −1.31 − (−0.26) = −1.05 rad, ω = −1.05 ÷ 0.20 = −5.25 rad/s. Both are negative because knee flexion is − in our system.</p></details>
+      <details><summary>A segment starts at rest and reaches 50 rad/s clockwise in 5 s. What is its angular acceleration?</summary><p>Clockwise is −, so Δω = −50 rad/s and α = −50 ÷ 5 = −10.00 rad/s².</p></details>
+    </div>
+
+    <div class="guide" data-show="in" hidden>
+      <h3>In-class: partner challenge</h3>
+      <ol>
+        <li><b>Predict:</b> where in the curl is ω largest, and what is α at that moment? <b>Then test:</b> scrub with <b>Tangent lines</b> on.</li>
+        <li><b>Predict:</b> give the signs of ω and α at 0.5 s and at 2.5 s. Speeding up or slowing down? <b>Then test:</b> scrub to each time and read the “Read the graph” box.</li>
+        <li><b>Predict:</b> the hand is 0.40 m from the elbow. How fast does it move at the peak ω? <b>Then test:</b> read the peak ω and use v = ω·r.</li>
+      </ol>
+      <h4>Discuss</h4>
+      <ul>
+        <li>Why is the average ω (0.35 rad/s) lower than the peak ω?</li>
+        <li>Why does v = ω·r only work with ω in rad/s?</li>
+      </ul>
+    </div>
+
+    <iframe data-src="../kinematics-graph-linker/?scen=curl" title="Kinematics Graph Linker, elbow curl"></iframe>
+  </section>
+
+  <!-- L4–5 FORCE PLATE -->
+  <section id="tab-plate" class="card" role="tabpanel" aria-labelledby="t-plate" tabindex="0" hidden>
+    <h2>A squat on a force plate</h2>
+    <p class="sub">vGRF = m·(g + a). Up is +. Scrub through the squat and watch the COM’s velocity and acceleration decide whether vGRF is above or below body weight.</p>
+
+    <div class="guide" data-show="pre">
+      <h3>Pre-class: guided steps</h3>
+      <h4>Lecture 4: Newton’s laws</h4>
+      <ol>
+        <li>Set <b>Time</b> to 0.00 s (standing still) and <b>Body mass</b> to 60 kg. vGRF equals the weight, W = m·g = 588.60 N, or 1.00 BW.</li>
+        <li>Change the mass while standing still. vGRF always equals m·g, because a = 0 (first law).</li>
+      </ol>
+      <h4>Lecture 5: Center of mass and GRF</h4>
+      <ol start="3">
+        <li>Set the mass to 70 kg (keep depth 0.40 m and squat time 2.0 s) and press <b>Play</b>. The <b>Phase</b> readout names each part of the squat. Note the sign of COM velocity and COM acceleration in each.</li>
+        <li>Drag <b>Time</b> to 1.50 s (the bottom). Velocity is about 0, but acceleration is + and vGRF is above 1 BW.</li>
+      </ol>
+      <h4>Check yourself</h4>
+      <details><summary>Lecture 4: what net force accelerates an 80 kg person at 1.5 m/s²?</summary><p>F_net = m·a = 80 × 1.5 = 120.00 N, in the direction of the acceleration.</p></details>
+      <details><summary>Lecture 4: are a resting book’s weight and the table pushing up on it a third-law pair?</summary><p>No. Both act on the book. They are equal because the book isn’t accelerating (first law). The table’s push pairs with the book pushing down on the table.</p></details>
+      <details><summary>Lecture 5: a 60 kg person accelerates upward at 1.5 m/s². What does the force plate read?</summary><p>vGRF = m·(g + a) = 60 × (9.81 + 1.5) = 678.60 N, which is 1.15 BW.</p></details>
+      <details><summary>Lecture 5: give the sign of COM velocity and acceleration in each squat phase.</summary><p>Early descent: v −, a −. Late descent: v −, a +. Ascent push: v +, a +. Near the top: v +, a −.</p></details>
+    </div>
+
+    <div class="guide" data-show="in" hidden>
+      <h3>In-class: partner challenge</h3>
+      <h4>Lecture 4: Newton’s laws</h4>
+      <ol>
+        <li><b>Predict:</b> a 70 kg person stands still on the plate. What does it read? <b>Then test:</b> set 70 kg and Time 0.00 s. What is the third-law partner of this vGRF, and what does it act on?</li>
+      </ol>
+      <h4>Lecture 5: Center of mass and GRF</h4>
+      <ol start="2">
+        <li><b>Predict:</b> during a slow squat, when do you feel lighter, and when heavier? <b>Then test:</b> press Play and watch when vGRF drops below and rises above 1 BW.</li>
+        <li><b>Predict:</b> vGRF for an 80 kg lifter at the bottom of the squat. <b>Then test:</b> set 80 kg, drag Time to 1.50 s, read the COM acceleration, work out m·(g + a) by hand, and compare with the readout.</li>
+        <li><b>Predict:</b> does a faster squat raise or lower the vGRF peak? <b>Then test:</b> change squat time from 2.0 s to 1.0 s.</li>
+      </ol>
+      <h4>Discuss</h4>
+      <ul>
+        <li>What does the plate read while a jumper is in the air? Why can vGRF never be negative?</li>
+        <li>Walking vGRF peaks just above 1 BW, running between 2 and 3 BW. Why does running need a bigger upward COM acceleration?</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div><canvas id="pCanvas" width="640" height="520" role="img" aria-label="Stick figure on a force plate with the vGRF and weight arrows, beside graphs of COM velocity, COM acceleration and vGRF over time. The current values are in the readouts."></canvas></div>
+      <div>
+        <div class="control"><div class="control-head"><label class="control-label" for="pM">Body mass</label><span class="control-val" id="pMv"></span></div><input type="range" id="pM" min="40" max="120" step="1" value="70"></div>
+        <div class="control"><div class="control-head"><label class="control-label" for="pD">Squat depth (COM drop)</label><span class="control-val" id="pDv"></span></div><input type="range" id="pD" min="0.10" max="0.60" step="0.01" value="0.40"></div>
+        <div class="control"><div class="control-head"><label class="control-label" for="pT">Squat time (down and up)</label><span class="control-val" id="pTv"></span></div><input type="range" id="pT" min="0.8" max="4.0" step="0.1" value="2.0"></div>
+        <div class="control"><div class="control-head"><label class="control-label" for="pt">Time</label><span class="control-val" id="ptv"></span></div><input type="range" id="pt" min="0" max="1000" step="1" value="0"></div>
+        <div class="chips"><button class="btn" id="pPlay">Play</button></div>
+        <div class="stat">
+          <div><div class="k">Phase</div><div class="v" id="pPhase" style="font-size:16px;"></div></div>
+          <div><div class="k">COM velocity</div><div class="v" id="pV"></div></div>
+          <div><div class="k">COM acceleration</div><div class="v" id="pA"></div></div>
+          <div><div class="k">vGRF</div><div class="v" id="pF"></div></div>
+          <div><div class="k">vGRF ÷ body weight</div><div class="v" id="pBW"></div></div>
+        </div>
+        <p class="note">Model: the COM moves down and back up along a smooth path (an idealized squat with no pause at the bottom). Real force-plate curves are noisier, but the pattern is the same.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- L6 TORQUE -->
+  <section id="tab-torque" class="card" role="tabpanel" aria-labelledby="t-torque" tabindex="0" hidden>
+    <h2>Levers and net torque</h2>
+    <p class="sub">The fulcrum sits at 0. The effort pushes up and the load pulls down. τ = force × perpendicular distance; counterclockwise (as drawn) is +.</p>
+
+    <div class="guide" data-show="pre">
+      <h3>Pre-class: guided steps</h3>
+      <ol>
+        <li>Press <b>Elbow curl (class III)</b>. Read the lever class, the TMA (0.17) and the net torque (−5.00 N·m). The load side wins.</li>
+        <li>Set the effort position to 0.05 m and the load position to 0.35 m. TMA = 0.05 ÷ 0.35 = 0.14, and the effort is in the middle, so it is class III.</li>
+        <li>Press <b>Practice problem 4</b> (271 N load at 0.34 m, effort at 0.13 m). Read the effort needed to balance. Then raise the effort until the net torque turns +.</li>
+        <li>Press <b>Calf raise (class II)</b>. The load sits between the fulcrum and the effort, so the TMA is above 1.</li>
+      </ol>
+      <h4>Check yourself</h4>
+      <details><summary>A muscle pulls with 400 N at a moment arm of 0.04 m. How much torque does it make?</summary><p>τ = F × d⊥ = 400 × 0.04 = 16.00 N·m.</p></details>
+      <details><summary>Effort arm 0.05 m, load arm 0.35 m, effort in the middle. TMA and class? Could a class II lever have this TMA?</summary><p>TMA = 0.05 ÷ 0.35 = 0.14. The effort is in the middle, so it is class III. No: a class II lever’s effort arm is always longer than its load arm, so its TMA is always greater than 1.</p></details>
+      <details><summary>A 271 N load acts 0.34 m from the fulcrum and the effort acts 0.13 m from it. What is the smallest effort that moves the load?</summary><p>Load torque = 271 × 0.34 = 92.14 N·m. The effort torque has to be larger: E × 0.13 &gt; 92.14, so E &gt; 708.77 N.</p></details>
+    </div>
+
+    <div class="guide" data-show="in" hidden>
+      <h3>In-class: partner challenge</h3>
+      <ol>
+        <li><b>Predict:</b> a 100 N effort at 0.45 m and a 100 N load at 0.15 m. Which side wins, and what is the TMA? What if you swap the two positions? <b>Then test:</b> set the four sliders, then swap.</li>
+        <li><b>Predict:</b> the smallest effort for <b>Practice problem 4</b>. <b>Then test:</b> press it and raise the effort until the net torque turns +.</li>
+        <li><b>Predict:</b> a 30 N dumbbell is held 0.35 m from the elbow. The biceps inserts 0.04 m from the elbow and pulls perpendicular to the forearm. What biceps force holds it still? <b>Then test:</b> set the effort at 0.04 m and a 30 N load at 0.35 m, then read the balancing effort.</li>
+      </ol>
+      <h4>Discuss</h4>
+      <ul>
+        <li>Does the TMA alone tell you which side wins? What do you compare instead?</li>
+        <li>If class III levers need so much muscle force, why does the body use them so often?</li>
+      </ul>
+    </div>
+
+    <div class="chips">
+      <button class="btn ghost" data-preset="elbow">Elbow curl (class III)</button>
+      <button class="btn ghost" data-preset="p4">Practice problem 4</button>
+      <button class="btn ghost" data-preset="seesaw">Seesaw (class I)</button>
+      <button class="btn ghost" data-preset="calf">Calf raise (class II)</button>
+    </div>
+    <div class="grid2">
+      <div><canvas id="tCanvas" width="640" height="380" role="img" aria-label="Lever diagram with the fulcrum at 0, the effort arrow pointing up and the load arrow pointing down, and their arms drawn below. The current values are in the readouts."></canvas></div>
+      <div>
+        <div class="control"><div class="control-head"><label class="control-label" for="tXe">Effort position</label><span class="control-val" id="tXev"></span></div><input type="range" id="tXe" min="-0.60" max="0.60" step="0.01" value="0.05"></div>
+        <div class="control"><div class="control-head"><label class="control-label" for="tE">Effort force (up)</label><span class="control-val" id="tEv"></span></div><input type="range" id="tE" min="0" max="1500" step="5" value="200"></div>
+        <div class="control"><div class="control-head"><label class="control-label" for="tXl">Load position</label><span class="control-val" id="tXlv"></span></div><input type="range" id="tXl" min="-0.60" max="0.60" step="0.01" value="0.30"></div>
+        <div class="control"><div class="control-head"><label class="control-label" for="tL">Load (down)</label><span class="control-val" id="tLv"></span></div><input type="range" id="tL" min="0" max="500" step="1" value="50"></div>
+      </div>
+    </div>
+    <div class="stat">
+      <div><div class="k">Lever class</div><div class="v" id="tClass"></div></div>
+      <div><div class="k">TMA (effort arm ÷ load arm)</div><div class="v" id="tTMA"></div></div>
+      <div><div class="k">Effort torque</div><div class="v" id="tTe"></div></div>
+      <div><div class="k">Load torque</div><div class="v" id="tTl"></div></div>
+      <div><div class="k">Net torque</div><div class="v" id="tTn"></div></div>
+    </div>
+    <p class="big" id="tOut" style="margin-top:12px;" aria-live="polite"></p>
+  </section>
+
+  <!-- L7 ANGLE OF PULL -->
+  <section id="tab-pull" class="card" role="tabpanel" aria-labelledby="t-pull" tabindex="0" hidden>
+    <h2>Angle of pull: measure from the segment</h2>
+    <p class="sub">Simplified biceps: origin 0.30 m up the humerus, insertion 0.05 m along the forearm. Change the elbow angle and watch θ change. Raise the whole arm and watch θ stay put while the dumbbell’s moment arm changes.</p>
+
+    <div class="guide" data-show="pre">
+      <h3>Pre-class: guided steps</h3>
+      <ol>
+        <li>Set <b>Elbow flexion</b> to 0.52, 1.75 and 2.44 rad. Read θ at each (the tool shows 0.45, 1.58 and 2.32 rad). θ grows as the elbow flexes.</li>
+        <li>At each angle, read the parallel component. Does it point toward the elbow (stabilizing), or away from it (dislocating)? Near 1.75 rad it is close to 0.</li>
+        <li>Set the elbow to 1.57 rad and the dumbbell to 50 N, and read the force needed to hold still. Then raise <b>Shoulder flexion</b> to 1.05 rad. θ stays put, but the dumbbell’s moment arm drops from 0.30 m to about 0.15 m.</li>
+      </ol>
+      <h4>Check yourself</h4>
+      <details><summary>A biceps pulls with 800 N at θ = 0.70 rad and inserts 0.04 m from the elbow. Rotary component, parallel component and torque?</summary><p>Rotary = 800 × sin 0.70 = 515.37 N. Parallel = 800 × cos 0.70 = 611.87 N, toward the elbow (θ &lt; 1.57 rad). Torque = 515.37 × 0.04 = 20.61 N·m.</p></details>
+      <details><summary>A 40 N weight is held 0.35 m from the elbow, elbow at 1.57 rad. Its torque with the forearm horizontal, and 0.52 rad above horizontal? Did θ change?</summary><p>Horizontal: 40 × 0.35 × cos 0 = 14.00 N·m. 0.52 rad above: 40 × 0.35 × cos 0.52 = 12.15 N·m. Both tend to extend the elbow, so they are −14.00 and −12.15 N·m in our system. θ did not change; it depends only on the elbow angle.</p></details>
+      <details><summary>Is the parallel component stabilizing or dislocating at θ = 0.45 rad? At θ = 2.32 rad?</summary><p>cos 0.45 = 0.90, which is positive, so it pulls toward the elbow: stabilizing. cos 2.32 = −0.68, which is negative, so it pulls away: dislocating.</p></details>
+    </div>
+
+    <div class="guide" data-show="in" hidden>
+      <h3>In-class: partner challenge</h3>
+      <ol>
+        <li><b>Predict:</b> at what elbow angle does θ reach 1.57 rad, and what happens to the parallel component there? <b>Then test:</b> drag the elbow until θ reads 1.57 rad.</li>
+        <li><b>Predict:</b> a 500 N biceps force with the elbow at 1.05 rad (θ ≈ 0.91 rad): rotary, parallel (toward or away?) and torque. <b>Then test:</b> set 1.05 rad and 500 N. The tool uses the unrounded θ (it shows 0.92 rad), so its answers differ slightly. Now raise the shoulder. Does θ change?</li>
+        <li><b>Predict:</b> with the elbow at 1.57 rad and a 50 N dumbbell, which needs more biceps force: the upper arm at your side, or the shoulder flexed 1.05 rad? <b>Then test:</b> read <b>Force needed to hold still</b> at both shoulder angles.</li>
+      </ol>
+      <h4>Discuss</h4>
+      <ul>
+        <li>In a preacher curl the upper arm is tilted forward on a pad. Is the hardest point at a larger or smaller elbow angle than in a standing curl?</li>
+        <li>Name one reason strength changes through the range of motion.</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div><canvas id="aCanvas" width="640" height="560" role="img" aria-label="Upper arm, forearm and biceps. The muscle force at the insertion is split into a rotary arrow and a parallel arrow, and the dumbbell's moment arm is drawn below. The current values are in the readouts."></canvas></div>
+      <div>
+        <div class="control"><div class="control-head"><label class="control-label" for="aF">Elbow flexion</label><span class="control-val" id="aFv"></span></div><input type="range" id="aF" min="0.05" max="2.50" step="0.01" value="1.57"></div>
+        <div class="control"><div class="control-head"><label class="control-label" for="aS">Shoulder flexion</label><span class="control-val" id="aSv"></span></div><input type="range" id="aS" min="0" max="2.10" step="0.01" value="0"></div>
+        <div class="control"><div class="control-head"><label class="control-label" for="aM">Biceps force</label><span class="control-val" id="aMv"></span></div><input type="range" id="aM" min="0" max="1200" step="10" value="600"></div>
+        <div class="control"><div class="control-head"><label class="control-label" for="aW">Dumbbell (0.30 m from elbow)</label><span class="control-val" id="aWv"></span></div><input type="range" id="aW" min="0" max="100" step="1" value="50"></div>
+        <div class="stat">
+          <div><div class="k">Angle of pull θ</div><div class="v" id="aTh"></div></div>
+          <div><div class="k">Rotary F·sin θ</div><div class="v" id="aRot"></div></div>
+          <div><div class="k">Parallel F·cos θ</div><div class="v" id="aPar" style="font-size:15px;"></div></div>
+          <div><div class="k">Muscle torque</div><div class="v" id="aTm"></div></div>
+          <div><div class="k">Dumbbell torque</div><div class="v" id="aTw"></div></div>
+          <div><div class="k">Force needed to hold still</div><div class="v" id="aNeed"></div></div>
+        </div>
+        <p class="note">Elbow flexion is + in our system. The person faces right. Ignores the forearm’s own weight. The tool doesn’t round θ, so its answers can differ from the slides (which round θ to 2 decimals first) in the last digit.</p>
+      </div>
+    </div>
+  </section>
+  <p class="note">KINE 3620 · Unit 1. Idealized models for learning; not patient data. This one file contains the whole explorer, including the Kinematics Graph Linker, and works offline.</p>
+</div>
+
+<script type="application/json" id="u1linker">"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Kinematics Graph Linker<\/title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link href=\"https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">\n<style>\n  :root{\n    --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158;\n    --stance:#2F6F63; --rust:#B8622A; --amber:#E8B23D; --line-blue:#3A5B8C; --purple:#7A5C8A; --line:#D8DED7; --radius:14px;\n  }\n  *{box-sizing:border-box;}\n  html,body{overflow-x:hidden;}\n  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;padding:28px 18px 60px;}\n  .wrap{max-width:1040px;margin:0 auto;}\n  h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,32px);font-weight:700;margin:0 0 4px;letter-spacing:-0.01em;}\n  .subtitle{color:var(--ink-soft);font-size:15px;margin:0 0 20px;max-width:720px;line-height:1.5;}\n  .card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);margin-bottom:16px;min-width:0;}\n  h2.window-title{margin:0 0 4px;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;}\n  .window-sub{color:var(--ink-soft);font-size:13.5px;margin:0 0 16px;line-height:1.5;}\n  h3{margin:0 0 10px;font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700;color:var(--ink-soft);}\n  .note{font-size:12.5px;line-height:1.6;color:#33392f;}\n  button{font-family:'Inter',sans-serif;}\n  [hidden]{display:none !important;}\n  @media (max-width:480px){ body{padding:22px 12px 48px;} .card{padding:16px 14px;} }\n\n  /* segmented toggles */\n  .axis-mode-row{display:flex;align-items:center;gap:8px 10px;margin-bottom:14px;flex-wrap:wrap;}\n  .axis-mode-label{font-size:12.5px;font-weight:700;color:var(--ink-soft);}\n  .axis-mode-group{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:9px;flex-wrap:wrap;}\n  .axis-mode-btn{border:none;background:transparent;padding:6px 13px;border-radius:7px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--ink-soft);}\n  .axis-mode-btn.active{background:var(--ink);color:#fff;}\n\n  .controls{display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap;}\n  .btn{font-weight:600;font-size:14px;border:none;border-radius:9px;padding:9px 16px;cursor:pointer;transition:transform 0.08s ease;}\n  .btn:active{transform:scale(0.96);}\n  #playBtn{background:var(--ink);color:#fff;min-width:78px;}\n  .toggles{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px;}\n  .toggle-btn{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;font-weight:700;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:7px;color:var(--ink-soft);}\n  .toggle-btn .sw{opacity:0.35;}\n  .toggle-btn.active{border-color:var(--amber);color:var(--ink);}\n  .toggle-btn.active .sw{opacity:1;}\n\n  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--line);border-radius:4px;outline:none;margin:16px 0 4px;}\n  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;margin-top:-8px;}\n  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;}\n  .readout{display:flex;justify-content:space-between;gap:6px 12px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft);}\n  .readout b{font-family:'Space Grotesk',sans-serif;color:var(--ink);}\n\n  .control{margin-bottom:4px;}\n  .control-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}\n  .control-label{font-weight:700;font-size:13.5px;}\n  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:var(--ink);white-space:nowrap;}\n  .control input[type=range]{margin:12px 0 8px;}\n  .sliders{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 22px;background:#FBFCFA;border:1px solid var(--line);border-radius:12px;padding:12px 14px 6px;margin-bottom:14px;}\n  @media (max-width:640px){ .sliders{grid-template-columns:1fr;} }\n  .sliders .chips{grid-column:1/-1;margin:0 0 8px;}\n\n  .legend{display:flex;gap:8px 16px;justify-content:center;margin-top:12px;font-size:12px;font-weight:600;color:var(--ink-soft);flex-wrap:wrap;}\n  .legend span{display:inline-flex;align-items:center;gap:6px;}\n  .sw{width:14px;height:5px;border-radius:3px;display:inline-block;}\n  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}\n\n  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}\n  .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--ink-soft);cursor:pointer;}\n  .chip:hover{color:var(--ink);border-color:var(--ink-soft);}\n\n  .feat-explain{margin-top:10px;font-size:13.5px;line-height:1.55;color:#33392f;background:#F1F4F0;border-radius:10px;padding:11px 13px;min-height:20px;}\n  .tag{display:inline-block;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--ink);color:#fff;margin-right:6px;}\n  .est{color:var(--ink-soft);font-style:italic;}\n\n  /* motion strip + graphs */\n  .stage{background:#FBFCFA;border:1px solid var(--line);border-radius:12px;overflow:hidden;}\n  .stage svg{width:100%;display:block;}\n  .gblock{margin-top:14px;}\n  .ghead{display:flex;justify-content:space-between;align-items:baseline;gap:2px 10px;flex-wrap:wrap;font-size:13px;margin-bottom:2px;}\n  .gt{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;}\n  .gt small{font-family:'Inter',sans-serif;font-weight:600;font-size:12px;color:var(--ink-soft);}\n  .gval{font-size:12.5px;color:var(--ink-soft);}\n  .gval b{font-family:'Space Grotesk',sans-serif;font-size:14px;}\n  .gslope{font-size:12.5px;color:#33392f;margin:4px 0 0;line-height:1.45;}\n  .gslope b{font-family:'Space Grotesk',sans-serif;}\n  svg.graph{width:100%;display:block;touch-action:pan-y;cursor:crosshair;-webkit-user-select:none;user-select:none;}\n  .axis-label{font-size:11px;fill:var(--ink-soft);font-family:'Inter',sans-serif;}\n  .ann{font-size:11px;font-weight:700;font-family:'Inter',sans-serif;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;}\n\n  /* average vs instantaneous */\n  .avg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 22px;}\n  @media (max-width:640px){ .avg-grid{grid-template-columns:1fr;} }\n  .calc{font-size:13.5px;line-height:1.6;margin:8px 0 0;}\n  .calc .row{padding:8px 0;border-top:1px solid var(--line);}\n  .calc .row:first-child{border-top:none;}\n  .calc b{font-family:'Space Grotesk',sans-serif;}\n\n  /* quiz */\n  .q{border-top:1px solid var(--line);padding:14px 0 4px;}\n  .q:first-of-type{border-top:none;padding-top:4px;}\n  .q-text{font-weight:700;font-size:14.5px;line-height:1.45;margin-bottom:8px;}\n  .q-opts{display:flex;flex-direction:column;gap:6px;}\n  .q-opt{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:8px 12px;font-weight:600;font-size:13px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.4;}\n  .q-opt:hover{border-color:var(--ink-soft);}\n  .q-opt.right{border-color:var(--stance);background:#E4EEEA;}\n  .q-opt.wrong{border-color:var(--rust);background:#F5E7DC;}\n  .q .feat-explain{display:none;}\n  .q.answered .feat-explain{display:block;}\n  .score{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:var(--ink-soft);}\n<\/style>\n<\/head>\n<body>\n<div class=\"wrap\">\n  <h1>Kinematics Graph Linker<\/h1>\n  <p class=\"subtitle\">Three graphs, one motion. The <b>slope<\/b> of each graph is the <b>value<\/b> of the graph below it. Move the time cursor and check.<\/p>\n\n  <!-- ============ Motion + graphs ============ -->\n  <div class=\"card\">\n    <div class=\"axis-mode-row\">\n      <span class=\"axis-mode-label\">Scenario:<\/span>\n      <div class=\"axis-mode-group\" id=\"scenGroup\">\n        <button class=\"axis-mode-btn active\" data-scen=\"bolt\" aria-pressed=\"true\">Bolt 100 m (real data)<\/button>\n        <button class=\"axis-mode-btn\" data-scen=\"curl\" aria-pressed=\"false\">Elbow curl<\/button>\n        <button class=\"axis-mode-btn\" data-scen=\"const\" aria-pressed=\"false\">Build your own<\/button>\n      <\/div>\n    <\/div>\n    <h2 class=\"window-title\" id=\"scenTitle\"><\/h2>\n    <p class=\"window-sub\" id=\"scenDesc\"><\/p>\n\n    <div class=\"sliders\" id=\"constSliders\" hidden>\n      <div class=\"control\">\n        <div class=\"control-head\"><span class=\"control-label\">Starting position x₀<\/span><span class=\"control-val\" id=\"x0Val\"><\/span><\/div>\n        <input type=\"range\" id=\"x0\" min=\"-20\" max=\"20\" step=\"1\" value=\"0\" aria-label=\"Starting position\">\n      <\/div>\n      <div class=\"control\">\n        <div class=\"control-head\"><span class=\"control-label\">Starting velocity v₀<\/span><span class=\"control-val\" id=\"v0Val\"><\/span><\/div>\n        <input type=\"range\" id=\"v0\" min=\"-10\" max=\"10\" step=\"0.5\" value=\"8\" aria-label=\"Starting velocity\">\n      <\/div>\n      <div class=\"control\">\n        <div class=\"control-head\"><span class=\"control-label\">Acceleration a<\/span><span class=\"control-val\" id=\"aVal\"><\/span><\/div>\n        <input type=\"range\" id=\"acc\" min=\"-5\" max=\"5\" step=\"0.25\" value=\"-2\" aria-label=\"Acceleration\">\n      <\/div>\n      <div class=\"chips\" id=\"constPresets\">\n        <button class=\"chip\" data-x0=\"0\" data-v0=\"2\" data-a=\"2\">Speeding up<\/button>\n        <button class=\"chip\" data-x0=\"0\" data-v0=\"8\" data-a=\"-2\">Slowing down, still moving forward<\/button>\n      <\/div>\n    <\/div>\n\n    <div class=\"axis-mode-row\" id=\"unitRow\" hidden>\n      <span class=\"axis-mode-label\">Angle units:<\/span>\n      <div class=\"axis-mode-group\" id=\"unitGroup\">\n        <button class=\"axis-mode-btn active\" data-unit=\"rad\" aria-pressed=\"true\">Radians<\/button>\n        <button class=\"axis-mode-btn\" data-unit=\"deg\" aria-pressed=\"false\">Degrees<\/button>\n      <\/div>\n    <\/div>\n\n    <div class=\"stage\"><svg id=\"strip\" role=\"img\" aria-label=\"Animation of the motion\"><\/svg><\/div>\n\n    <div class=\"controls\">\n      <button class=\"btn\" id=\"playBtn\">Play<\/button>\n    <\/div>\n    <input type=\"range\" id=\"scrub\" min=\"0\" max=\"1000\" value=\"500\" aria-label=\"Time cursor\">\n    <div class=\"readout\"><span>Time: <b id=\"tOut\">0.00 s<\/b><\/span><span>Drag the slider, or drag on any graph.<\/span><\/div>\n\n    <div class=\"toggles\">\n      <button class=\"toggle-btn active\" id=\"tanBtn\" aria-pressed=\"true\"><span class=\"sw\" style=\"background:var(--line-blue);\"><\/span>Tangent lines<\/button>\n      <button class=\"toggle-btn\" id=\"secBtn\" aria-pressed=\"false\"><span class=\"sw\" style=\"background:var(--purple);\"><\/span>Average (secant)<\/button>\n      <button class=\"toggle-btn\" id=\"segBtn\" aria-pressed=\"false\"><span class=\"sw\" style=\"background:var(--ink);\"><\/span>Segment averages<\/button>\n    <\/div>\n\n    <div id=\"graphs\">\n      <div class=\"gblock\"><div class=\"ghead\" id=\"h0\"><\/div><svg class=\"graph\" id=\"g0\"><\/svg><p class=\"gslope\" id=\"s0\"><\/p><\/div>\n      <div class=\"gblock\"><div class=\"ghead\" id=\"h1\"><\/div><svg class=\"graph\" id=\"g1\"><\/svg><p class=\"gslope\" id=\"s1\"><\/p><\/div>\n      <div class=\"gblock\"><div class=\"ghead\" id=\"h2\"><\/div><svg class=\"graph\" id=\"g2\"><\/svg><\/div>\n    <\/div>\n    <div class=\"legend\" id=\"legend\"><\/div>\n\n    <h3 style=\"margin:18px 0 0;\">Read the graph<\/h3>\n    <div class=\"feat-explain\" id=\"readBox\" aria-live=\"polite\"><\/div>\n    <p class=\"note\" id=\"scenNote\" style=\"margin-top:12px;\"><\/p>\n  <\/div>\n\n  <!-- ============ Average vs instantaneous ============ -->\n  <div class=\"card\" id=\"avgCard\" hidden>\n    <h2 class=\"window-title\">Average vs. instantaneous<\/h2>\n    <p class=\"window-sub\">The purple <b>secant<\/b> joins two points on the top graph. Its slope is the <b>average<\/b> between t₁ and t₂. The tangent's slope is the value at <b>one instant<\/b>. Drag the purple handles on the top graph, or use these sliders.<\/p>\n    <div class=\"avg-grid\">\n      <div class=\"control\">\n        <div class=\"control-head\"><span class=\"control-label\">t₁<\/span><span class=\"control-val\" id=\"t1Val\"><\/span><\/div>\n        <input type=\"range\" id=\"t1\" min=\"0\" max=\"1000\" value=\"0\" aria-label=\"Secant start time\">\n      <\/div>\n      <div class=\"control\">\n        <div class=\"control-head\"><span class=\"control-label\">t₂<\/span><span class=\"control-val\" id=\"t2Val\"><\/span><\/div>\n        <input type=\"range\" id=\"t2\" min=\"0\" max=\"1000\" value=\"1000\" aria-label=\"Secant end time\">\n      <\/div>\n    <\/div>\n    <div class=\"calc\" id=\"avgOut\"><\/div>\n  <\/div>\n\n  <!-- ============ Quiz ============ -->\n  <div class=\"card\">\n    <h2 class=\"window-title\">Quick check<\/h2>\n    <p class=\"window-sub\">Pick an answer to see feedback. <span class=\"score\" id=\"score\"><\/span><\/p>\n    <div id=\"quiz\"><\/div>\n  <\/div>\n\n  <!-- ============ Footer ============ -->\n  <div class=\"card\">\n    <p class=\"note\" style=\"margin:0;\"><b>Data source.<\/b> Bolt 100 m: official 20 m splits and reaction time from the 9.58 s world record (Berlin, 16 August 2009), as reported by <i>Track &amp; Field News<\/i> (November 2009) from the official biomechanical analysis. Only the splits are measured. The smooth curve is a model fitted to them (within 0.02 s), so its velocity and acceleration are estimates.<\/p>\n    <p class=\"note\" style=\"margin:8px 0 0;\">Curl and constant-acceleration scenarios are idealized models.<\/p>\n  <\/div>\n<\/div>\n\n<script>\n'use strict';\nconst PI = Math.PI;\nconst C = {ink:'#1B2420', soft:'#586158', stance:'#2F6F63', rust:'#B8622A', amber:'#E8B23D', blue:'#3A5B8C', purple:'#7A5C8A', line:'#D8DED7', grid:'#EDEFEC'};\nconst GRAPH_COLORS = [C.stance, C.blue, C.rust];\n\n// ===================== Models =====================\n// Bolt smooth-start sprint model, fitted to the official split times (within 0.02 s).\n// t' = t - 0.146 s reaction time; v = vmax(1 - e^(-t'/tau1))(1 - e^(-t'/tau2))^2.\n// Both a and da/dt are 0 at t' = 0, so acceleration leaves zero smoothly (no corner).\nconst BOLT_RT = 0.146, BOLT_VMAX = 12.2046, BOLT_T1 = 1.1970, BOLT_T2 = 0.18;\nconst BOLT_TC = 1/(1/BOLT_T1 + 1/BOLT_T2), BOLT_TD = 1/(1/BOLT_T1 + 2/BOLT_T2);\nfunction boltModel(t){\n  const tp = t - BOLT_RT;\n  if(tp<=0) return [0,0,0];\n  const F = c => c*(1-Math.exp(-tp/c));\n  const e1=Math.exp(-tp/BOLT_T1), e2=Math.exp(-tp/BOLT_T2), A=1-e1, B=1-e2;\n  const x = BOLT_VMAX*(tp - 2*F(BOLT_T2) + F(BOLT_T2/2) - F(BOLT_T1) + 2*F(BOLT_TC) - F(BOLT_TD));\n  const v = BOLT_VMAX*A*B*B;\n  const a = BOLT_VMAX*((e1/BOLT_T1)*B*B + 2*A*B*(e2/BOLT_T2));   // analytic dv/dt\n  return [x,v,a];\n}\nfunction minJerk(th0, dth, T){\n  return function(t){\n    if(t<=0) return [th0,0,0];\n    if(t>=T) return [th0+dth,0,0];\n    const s=t/T, s2=s*s, s3=s2*s, s4=s3*s, s5=s4*s;\n    return [th0+dth*(10*s3-15*s4+6*s5), dth/T*(30*s2-60*s3+30*s4), dth/(T*T)*(60*s-180*s2+120*s3)];\n  };\n}\n\n// Bolt: official cumulative splits (Track & Field News, Nov 2009; Berlin 2009 biomechanical analysis)\nconst SPLIT_T = [0, 2.89, 4.64, 6.31, 7.92, 9.58];   // gun, then 20/40/60/80/100 m\nconst SPLIT_X = [0, 20, 40, 60, 80, 100];\nconst SEG_AVG = [6.92, 11.43, 11.98, 12.42, 12.05];  // 20 m / segment time (m/s)\n\nconst curlFn = minJerk(-PI/6, PI/3, 3);\nconst CP = {x0:0, v0:8, a:-2};\nfunction constFn(t){ return [CP.x0 + CP.v0*t + 0.5*CP.a*t*t, CP.v0 + CP.a*t, CP.a]; }\n\nconst SCEN = {\n  bolt:{ title:'Usain Bolt, 100 m world record (9.58 s)', kind:'linear', tMax:9.58, tStep:1, t0:1.5,\n    desc:'Berlin, 2009. The clock starts at the gun. Bolt reacts at 0.146 s. The dots are his official 20 m split times.',\n    fwd:'moving forward', back:'moving backward', estimated:true,\n    note:'Dots: official splits. Smooth model fitted to the official splits (within 0.02 s). Velocity and acceleration are model estimates. The segment averages show a small slowdown over the last 20 m that this simple model leaves out.',\n    fn:boltModel, secDefault:[2.89, 4.64] },\n  curl:{ title:'Elbow curl', kind:'angular', tMax:3, tStep:0.5, t0:0.75,\n    desc:'The forearm curls from −30° to +30° (−π/6 to +π/6 rad) in 3 s. It starts and ends at rest. θ is the forearm angle above horizontal, so positive ω means the elbow is flexing.',\n    fwd:'curling up', back:'lowering',\n    note:'Idealized model. Average ω for the whole curl = Δθ/Δt = (π/3 rad)/(3 s) = π/9 ≈ 0.35 rad/s.',\n    fn:curlFn, secDefault:[0,3] },\n  const:{ title:'Build your own: constant acceleration', kind:'linear', tMax:5, tStep:1, t0:1,\n    desc:'x = x₀ + v₀t + ½at² and v = v₀ + at. Try a negative a with a positive v₀.',\n    fwd:'moving in the + direction', back:'moving in the − direction',\n    note:'Idealized model. With constant a, the velocity graph is a straight line, so its slope is the same everywhere.',\n    fn:constFn, secDefault:[1,3] }\n};\n\n// ===================== State =====================\nlet cur='bolt', units='rad', t=1.5, t1=0, t2=1, playing=false, lastTs=null;\nlet showTan=true, showSec=false, showSeg=false;\nconst G = [];\nlet W = 600, maxV=1, maxA=1, epsV=1e-9, epsA=1e-9;\n\nconst $ = id => document.getElementById(id);\nconst svgs = [$('g0'),$('g1'),$('g2')];\nconst heads = [$('h0'),$('h1'),$('h2')];\nconst slopes = [$('s0'),$('s1')];\nconst strip = $('strip');\n\nfunction sc(){ return SCEN[cur]; }\nfunction U(){ return (sc().kind==='angular' && units==='deg') ? 180/PI : 1; }\nfunction unitStrs(){\n  if(sc().kind==='linear') return ['m','m/s','m/s²'];\n  return units==='deg' ? ['°','°/s','°/s²'] : ['rad','rad/s','rad/s²'];\n}\nfunction labels(){\n  return sc().kind==='linear'\n    ? {names:['Position','Velocity','Acceleration'], sym:['x','v','a'], pos:'position', V:'Velocity', A:'acceleration'}\n    : {names:['Angle','Angular velocity','Angular acceleration'], sym:['θ','ω','α'], pos:'angle', V:'ω', A:'α'};\n}\nfunction fmt(v){\n  if(!isFinite(v)) return '–';\n  const a=Math.abs(v), dp = a>=1000?0:(a>=100?1:2);\n  let s=v.toFixed(dp);\n  if(parseFloat(s)===0) s=(0).toFixed(dp);\n  return s.replace('-','−');\n}\nfunction fu(v,u){ return fmt(v)+(u.charAt(0)==='°'?u:' '+u); }\nfunction fmtTick(v, step){\n  let dp=0; while(dp<3 && Math.abs(step*Math.pow(10,dp)-Math.round(step*Math.pow(10,dp)))>1e-6) dp++;\n  let s=v.toFixed(dp); if(parseFloat(s)===0) s=(0).toFixed(dp);\n  return s.replace('-','−');\n}\nfunction fmtT(x){ return x.toFixed(2)+' s'; }\n\n// ===================== Geometry =====================\nfunction niceStep(r, n){\n  const raw=r/n, p=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/p;\n  return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;\n}\n// dense sample times (at least 400 points, more on wide screens)\nfunction sampleTimes(n){ const T=sc().tMax, out=[]; for(let i=0;i<=n;i++) out.push(T*i/n); return out; }\nfunction computeGeometry(){\n  const S=sc(), u=U();\n  W = Math.max(260, Math.round($('graphs').clientWidth));\n  const narrow = W<520;\n  const H = narrow?150:175, padL = narrow?46:58, padR=14, padT=10, padB=24;\n  const ts = sampleTimes(800), rows = ts.map(tt=>S.fn(tt));\n  maxV=0; maxA=0; rows.forEach(r=>{ maxV=Math.max(maxV,Math.abs(r[1])); maxA=Math.max(maxA,Math.abs(r[2])); });\n  epsV=Math.max(maxV*0.02,1e-9); epsA=Math.max(maxA*0.02,1e-9);\n  for(let k=0;k<3;k++){\n    let lo=0, hi=0;\n    rows.forEach(r=>{ const v=r[k]*u; if(v<lo) lo=v; if(v>hi) hi=v; });\n    if(cur==='bolt' && k===0) hi=Math.min(hi,100);\n    if(cur==='bolt' && k===1) hi=Math.max(hi,13);\n    if(hi-lo<1e-9){ lo-=1; hi+=1; }\n    const step=niceStep(hi-lo, narrow?3:4);\n    const lo2=Math.floor(lo/step+1e-9)*step, hi2=Math.ceil(hi/step-1e-9)*step;\n    const ticks=[]; for(let v=lo2; v<=hi2+step*1e-6; v+=step) ticks.push(Math.abs(v)<step*1e-6?0:v);\n    const plotW=W-padL-padR, plotH=H-padT-padB;\n    G[k]={W,H,padL,padR,padT,padB,plotW,plotH,lo:lo2,hi:hi2,ticks,step,\n      x:tt=>padL+tt/S.tMax*plotW, y:v=>padT+(1-(v-lo2)/(hi2-lo2))*plotH,\n      ky:plotH/(hi2-lo2), kx:plotW/S.tMax};\n  }\n}\n\n// ===================== Static layer =====================\nfunction renderBase(){\n  computeGeometry();\n  const S=sc(), u=U(), L=labels();\n  const n = Math.max(400, Math.round(G[0].plotW*2));\n  const ts = sampleTimes(n), rows = ts.map(tt=>S.fn(tt));\n  for(let k=0;k<3;k++){\n    const g=G[k]; let h='';\n    h+=`<defs><clipPath id=\"clip${k}\"><rect x=\"${g.padL}\" y=\"${g.padT-2}\" width=\"${g.plotW}\" height=\"${g.plotH+4}\"/><\/clipPath><\/defs>`;\n    g.ticks.forEach(v=>{\n      const y=g.y(v);\n      h+=`<line x1=\"${g.padL}\" y1=\"${y}\" x2=\"${g.W-g.padR}\" y2=\"${y}\" stroke=\"${v===0?'#B9C1B8':C.grid}\" stroke-width=\"${v===0?1.4:1}\"/>`;\n      h+=`<text x=\"${g.padL-6}\" y=\"${y+4}\" text-anchor=\"end\" class=\"axis-label\">${fmtTick(v,g.step)}<\/text>`;\n    });\n    h+=`<line x1=\"${g.padL}\" y1=\"${g.padT}\" x2=\"${g.padL}\" y2=\"${g.H-g.padB}\" stroke=\"${C.line}\" stroke-width=\"1.5\"/>`;\n    h+=`<line x1=\"${g.padL}\" y1=\"${g.H-g.padB}\" x2=\"${g.W-g.padR}\" y2=\"${g.H-g.padB}\" stroke=\"${C.line}\" stroke-width=\"1.5\"/>`;\n    const tickEvery = (g.plotW/(S.tMax/S.tStep) < 34) ? 2 : 1;\n    let i=0;\n    for(let tt=0; tt<=S.tMax+1e-9; tt+=S.tStep, i++){\n      const x=g.x(tt);\n      h+=`<line x1=\"${x}\" y1=\"${g.H-g.padB}\" x2=\"${x}\" y2=\"${g.H-g.padB+4}\" stroke=\"${C.line}\"/>`;\n      if(i%tickEvery===0) h+=`<text x=\"${x}\" y=\"${g.H-g.padB+16}\" text-anchor=\"middle\" class=\"axis-label\">${+tt.toFixed(2)}<\/text>`;\n    }\n    if(k===2) h+=`<text x=\"${g.W-g.padR}\" y=\"${g.H-g.padB-6}\" text-anchor=\"end\" class=\"axis-label\">time (s)<\/text>`;\n    if(cur==='bolt' && k===1 && showSeg){\n      SEG_AVG.forEach((v,j)=>{\n        const xa=g.x(SPLIT_T[j]), xb=g.x(SPLIT_T[j+1]), y=g.y(v);\n        h+=`<line x1=\"${xa}\" y1=\"${y}\" x2=\"${xb}\" y2=\"${y}\" stroke=\"${C.ink}\" stroke-opacity=\"0.55\" stroke-width=\"2.5\"/>`;\n        if(j<SEG_AVG.length-1){ const yn=g.y(SEG_AVG[j+1]); h+=`<line x1=\"${xb}\" y1=\"${y}\" x2=\"${xb}\" y2=\"${yn}\" stroke=\"${C.ink}\" stroke-opacity=\"0.3\" stroke-width=\"1.2\"/>`; }\n        if(g.plotW>330 || j%2===0) h+=`<text x=\"${(xa+xb)/2}\" y=\"${y+15}\" text-anchor=\"middle\" class=\"ann\" fill=\"${C.ink}\" fill-opacity=\"0.75\">${v.toFixed(2)}<\/text>`;\n      });\n    }\n    const pts = rows.map((r,j)=>g.x(ts[j]).toFixed(2)+','+g.y(r[k]*u).toFixed(2)).join(' ');\n    h+=`<polyline points=\"${pts}\" fill=\"none\" stroke=\"${GRAPH_COLORS[k]}\" stroke-width=\"3\" stroke-linejoin=\"round\" stroke-linecap=\"round\" clip-path=\"url(#clip${k})\"/>`;\n    if(cur==='bolt' && k===0){\n      SPLIT_T.forEach((tt,j)=>{ if(j===0) return; h+=`<circle cx=\"${g.x(tt)}\" cy=\"${g.y(SPLIT_X[j])}\" r=\"4\" fill=\"#fff\" stroke=\"${C.ink}\" stroke-width=\"2\"/>`; });\n    }\n    h+=`<g class=\"over\"><\/g>`;\n    svgs[k].setAttribute('viewBox',`0 0 ${g.W} ${g.H}`);\n    svgs[k].setAttribute('height', g.H);\n    svgs[k].innerHTML=h;\n    svgs[k].setAttribute('aria-label', `${L.names[k]} vs. time graph`);\n  }\n  renderLegend();\n  renderOver();\n}\n\nfunction renderLegend(){\n  let h=`<span><span class=\"sw\" style=\"background:${C.amber};\"><\/span>Time cursor<\/span>`;\n  if(showTan) h+=`<span><span class=\"sw\" style=\"height:0;border-radius:0;border-top:3px dashed ${C.soft};\"><\/span>Tangent (slope = value on the graph below)<\/span>`;\n  if(showSec) h+=`<span><span class=\"sw\" style=\"background:${C.purple};\"><\/span>Secant (average from t₁ to t₂)<\/span>`;\n  if(cur==='bolt') h+=`<span><span class=\"dot\" style=\"background:#fff;border:2px solid ${C.ink};\"><\/span>Official split<\/span>`;\n  if(cur==='bolt' && showSeg) h+=`<span><span class=\"sw\" style=\"background:${C.ink};opacity:.55;\"><\/span>20 m segment average<\/span>`;\n  $('legend').innerHTML=h;\n}\n\n// ===================== Dynamic layer =====================\nfunction arrowPath(x1,y1,x2,y2,col,w){\n  const dx=x2-x1, dy=y2-y1, len=Math.hypot(dx,dy); if(len<3) return '';\n  const ux=dx/len, uy=dy/len, hs=Math.min(8,len*0.6);\n  const bx=x2-ux*hs, by=y2-uy*hs;\n  return `<line x1=\"${x1}\" y1=\"${y1}\" x2=\"${bx}\" y2=\"${by}\" stroke=\"${col}\" stroke-width=\"${w}\" stroke-linecap=\"round\"/>`+\n    `<path d=\"M${x2} ${y2} L${bx-uy*hs*0.55} ${by+ux*hs*0.55} L${bx+uy*hs*0.55} ${by-ux*hs*0.55} Z\" fill=\"${col}\"/>`;\n}\n\nfunction renderOver(){\n  const S=sc(), u=U(), L=labels(), us=unitStrs();\n  const r = S.fn(t);\n  for(let k=0;k<3;k++){\n    const g=G[k]; let h='';\n    const xc=g.x(t);\n    h+=`<line x1=\"${xc}\" y1=\"${g.padT}\" x2=\"${xc}\" y2=\"${g.H-g.padB}\" stroke=\"${C.amber}\" stroke-width=\"2\"/>`;\n    if(showSec && k<2){\n      const p1=S.fn(t1)[0]*u, p2=S.fn(t2)[0]*u, dt=t2-t1;\n      if(k===0){\n        const x1=g.x(t1), x2=g.x(t2), y1=g.y(p1), y2=g.y(p2);\n        if(Math.abs(dt)>1e-9){\n          const ext=0.06*S.tMax, m=(p2-p1)/dt, ta=Math.min(t1,t2)-ext, tb=Math.max(t1,t2)+ext;\n          h+=`<line x1=\"${g.x(ta)}\" y1=\"${g.y(p1+m*(ta-t1))}\" x2=\"${g.x(tb)}\" y2=\"${g.y(p1+m*(tb-t1))}\" stroke=\"${C.purple}\" stroke-width=\"2.5\" clip-path=\"url(#clip0)\"/>`;\n        }\n        [[x1,y1,'1'],[x2,y2,'2']].forEach(([x,y,lab])=>{\n          h+=`<line x1=\"${x}\" y1=\"${y}\" x2=\"${x}\" y2=\"${g.H-g.padB}\" stroke=\"${C.purple}\" stroke-width=\"1.2\" stroke-dasharray=\"3,3\"/>`;\n          h+=`<circle cx=\"${x}\" cy=\"${y}\" r=\"6.5\" fill=\"${C.purple}\" stroke=\"#fff\" stroke-width=\"2\" style=\"cursor:ew-resize\"/>`;\n          h+=`<rect x=\"${x-11}\" y=\"${g.H-g.padB-17}\" width=\"22\" height=\"15\" rx=\"4\" fill=\"${C.purple}\" style=\"cursor:ew-resize\"/>`;\n          h+=`<text x=\"${x}\" y=\"${g.H-g.padB-6}\" text-anchor=\"middle\" class=\"ann\" fill=\"#fff\" style=\"pointer-events:none;stroke:none\">t<tspan font-size=\"8.5\" dy=\"2\">${lab}<\/tspan><\/text>`;\n        });\n      } else if(Math.abs(dt)>1e-9){\n        const avg=(p2-p1)/dt, y=g.y(avg);\n        if(avg>=g.lo && avg<=g.hi){\n          const xe=g.x(Math.max(t1,t2)), nearR = xe>g.W-70;\n          h+=`<line x1=\"${g.x(Math.min(t1,t2))}\" y1=\"${y}\" x2=\"${xe}\" y2=\"${y}\" stroke=\"${C.purple}\" stroke-width=\"2.5\" stroke-dasharray=\"6,4\"/>`;\n          h+=`<text x=\"${nearR?xe-4:xe+4}\" y=\"${nearR?y-6:y+4}\" text-anchor=\"${nearR?'end':'start'}\" class=\"ann\" fill=\"${C.purple}\">avg<\/text>`;\n        }\n      }\n    }\n    if(showTan && k<2){\n      const y0=r[k]*u, m=r[k+1]*u;\n      const dyp=-m*g.ky/g.kx, len=Math.hypot(1,dyp), half=Math.min(70, g.plotW*0.2);\n      const ux=1/len*half, uy=dyp/len*half;\n      h+=`<line x1=\"${xc-ux}\" y1=\"${g.y(y0)-uy}\" x2=\"${xc+ux}\" y2=\"${g.y(y0)+uy}\" stroke=\"${GRAPH_COLORS[k+1]}\" stroke-width=\"2.5\" stroke-dasharray=\"7,4\" clip-path=\"url(#clip${k})\"/>`;\n    }\n    const v=r[k]*u;\n    if(v>=g.lo-1e-9 && v<=g.hi+1e-9) h+=`<circle cx=\"${xc}\" cy=\"${g.y(v)}\" r=\"5.5\" fill=\"${GRAPH_COLORS[k]}\" stroke=\"#fff\" stroke-width=\"2\"/>`;\n    svgs[k].querySelector('.over').innerHTML=h;\n\n    const est = S.estimated && k>0 ? ' <small>(model estimate)<\/small>' : '';\n    heads[k].innerHTML=`<span class=\"gt\">${L.names[k]} ${L.sym[k]} <small>(${us[k]})<\/small>${est}<\/span><span class=\"gval\">${L.sym[k]} = <b style=\"color:${GRAPH_COLORS[k]}\">${fu(r[k]*u, us[k])}<\/b><\/span>`;\n    if(k<2){\n      slopes[k].innerHTML = showTan\n        ? `Slope of the tangent = <b style=\"color:${GRAPH_COLORS[k+1]}\">${fu(r[k+1]*u,us[k+1])}<\/b> = ${L.sym[k+1]} on the graph below.`\n        : '';\n    }\n  }\n  $('tOut').textContent=fmtT(t);\n  $('scrub').value=Math.round(t/S.tMax*1000);\n  renderStrip(r);\n  renderRead(r);\n  if(showSec) renderAvg(r);\n}\n\n// ===================== Motion strip =====================\nfunction renderStrip(r){\n  const S=sc(), w=W; let h='';\n  if(S.kind==='linear'){\n    const H=96, Lx=22, Rx=w-22, ty=58;\n    let lo, hi, ticks, step;\n    if(cur==='bolt'){ lo=0; hi=100; ticks=SPLIT_X; step=20; }\n    else { lo=G[0].lo; hi=G[0].hi; ticks=G[0].ticks; step=G[0].step; }\n    const X=p=>Lx+(p-lo)/(hi-lo)*(Rx-Lx);\n    h+=`<rect x=\"${Lx-6}\" y=\"${ty-9}\" width=\"${Rx-Lx+12}\" height=\"18\" rx=\"9\" fill=\"#E9EDE8\"/>`;\n    h+=`<line x1=\"${Lx}\" y1=\"${ty}\" x2=\"${Rx}\" y2=\"${ty}\" stroke=\"#fff\" stroke-width=\"2\" stroke-dasharray=\"6,6\"/>`;\n    ticks.forEach((p,i)=>{\n      const x=X(p), edge = p===0||(cur==='bolt'&&p===100);\n      h+=`<line x1=\"${x}\" y1=\"${ty-9}\" x2=\"${x}\" y2=\"${ty+9}\" stroke=\"${edge?C.ink:'#B9C1B8'}\" stroke-width=\"${edge?2:1.2}\"/>`;\n      if(w>420 || i%2===0 || p===100) h+=`<text x=\"${x}\" y=\"${ty+24}\" text-anchor=\"middle\" class=\"axis-label\">${fmtTick(p,step)} m<\/text>`;\n    });\n    const xr=X(r[0]);\n    [[maxV>0?r[1]*70/maxV:0,16,C.blue,'v'],[maxA>0?r[2]*50/maxA:0,34,C.rust,'a']].forEach(([len,y,col,lab])=>{\n      if(Math.abs(len)<3) return;\n      let x0=xr; const room=16;\n      if(x0+len>w-room) x0=w-room-len;\n      if(x0+len<room) x0=room-len;\n      h+=arrowPath(x0,y,x0+len,y,col,3.5);\n      h+=`<text x=\"${x0+len+(len>0?-2:2)}\" y=\"${y-6}\" text-anchor=\"${len>0?'end':'start'}\" class=\"ann\" fill=\"${col}\">${lab}<\/text>`;\n    });\n    h+=`<circle cx=\"${xr}\" cy=\"${ty}\" r=\"8.5\" fill=\"${C.stance}\" stroke=\"#fff\" stroke-width=\"2.5\"/>`;\n    strip.setAttribute('viewBox',`0 0 ${w} ${H}`); strip.setAttribute('height',H);\n  } else {\n    const H=230, cx=Math.round(w*0.34), cy=124, Lf=Math.min(140, w*0.48);\n    h+=`<line x1=\"${cx}\" y1=\"${cy}\" x2=\"${cx+Lf+14}\" y2=\"${cy}\" stroke=\"#B9C1B8\" stroke-width=\"1.2\" stroke-dasharray=\"4,4\"/>`;\n    h+=`<line x1=\"${cx}\" y1=\"${cy}\" x2=\"${cx-14}\" y2=\"${cy-96}\" stroke=\"${C.ink}\" stroke-width=\"9\" stroke-linecap=\"round\"/>`;\n    h+=`<circle cx=\"${cx-14}\" cy=\"${cy-96}\" r=\"7\" fill=\"${C.ink}\"/>`;\n    const th=r[0], hx=cx+Lf*Math.cos(th), hy=cy-Lf*Math.sin(th);\n    const ra=42;\n    if(Math.abs(th)>0.01) h+=`<path d=\"M${cx+ra} ${cy} A${ra} ${ra} 0 0 ${th>0?0:1} ${cx+ra*Math.cos(th)} ${cy-ra*Math.sin(th)}\" fill=\"none\" stroke=\"${C.stance}\" stroke-width=\"2\"/>`;\n    h+=`<text x=\"${cx+ra+6}\" y=\"${cy+(th>0?14:-6)}\" class=\"ann\" fill=\"${C.stance}\">θ<\/text>`;\n    h+=`<line x1=\"${cx}\" y1=\"${cy}\" x2=\"${hx}\" y2=\"${hy}\" stroke=\"${C.rust}\" stroke-width=\"9\" stroke-linecap=\"round\"/>`;\n    h+=`<circle cx=\"${hx}\" cy=\"${hy}\" r=\"9\" fill=\"${C.rust}\"/>`;\n    h+=`<circle cx=\"${cx}\" cy=\"${cy}\" r=\"6\" fill=\"#fff\" stroke=\"${C.ink}\" stroke-width=\"3\"/>`;\n    const omLen = r[1]/(maxV||1)*0.25;\n    if(Math.abs(omLen)>0.03){\n      const R=Lf+18, a1=th+omLen;\n      const p0=[cx+R*Math.cos(th), cy-R*Math.sin(th)], p1=[cx+R*Math.cos(a1), cy-R*Math.sin(a1)];\n      h+=`<path d=\"M${p0[0]} ${p0[1]} A${R} ${R} 0 0 ${omLen>0?0:1} ${p1[0]} ${p1[1]}\" fill=\"none\" stroke=\"${C.blue}\" stroke-width=\"3\"/>`;\n      const sg=omLen>0?1:-1, tx=-Math.sin(a1)*sg, tyy=-Math.cos(a1)*sg;\n      h+=arrowPath(p1[0]-tx*6, p1[1]-tyy*6, p1[0]+tx*3, p1[1]+tyy*3, C.blue, 3);\n      h+=`<text x=\"${p1[0]+6}\" y=\"${p1[1]-6}\" class=\"ann\" fill=\"${C.blue}\">ω<\/text>`;\n    }\n    h+=`<text x=\"10\" y=\"${H-10}\" class=\"axis-label\">θ = ${fu(th*U(), unitStrs()[0])}${units==='deg'?'':' ('+fmt(th*180/PI)+'°)'}<\/text>`;\n    strip.setAttribute('viewBox',`0 0 ${w} ${H}`); strip.setAttribute('height',H);\n  }\n  strip.innerHTML=h;\n}\n\n// ===================== Read the graph =====================\nfunction renderRead(r){\n  const S=sc(), L=labels();\n  const v=r[1], a=r[2];\n  const sv = Math.abs(v)<=epsV?0:Math.sign(v), sa=Math.abs(a)<=epsA?0:Math.sign(a);\n  let tag, txt;\n  if(cur==='bolt' && t<=BOLT_RT){ tag='In the blocks'; txt='Bolt has not reacted to the gun yet. Position, velocity, and acceleration are all zero.'; }\n  else if(sv===0 && sa===0){ tag='At rest'; txt=`${L.V} is zero and ${L.A} is zero. Nothing is moving.`; }\n  else if(sv===0){ tag='Stopped for an instant'; txt=`${L.V} is zero: the ${L.pos} graph is flat. But ${L.A} is ${sa>0?'positive':'negative'}, so it is about to move ${sa>0?'in the + direction':'in the − direction'}.`; }\n  else if(sa===0){\n    if(cur==='curl'){ tag='Fastest point'; txt=`${L.V} is at its peak, so its graph is flat here. That makes ${L.A} zero.`; }\n    else { tag='Steady'; txt=`${L.V} is ${sv>0?'positive':'negative'} and ${cur==='const'?'constant':'almost constant'}, so ${L.A} is ${cur==='const'?'zero':'near zero'}.`; }\n  }\n  else if(sv>0 && sa>0){ tag='Speeding up'; txt=`${L.V} is positive and growing, so ${L.A} is positive.`; }\n  else if(sv>0 && sa<0){ tag='Slowing down'; txt=`${L.V} is positive but shrinking, so ${L.A} is negative. Still ${S.fwd}.`; }\n  else if(sv<0 && sa<0){ tag='Speeding up'; txt=`${L.V} is negative and getting more negative, so ${L.A} is negative. Getting faster while ${S.back}.`; }\n  else { tag='Slowing down'; txt=`${L.V} is negative but moving toward zero, so ${L.A} is positive. Still ${S.back}.`; }\n  if(cur==='bolt' && t>=SPLIT_T[4]) txt+=` <span class=\"est\">The official splits show he slowed slightly over the last 20 m.<\/span>`;\n  $('readBox').innerHTML=`<span class=\"tag\">${tag}<\/span>${txt}`;\n}\nfunction cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }\n\n// ===================== Average vs instantaneous =====================\nfunction renderAvg(r){\n  const S=sc(), u=U(), L=labels(), us=unitStrs();\n  $('t1Val').textContent=fmtT(t1); $('t2Val').textContent=fmtT(t2);\n  $('t1').value=Math.round(t1/S.tMax*1000); $('t2').value=Math.round(t2/S.tMax*1000);\n  const dt=t2-t1;\n  if(Math.abs(dt)<1e-9){ $('avgOut').innerHTML='<div class=\"row\">t₁ and t₂ are at the same time. Spread them apart.<\/div>'; return; }\n  const p1=S.fn(t1)[0]*u, p2=S.fn(t2)[0]*u, avg=(p2-p1)/dt;\n  let h=`<div class=\"row\">Average ${L.sym[1]} = Δ${L.sym[0]}/Δt = (${fu(p2,us[0])} − ${fu(p1,us[0])}) / (${t2.toFixed(2)} − ${t1.toFixed(2)} s) = <b style=\"color:${C.purple}\">${fu(avg,us[1])}<\/b><br>`+\n    `${L.sym[1]} at the cursor (t = ${fmtT(t)}) = <b style=\"color:${C.blue}\">${fu(r[1]*u,us[1])}<\/b><\/div>`;\n  if(cur==='bolt'){\n    const j=SPLIT_T.findIndex((v,i)=>i<SPLIT_T.length-1 && Math.abs(v-Math.min(t1,t2))<0.006 && Math.abs(SPLIT_T[i+1]-Math.max(t1,t2))<0.006);\n    if(j>=0) h+=`<div class=\"row note\">Official split times: 20 m ÷ ${(SPLIT_T[j+1]-SPLIT_T[j]).toFixed(2)} s = ${SEG_AVG[j].toFixed(2)} m/s.<\/div>`;\n  }\n  $('avgOut').innerHTML=h;\n}\n\n// ===================== Interaction =====================\nfunction setGroupActive(groupId, attr, val){\n  document.querySelectorAll(`#${groupId} .axis-mode-btn`).forEach(b=>{ const on=b.dataset[attr]===String(val); b.classList.toggle('active',on); b.setAttribute('aria-pressed',on); });\n}\nfunction setToggle(id,on){ const b=$(id); b.classList.toggle('active',on); b.setAttribute('aria-pressed',on); }\n\nfunction setScenario(key){\n  cur=key; const S=sc();\n  setGroupActive('scenGroup','scen',key);\n  $('scenTitle').textContent=S.title; $('scenDesc').textContent=S.desc; $('scenNote').textContent=S.note;\n  $('constSliders').hidden = key!=='const';\n  $('unitRow').hidden = S.kind!=='angular';\n  $('segBtn').hidden = key!=='bolt';\n  t=S.t0; t1=S.secDefault[0]; t2=S.secDefault[1];\n  pause();\n  renderBase();\n}\ndocument.querySelectorAll('#scenGroup .axis-mode-btn').forEach(b=>b.addEventListener('click',()=>setScenario(b.dataset.scen)));\ndocument.querySelectorAll('#unitGroup .axis-mode-btn').forEach(b=>b.addEventListener('click',()=>{ units=b.dataset.unit; setGroupActive('unitGroup','unit',units); renderBase(); }));\n$('tanBtn').addEventListener('click',()=>{ showTan=!showTan; setToggle('tanBtn',showTan); renderLegend(); renderOver(); });\n$('secBtn').addEventListener('click',()=>{ showSec=!showSec; setToggle('secBtn',showSec); $('avgCard').hidden=!showSec; renderLegend(); renderOver(); });\n$('segBtn').addEventListener('click',()=>{ showSeg=!showSeg; setToggle('segBtn',showSeg); renderBase(); });\n\n$('scrub').addEventListener('input',e=>{ pause(); t=e.target.value/1000*sc().tMax; renderOver(); });\n$('t1').addEventListener('input',e=>{ t1=e.target.value/1000*sc().tMax; renderOver(); });\n$('t2').addEventListener('input',e=>{ t2=e.target.value/1000*sc().tMax; renderOver(); });\n\nfunction updConstLabels(){ $('x0Val').textContent=fmtTick(CP.x0,1)+' m'; $('v0Val').textContent=fmtTick(CP.v0,0.5)+' m/s'; $('aVal').textContent=fmtTick(CP.a,0.25)+' m/s²'; }\n['x0','v0','acc'].forEach(id=>$(id).addEventListener('input',()=>{ CP.x0=+$('x0').value; CP.v0=+$('v0').value; CP.a=+$('acc').value; updConstLabels(); renderBase(); }));\ndocument.querySelectorAll('#constPresets .chip').forEach(b=>b.addEventListener('click',()=>{\n  CP.x0=+b.dataset.x0; CP.v0=+b.dataset.v0; CP.a=+b.dataset.a;\n  $('x0').value=CP.x0; $('v0').value=CP.v0; $('acc').value=CP.a; updConstLabels(); renderBase();\n}));\n\n// click / drag on graphs (purple handles on the top graph move t1 / t2)\nlet drag=null;\nfunction localX(e, el){ const r=el.getBoundingClientRect(); return (e.clientX-r.left)*(G[0].W/r.width); }\nfunction tFromX(px){ const g=G[0]; return Math.min(sc().tMax, Math.max(0,(px-g.padL)/g.plotW*sc().tMax)); }\nsvgs.forEach((el,k)=>{\n  el.addEventListener('pointerdown',e=>{\n    const px=localX(e,el); let target='cursor';\n    if(k===0 && showSec){\n      const d1=Math.abs(px-G[0].x(t1)), d2=Math.abs(px-G[0].x(t2));\n      if(Math.min(d1,d2)<16) target = d1<=d2 ? 't1' : 't2';\n    }\n    drag={target,id:e.pointerId};\n    try{ el.setPointerCapture(e.pointerId); }catch(_){}\n    pause(); applyDrag(px);\n  });\n  el.addEventListener('pointermove',e=>{ if(drag && drag.id===e.pointerId) applyDrag(localX(e,el)); });\n  const end=e=>{ if(drag && drag.id===e.pointerId) drag=null; };\n  el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end);\n});\nfunction applyDrag(px){\n  const tt=tFromX(px);\n  if(drag.target==='t1') t1=tt; else if(drag.target==='t2') t2=tt; else t=tt;\n  renderOver();\n}\n\n// playback (real time)\nfunction pause(){ playing=false; $('playBtn').textContent='Play'; lastTs=null; }\n$('playBtn').addEventListener('click',()=>{\n  if(playing){ pause(); return; }\n  if(t>=sc().tMax-1e-6) t=0;\n  playing=true; $('playBtn').textContent='Pause'; lastTs=null; requestAnimationFrame(tick);\n});\nfunction tick(ts){\n  if(!playing) return;\n  if(lastTs!==null){\n    t += (ts-lastTs)/1000;\n    if(t>=sc().tMax){ t=sc().tMax; renderOver(); pause(); return; }\n    renderOver();\n  }\n  lastTs=ts; requestAnimationFrame(tick);\n}\n\nlet rzTimer=null;\nwindow.addEventListener('resize',()=>{ clearTimeout(rzTimer); rzTimer=setTimeout(()=>{ if(Math.round($('graphs').clientWidth)!==W) renderBase(); },80); });\n\n// ===================== Quiz =====================\nconst QUIZ=[\n  {q:'On a position–time graph, what does a steeper slope mean?',\n   opts:['The object is farther from where it started','The object is moving faster','The object has a larger acceleration','The object is moving uphill'], a:1,\n   fb:'The slope of position is velocity. Steeper means more meters per second. How far away the object is shows up as the <i>height<\/i> of the graph, not its slope.'},\n  {q:'Bolt\\'s position graph gets steeper during the first 3 seconds. What does that tell you?',\n   opts:['Velocity is increasing, so acceleration is positive','Velocity is constant, so acceleration is zero','Velocity is decreasing, so acceleration is negative','Position is increasing, so acceleration must be zero'], a:0,\n   fb:'A steeper position graph means a larger velocity. Velocity going up means acceleration is positive. Check the velocity graph: it rises fast at the start.'},\n  {q:'During the elbow curl, ω is positive and α is negative. What is the elbow doing?',\n   opts:['Extending (lowering the forearm)','Still flexing, but slowing down','Flexing faster and faster','Stopped'], a:1,\n   fb:'The sign of ω gives the direction (positive = flexing here). A negative α means ω is shrinking. So the elbow is still flexing, but more slowly. That is the second half of the curl.'},\n  {q:'In Build your own, the velocity graph crosses zero. What does the position graph look like at that moment?',\n   opts:['It also crosses zero','It is flat: its tangent is horizontal','It is at its steepest','It drops straight down'], a:1,\n   fb:'Velocity is the slope of position. Zero velocity means a flat position graph. The object is stopped for an instant, but its acceleration is not zero. Try the <b>Slowing down, still moving forward<\/b> preset: velocity reaches zero at 4 s.'}\n];\nlet quizRight=0, quizDone=0;\nfunction buildQuiz(){\n  const el=$('quiz');\n  QUIZ.forEach((item,qi)=>{\n    const d=document.createElement('div'); d.className='q';\n    d.innerHTML=`<div class=\"q-text\">${qi+1}. ${item.q}<\/div><div class=\"q-opts\"><\/div><div class=\"feat-explain\"><\/div>`;\n    const opts=d.querySelector('.q-opts'), fb=d.querySelector('.feat-explain');\n    item.opts.forEach((o,oi)=>{\n      const b=document.createElement('button'); b.className='q-opt'; b.textContent=o;\n      b.addEventListener('click',()=>{\n        const first=!d.classList.contains('answered');\n        d.classList.add('answered');\n        opts.querySelectorAll('.q-opt').forEach(x=>x.classList.remove('right','wrong'));\n        if(oi===item.a){ b.classList.add('right'); fb.innerHTML='<b>Correct.<\/b> '+item.fb; }\n        else { b.classList.add('wrong'); opts.children[item.a].classList.add('right'); fb.innerHTML='<b>Not quite.<\/b> '+item.fb; }\n        if(first){ quizDone++; if(oi===item.a) quizRight++; updateScore(); }\n      });\n      opts.appendChild(b);\n    });\n    el.appendChild(d);\n  });\n  updateScore();\n}\nfunction updateScore(){ $('score').textContent = quizDone? `First-try score: ${quizRight} of ${quizDone} answered (${QUIZ.length} total).` : ''; }\n\n// ===================== Self-test (console only) =====================\nfunction selfTest(){\n  const results=[];\n  const check=(name,ok,detail)=>results.push({name,ok:!!ok,detail});\n  // Bolt: model reaches each split within 0.02 s\n  const tAt=X=>{ let lo=BOLT_RT, hi=20; for(let i=0;i<200;i++){ const mid=(lo+hi)/2; if(boltModel(mid)[0]<X) lo=mid; else hi=mid; } return (lo+hi)/2; };\n  for(let j=1;j<SPLIT_T.length;j++){ const res=tAt(SPLIT_X[j])-SPLIT_T[j]; check(`Bolt model reaches ${SPLIT_X[j]} m within 0.02 s of ${SPLIT_T[j]} s (residual ${res>=0?'+':''}${res.toFixed(4)} s)`, Math.abs(res)<0.02, res); }\n  check('Bolt: x, v, a = 0 up to the 0.146 s reaction time', [0,0.05,0.1,0.146].every(tt=>boltModel(tt).every(q=>Math.abs(q)<1e-12)));\n  check('Bolt: a(0.146) = 0', Math.abs(boltModel(BOLT_RT)[2])<1e-12 && Math.abs(boltModel(BOLT_RT+1e-9)[2])<1e-6);\n  let vMono=true, aNonNeg=true, aCont=true, prev=boltModel(0), peakA=0, peakT=0;\n  const N=95800;\n  for(let i=1;i<=N;i++){ const tt=9.58*i/N, r=boltModel(tt); if(r[1]<prev[1]-1e-12) vMono=false; if(r[2]<-1e-12) aNonNeg=false; if(Math.abs(r[2]-prev[2])>0.02) aCont=false; if(r[2]>peakA){peakA=r[2]; peakT=tt;} prev=r; }\n  check('Bolt: velocity is monotone (never decreases)', vMono);\n  check('Bolt: acceleration is never negative', aNonNeg);\n  check('Bolt: acceleration is continuous (no jumps on a 0.1 ms grid)', aCont);\n  check(`Bolt: acceleration peaks smoothly (${peakA.toFixed(2)} m/s² at ${peakT.toFixed(2)} s)`, peakA>9.5 && peakA<10.3 && peakT>0.35 && peakT<0.6, [peakA,peakT]);\n  const hA=1e-4, slopeA=(boltModel(BOLT_RT+hA)[2]-boltModel(BOLT_RT)[2])/hA;\n  check(`Bolt: slope of a just after 0.146 s ≈ 0 (no corner; ${slopeA.toFixed(3)} m/s³)`, Math.abs(slopeA)<0.5, slopeA);\n  check(`Bolt: v(5 s) ≈ 11.99 m/s (${boltModel(5)[1].toFixed(3)})`, Math.abs(boltModel(5)[1]-11.99)<0.01);\n  let dOK=true; for(let i=1;i<200;i++){ const tt=0.2+i*0.046, hh=1e-5, r=boltModel(tt); const nv=(boltModel(tt+hh)[0]-boltModel(tt-hh)[0])/(2*hh), na=(boltModel(tt+hh)[1]-boltModel(tt-hh)[1])/(2*hh); if(Math.abs(nv-r[1])>1e-5||Math.abs(na-r[2])>1e-4) dOK=false; }\n  check('Bolt: v and a match numerical derivatives of x', dOK);\n  for(let j=0;j<5;j++){\n    const dt=SPLIT_T[j+1]-SPLIT_T[j], avg=(SPLIT_X[j+1]-SPLIT_X[j])/dt;\n    check(`Official segment ${SPLIT_X[j]}-${SPLIT_X[j+1]} m average = 20/${dt.toFixed(2)} = ${SEG_AVG[j]}`, Math.abs(avg-20/dt)<1e-9 && Math.abs(avg-SEG_AVG[j])<0.005, avg);\n  }\n  // Curl (minimum jerk)\n  let integ=0; const M=6000; for(let i=0;i<M;i++){ const a=3*i/M, b=3*(i+1)/M; integ+=(curlFn(a)[1]+curlFn(b)[1])/2*(b-a); }\n  check('Curl: ∫ω dt = Δθ = π/3', Math.abs(integ-PI/3)<1e-6, integ);\n  check('Curl: average ω = π/9 ≈ 0.349 rad/s', Math.abs(integ/3-PI/9)<1e-6, integ/3);\n  check('Curl: θ(0) = −π/6 and θ(3) = +π/6', Math.abs(curlFn(0)[0]+PI/6)<1e-12 && Math.abs(curlFn(3)[0]-PI/6)<1e-12);\n  let mjOK=true; for(let i=1;i<50;i++){ const tt=3*i/50, hh=3e-6, r=curlFn(tt); const nw=(curlFn(tt+hh)[0]-curlFn(tt-hh)[0])/(2*hh), na=(curlFn(tt+hh)[1]-curlFn(tt-hh)[1])/(2*hh); if(Math.abs(nw-r[1])>1e-5||Math.abs(na-r[2])>1e-4) mjOK=false; }\n  check('Curl: ω and α match numerical derivatives', mjOK);\n  // Constant acceleration\n  const save={...CP}; let caOK=true;\n  [[0,8,-2],[5,-3,1.5],[-10,0,4],[0,5,0]].forEach(([x0,v0,a])=>{ CP.x0=x0; CP.v0=v0; CP.a=a; for(let i=1;i<50;i++){ const tt=5*i/50, hh=1e-5, r=constFn(tt); const nv=(constFn(tt+hh)[0]-constFn(tt-hh)[0])/(2*hh), na=(constFn(tt+hh)[1]-constFn(tt-hh)[1])/(2*hh); if(Math.abs(nv-r[1])>1e-6||Math.abs(na-r[2])>1e-6) caOK=false; } });\n  Object.assign(CP,save);\n  check('Constant acceleration: dx/dt ≈ v and dv/dt ≈ a', caOK);\n  const pass=results.filter(r=>r.ok).length;\n  results.filter(r=>!r.ok).forEach(r=>console.warn('Self-test FAILED:', r.name, r.detail));\n  console.log(`Kinematics Graph Linker self-test: ${pass}/${results.length} passed`);\n  return {pass,total:results.length,results};\n}\n\n// ===================== Init =====================\nupdConstLabels();\nbuildQuiz();\n// ?scen=bolt|curl|const picks the starting scenario (the Unit 1 Explorer links here with it)\nconst startScen = new URLSearchParams(window.__U1Q || location.search).get('scen');\nsetScenario(['bolt', 'curl', 'const'].includes(startScen) ? startScen : 'bolt');\nwindow.__selfTest = selfTest();\n<\/script>\n<\/body>\n<\/html>\n"</script>
+<script>
+const $ = id => document.getElementById(id);
+const f2 = x => (Math.abs(x) < 0.005 ? 0 : x).toFixed(2);
+const sgn = x => (x > 0.005 ? '+' : x < -0.005 ? '−' : '') + Math.abs(x).toFixed(2);
+const INK = '#1B2420', SOFT = '#586158', LINE = '#D8DED7', BLUE = '#1F6B9E', ORANGE = '#B34B0B', GREEN = '#2E7D32', RED = '#B71C1C', BONE = '#C9B99A', MUSCLE = '#C96A6A';
+
+/* ---------- graph-linker frames (build_standalone_u1.py swaps this block for the offline file) ---------- */
+const U1LINKER = JSON.parse(document.getElementById('u1linker').textContent);
+function linkerDoc(q) { return U1LINKER.replace(/<head([^>]*)>/i, m => m + '<script>window.__U1Q=' + JSON.stringify(q) + ';<\/script>'); }
+function loadFrame(fr) { fr.srcdoc = linkerDoc('?' + (fr.dataset.src.split('?')[1] || '')); }
+document.querySelectorAll('a[data-solo]').forEach(a => {   // 'Open it in its own window' -> a blob: copy of the linker
+  a.href = URL.createObjectURL(new Blob([linkerDoc(a.dataset.solo)], { type: 'text/html' }));
+});
+/* ---------- end graph-linker frames ---------- */
+
+/* ---------- tabs (WAI-ARIA tabs: arrow keys, Home, End) ---------- */
+const TABS = ['signs', 'linear', 'angular', 'plate', 'torque', 'pull'];
+function showTab(name, focus) {
+  TABS.forEach(k => {
+    const b = $('t-' + k), on = k === name;
+    b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
+    $('tab-' + k).hidden = !on;
+  });
+  if (focus) $('t-' + name).focus();
+  const fr = document.querySelector(`#tab-${name} iframe`);
+  if (fr && !fr.dataset.loaded) {
+    fr.dataset.loaded = '1';
+    const scen = new URLSearchParams(fr.dataset.src.split('?')[1] || '').get('scen');
+    fr.addEventListener('load', () => { try { fr.contentWindow.setScenario(scen); } catch (e) { /* cross-origin from disk: the linker reads ?scen itself */ } });
+    loadFrame(fr);
+  }
+  try { history.replaceState(history.state, '', '#' + name); } catch (e) { /* some file:// contexts */ }
+  draw();
+}
+const tablist = $('tabs');
+tablist.querySelectorAll('[role="tab"]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+tablist.addEventListener('keydown', e => {
+  const i = TABS.indexOf(document.activeElement && document.activeElement.dataset.tab);
+  if (i < 0) return;
+  let j = null;
+  if (e.key === 'ArrowRight') j = (i + 1) % TABS.length;
+  else if (e.key === 'ArrowLeft') j = (i - 1 + TABS.length) % TABS.length;
+  else if (e.key === 'Home') j = 0;
+  else if (e.key === 'End') j = TABS.length - 1;
+  if (j !== null) { e.preventDefault(); showTab(TABS[j], true); }
+});
+
+/* ---------- L1 signs ---------- */
+// plane, axis, + on right, + on left, the moving segment's direction, explanation of the curl
+const MOTIONS = [
+  ['Hip flexion / extension', 'Sagittal', 'x (mediolateral)', 'Flexion', 'Flexion', 'Thumb points right (+x). Below the thumb, the curl swings forward, so the thigh (pointing down) swinging forward is +.'],
+  ['Knee flexion / extension', 'Sagittal', 'x (mediolateral)', 'Extension', 'Extension', 'Thumb points right (+x). The curl swings the shank forward, which is extension. Knee flexion is −.'],
+  ['Ankle dorsiflexion / plantarflexion', 'Sagittal', 'x (mediolateral)', 'Dorsiflexion', 'Dorsiflexion', 'Thumb points right (+x). In front of the thumb, the curl swings up, so the foot (pointing forward) lifting the toes is +.'],
+  ['Shoulder flexion / extension', 'Sagittal', 'x (mediolateral)', 'Flexion', 'Flexion', 'Thumb points right (+x). The arm points down, and the curl swings it forward: flexion is +.'],
+  ['Elbow flexion / extension', 'Sagittal', 'x (mediolateral)', 'Flexion', 'Flexion', 'Thumb points right (+x). The forearm points down, and the curl swings it forward and up: flexion is +.'],
+  ['Trunk (L5) flexion / extension', 'Sagittal', 'x (mediolateral)', 'Extension', 'Extension', 'Thumb points right (+x). Above the thumb, the curl swings backward. The trunk points UP from L5, so extension is + and flexion is −.'],
+  ['Hip abduction / adduction', 'Frontal', 'y (anteroposterior)', 'Adduction', 'Abduction', 'Thumb points forward (+y). Below the thumb, the curl swings toward the LEFT. That is toward the midline for the right leg and away from it for the left leg.'],
+  ['Shoulder abduction / adduction', 'Frontal', 'y (anteroposterior)', 'Adduction', 'Abduction', 'Thumb points forward (+y). The arm points down and the curl swings it toward the left: adduction on the right, abduction on the left.'],
+  ['Knee varus / valgus', 'Frontal', 'y (anteroposterior)', 'Varus', 'Valgus', 'Thumb points forward (+y). The curl swings the distal shank toward the left: medial (varus) on the right, lateral (valgus) on the left.'],
+  ['Wrist ulnar / radial deviation', 'Frontal', 'y (anteroposterior)', 'Ulnar deviation', 'Radial deviation', 'Anatomical position, palms forward. The curl swings the hand toward the left: toward the ulnar side on the right hand, the radial side on the left.'],
+  ['Hip internal / external rotation', 'Transverse', 'z (longitudinal)', 'Internal rotation', 'External rotation', 'Thumb points up (+z). The curl turns the front of the limb toward the LEFT: inward on the right, outward on the left.'],
+  ['Shoulder internal / external rotation', 'Transverse', 'z (longitudinal)', 'Internal rotation', 'External rotation', 'Thumb points up (+z). The curl turns the front of the arm toward the left: inward on the right, outward on the left.'],
+  ['Trunk or head (C2) rotation', 'Transverse', 'z (longitudinal)', 'Rotation to the left', 'Rotation to the left', 'Thumb points up (+z). The curl turns the nose toward the left. Midline segments have no side, so turning left is + for everyone.'],
+];
+const MIDLINE = new Set([5, 12]);
+MOTIONS.forEach((m, i) => { const o = document.createElement('option'); o.value = i; o.textContent = m[0]; $('sMotion').appendChild(o); });
+function renderSigns() {
+  const i = +$('sMotion').value, side = $('sSide').value, m = MOTIONS[i];
+  const pos = side === 'R' ? m[3] : m[4];
+  const flip = m[3] !== m[4] ? ' This plane flips between sides.' : (MIDLINE.has(i) ? ' Midline motion: the same for everyone.' : ' Same sign on both sides.');
+  $('sOut').innerHTML = `<b>${m[1]} plane</b>, about the <b>${m[2]}</b> axis.<br><span class="pill pos">+ ${pos}</span> on the ${side === 'R' ? 'right' : 'left'} side.${flip}<br><span style="color:var(--ink-soft)">${m[5]}</span>`;
+}
+$('sMotion').addEventListener('change', renderSigns); $('sSide').addEventListener('change', renderSigns);
+let quiz = null;
+function newQuiz() {
+  const i = Math.floor(Math.random() * MOTIONS.length), m = MOTIONS[i];
+  const side = MIDLINE.has(i) ? 'R' : (Math.random() < 0.5 ? 'R' : 'L');
+  const pos = side === 'R' ? m[3] : m[4];
+  let dir = Math.random() < 0.5 ? 'pos' : 'neg';
+  const label = dir === 'pos' ? pos : opposite(pos);
+  quiz = { i, side, dir, label };
+  $('qPrompt').innerHTML = MIDLINE.has(i) ? `<b>${cap(label)}</b> (${m[0].split(' ')[0].toLowerCase()})` : `<b>${side === 'R' ? 'Right' : 'Left'} ${m[0].split(' ')[0].toLowerCase()}</b>: ${label.toLowerCase()}`;
+  $('qFeedback').textContent = '';
+}
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function opposite(p) {
+  const O = { 'Flexion': 'Extension', 'Extension': 'Flexion', 'Dorsiflexion': 'Plantarflexion', 'Adduction': 'Abduction', 'Abduction': 'Adduction',
+    'Varus': 'Valgus', 'Valgus': 'Varus', 'Ulnar deviation': 'Radial deviation', 'Radial deviation': 'Ulnar deviation', 'Internal rotation': 'External rotation',
+    'External rotation': 'Internal rotation', 'Rotation to the left': 'Rotation to the right' };
+  return O[p] || p;
+}
+function answer(guess) {
+  if (!quiz) return; const m = MOTIONS[quiz.i];
+  const ok = guess === quiz.dir;
+  $('qFeedback').innerHTML = (ok ? '<span class="pill pos">Correct</span> ' : '<span class="pill neg">Not quite</span> ') +
+    `${cap(quiz.label)} is <b>${quiz.dir === 'pos' ? 'positive' : 'negative'}</b>. ${m[1]} plane, ${m[2]} axis. ${m[5]}`;
+}
+$('qPos').addEventListener('click', () => answer('pos')); $('qNeg').addEventListener('click', () => answer('neg')); $('qNext').addEventListener('click', newQuiz);
+
+/* ---------- canvas helpers ---------- */
+function ctxOf(id) { const c = $(id); return [c, c.getContext('2d')]; }
+function arrow(g, x0, y0, x1, y1, color, w = 4, head = 12) {
+  const ang = Math.atan2(y1 - y0, x1 - x0), len = Math.hypot(x1 - x0, y1 - y0);
+  if (len < 2) return;
+  g.strokeStyle = color; g.fillStyle = color; g.lineWidth = w; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1 - Math.cos(ang) * head * 0.8, y1 - Math.sin(ang) * head * 0.8); g.stroke();
+  g.beginPath(); g.moveTo(x1, y1); g.lineTo(x1 - head * Math.cos(ang - 0.4), y1 - head * Math.sin(ang - 0.4));
+  g.lineTo(x1 - head * Math.cos(ang + 0.4), y1 - head * Math.sin(ang + 0.4)); g.closePath(); g.fill();
+}
+function text(g, s, x, y, color = INK, size = 15, align = 'left', weight = 600) {
+  g.fillStyle = color; g.font = `${weight} ${size}px Inter, Arial, sans-serif`; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(s, x, y);
+}
+
+/* ---------- L4–5 force plate ---------- */
+const G = 9.81, PAD = 0.5;
+let pt = 0, pPlaying = false, pLast = 0;
+function plateState(t) {
+  const D = +$('pD').value, T = +$('pT').value;
+  const u = t - PAD;
+  if (u < 0 || u > T) return { y: 0, v: 0, a: 0 };
+  const k = Math.PI / T, s = Math.sin(k * u), c = Math.cos(k * u);   // y = −D·sin⁴(πu/T): smooth start, stop, and reversal
+  return { y: -D * s ** 4, v: -D * 4 * s ** 3 * c * k, a: -D * (12 * s * s * c * c - 4 * s ** 4) * k * k };
+}
+function phaseOf(s, t) {
+  const T = +$('pT').value, u = t - PAD;
+  if (u <= 0 || u >= T) return 'Standing still';
+  if (Math.abs(s.v) < 0.02 && s.a > 0) return 'Bottom';
+  if (s.v < 0) return s.a < 0 ? 'Early descent' : 'Late descent (braking)';
+  return s.a > 0 ? 'Ascent push' : 'Near the top';
+}
+function drawPlate() {
+  const [c, g] = ctxOf('pCanvas'); const W = c.width, H = c.height; g.clearRect(0, 0, W, H);
+  const m = +$('pM').value, T = +$('pT').value, tMax = T + 2 * PAD, BW = m * G;
+  $('pMv').textContent = m + ' kg'; $('pDv').textContent = (+$('pD').value).toFixed(2) + ' m'; $('pTv').textContent = T.toFixed(1) + ' s';
+  const t = pt * tMax; $('ptv').textContent = t.toFixed(2) + ' s';
+  const s = plateState(t), F = m * (G + s.a);
+  $('pPhase').textContent = phaseOf(s, t); $('pV').textContent = sgn(s.v) + ' m/s'; $('pA').textContent = sgn(s.a) + ' m/s²';
+  $('pF').textContent = f2(F) + ' N'; $('pBW').textContent = f2(F / BW) + ' BW';
+  // stick figure (left) and three plots (right)
+  const fx = 90, ground = H - 40, drop = s.y * 260;
+  g.fillStyle = '#E9ECE8'; g.fillRect(20, ground, 140, 14); text(g, 'force plate', 90, ground + 26, SOFT, 12, 'center', 600);
+  const hip = [fx, ground - 190 - drop * 1.0 + 0], knee = [fx + 28 + (-drop) * 0.12, ground - 95 - drop * 0.35];
+  g.strokeStyle = BONE; g.lineWidth = 11; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(fx, ground - 4); g.lineTo(knee[0], knee[1]); g.lineTo(hip[0], hip[1]); g.lineTo(hip[0] - 4, hip[1] - 105); g.stroke();
+  g.beginPath(); g.arc(hip[0] - 4, hip[1] - 125, 16, 0, 2 * Math.PI); g.fillStyle = BONE; g.fill();
+  g.beginPath(); g.moveTo(hip[0] - 4, hip[1] - 90); g.lineTo(hip[0] + 55, hip[1] - 85); g.stroke();
+  g.beginPath(); g.arc(hip[0], hip[1] - 20, 6, 0, 2 * Math.PI); g.fillStyle = INK; g.fill(); text(g, 'COM', hip[0] - 12, hip[1] - 20, INK, 12, 'right', 700);
+  const sc = 130 / BW;
+  arrow(g, fx + 50, ground, fx + 50, ground - F * sc, BLUE, 5, 14); text(g, 'vGRF', fx + 58, ground - F * sc - 2, BLUE, 13, 'left', 700);
+  arrow(g, fx - 45, hip[1] - 20, fx - 45, hip[1] - 20 + BW * sc, RED, 5, 14); text(g, 'W', fx - 56, hip[1] - 20 + BW * sc / 2, RED, 13, 'right', 700);
+  const px = 200, pw = W - px - 16, ph = (H - 60) / 3;
+  const plots = [['COM velocity (m/s)', tt => plateState(tt).v, 1.2, GREEN], ['COM acceleration (m/s²)', tt => plateState(tt).a, 6, ORANGE], ['vGRF (× body weight)', tt => 1 + plateState(tt).a / G, 0, BLUE]];
+  plots.forEach(([lab, fn, lim, col], k) => {
+    const y0 = 14 + k * (ph + 14), h = ph - 8;
+    let lo, hi;
+    if (k < 2) { let mx = 0; for (let i = 0; i <= 200; i++) mx = Math.max(mx, Math.abs(fn(i / 200 * tMax))); mx = Math.max(mx * 1.15, 0.05); lo = -mx; hi = mx; }
+    else { lo = 0.4; hi = 1.6; for (let i = 0; i <= 200; i++) { const v = fn(i / 200 * tMax); lo = Math.min(lo, v - 0.1); hi = Math.max(hi, v + 0.1); } }
+    const Y = v => y0 + h - (v - lo) / (hi - lo) * h, X = tt => px + tt / tMax * pw;
+    g.strokeStyle = LINE; g.lineWidth = 1; g.strokeRect(px, y0, pw, h);
+    const ref = k < 2 ? 0 : 1; g.setLineDash([5, 4]); g.beginPath(); g.moveTo(px, Y(ref)); g.lineTo(px + pw, Y(ref)); g.stroke(); g.setLineDash([]);
+    text(g, k < 2 ? '0' : '1 BW', px + 4, Y(ref) - 9, SOFT, 11, 'left', 600);
+    g.strokeStyle = col; g.lineWidth = 3; g.beginPath();
+    for (let i = 0; i <= 300; i++) { const tt = i / 300 * tMax; const yy = Y(fn(tt)); i ? g.lineTo(X(tt), yy) : g.moveTo(X(tt), yy); } g.stroke();
+    text(g, lab, px + 8, y0 + 12, INK, 13, 'left', 700);
+    g.strokeStyle = INK; g.lineWidth = 1.5; g.beginPath(); g.moveTo(X(t), y0); g.lineTo(X(t), y0 + h); g.stroke();
+    g.beginPath(); g.arc(X(t), Y(fn(t)), 5, 0, 2 * Math.PI); g.fillStyle = col; g.fill();
+  });
+  text(g, 'time →', W - 20, H - 14, SOFT, 12, 'right', 600);
+}
+function playLoop(ts) {
+  if (!pPlaying) return;
+  const tMax = +$('pT').value + 2 * PAD;
+  if (pLast) pt += (ts - pLast) / 1000 / tMax / 1.5;   // 1.5× slow motion
+  pLast = ts; if (pt >= 1) { pt = 1; pPlaying = false; $('pPlay').textContent = 'Play'; }
+  $('pt').value = Math.round(pt * 1000); drawPlate();
+  if (pPlaying) requestAnimationFrame(playLoop);
+}
+$('pPlay').addEventListener('click', () => { pPlaying = !pPlaying; $('pPlay').textContent = pPlaying ? 'Pause' : 'Play'; if (pPlaying) { if (pt >= 1) pt = 0; pLast = 0; requestAnimationFrame(playLoop); } });
+$('pt').addEventListener('input', e => { pt = e.target.value / 1000; pPlaying = false; $('pPlay').textContent = 'Play'; drawPlate(); });
+['pM', 'pD', 'pT'].forEach(id => $(id).addEventListener('input', drawPlate));
+
+/* ---------- L6 torque / levers ---------- */
+const PRESETS = { elbow: [0.05, 200, 0.30, 50], p4: [0.13, 700, 0.34, 271], seesaw: [-0.50, 300, 0.40, 300], calf: [0.40, 200, 0.15, 500] };
+document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
+  const [xe, E, xl, L] = PRESETS[b.dataset.preset]; $('tXe').value = xe; $('tE').value = E; $('tXl').value = xl; $('tL').value = L; drawTorque();
+}));
+function drawTorque() {
+  const xe = +$('tXe').value, E = +$('tE').value, xl = +$('tXl').value, L = +$('tL').value;
+  $('tXev').textContent = f2(xe) + ' m'; $('tEv').textContent = E + ' N'; $('tXlv').textContent = f2(xl) + ' m'; $('tLv').textContent = L + ' N';
+  const te = xe * E, tl = xl * (-L), tn = te + tl;
+  const ae = Math.abs(xe), al = Math.abs(xl);
+  let cls = '—';
+  if (ae > 0.001 && al > 0.001) cls = (xe * xl < 0) ? 'Class I' : (al < ae ? 'Class II' : (ae < al ? 'Class III' : 'Same spot'));
+  $('tClass').textContent = cls; $('tTMA').textContent = al > 0.001 ? f2(ae / al) : '—';
+  $('tTe').textContent = sgn(te) + ' N·m'; $('tTl').textContent = sgn(tl) + ' N·m'; $('tTn').textContent = sgn(tn) + ' N·m';
+  $('tOut').innerHTML = Math.abs(tn) < 0.005 ? '<span class="pill pos">Balanced</span> Net torque is zero, so the lever stays still (or keeps turning at a constant rate).'
+    : (tn > 0 ? '<span class="pill pos">Counterclockwise (+)</span> The effort side wins.' : '<span class="pill neg">Clockwise (−)</span> The load side wins.') +
+      (Math.abs(tl) > 0 && Math.abs(xe) > 0.001 ? ` To balance, the effort would need ${f2(Math.abs(tl / xe))} N.` : '');
+  const [c, g] = ctxOf('tCanvas'); const W = c.width, H = c.height; g.clearRect(0, 0, W, H);
+  const cx = W / 2, by = H * 0.52, S = (W / 2 - 40) / 0.6;
+  g.strokeStyle = INK; g.lineWidth = 8; g.lineCap = 'butt'; g.beginPath(); g.moveTo(cx - 0.6 * S, by); g.lineTo(cx + 0.6 * S, by); g.stroke();
+  for (let m = -0.6; m <= 0.601; m += 0.1) { g.strokeStyle = SOFT; g.lineWidth = 1; g.beginPath(); g.moveTo(cx + m * S, by + 6); g.lineTo(cx + m * S, by + 12); g.stroke(); }
+  const fs = 120 / Math.max(E, L, 1);
+  if (E > 0) arrow(g, cx + xe * S, by - 4, cx + xe * S, by - 4 - E * fs, GREEN, 5, 14);
+  if (L > 0) arrow(g, cx + xl * S, by - 4 - L * fs, cx + xl * S, by - 4, ORANGE, 5, 14);
+  g.fillStyle = BLUE; g.beginPath(); g.moveTo(cx, by + 4); g.lineTo(cx - 20, by + 40); g.lineTo(cx + 20, by + 40); g.closePath(); g.fill();
+  text(g, 'fulcrum', cx, by + 56, BLUE, 13, 'center', 700);
+  text(g, `Effort ${E} N`, cx + xe * S, by - E * fs - 22, GREEN, 14, 'center', 700);
+  text(g, `Load ${L} N`, cx + xl * S, by - L * fs - 22, ORANGE, 14, 'center', 700);
+  [[xe, GREEN, 'effort arm'], [xl, ORANGE, 'load arm']].forEach(([x, col, lab], k) => {
+    const yy = by + 96 + k * 30; g.strokeStyle = col; g.lineWidth = 2; g.setLineDash([6, 4]);
+    g.beginPath(); g.moveTo(cx, yy); g.lineTo(cx + x * S, yy); g.stroke(); g.setLineDash([]);
+    text(g, `${lab} ${f2(Math.abs(x))} m`, cx + x * S / 2, yy - 10, col, 12, 'center', 700);
+  });
+}
+['tXe', 'tE', 'tXl', 'tL'].forEach(id => $(id).addEventListener('input', drawTorque));
+
+/* ---------- L7 angle of pull ---------- */
+const A = 0.30, Dm = 0.05, HAND = 0.30;
+function pullModel(flex, shoulder) {
+  const hum = Math.PI / 2 + shoulder;                // direction from elbow to shoulder
+  const fdir = hum + Math.PI + flex;                  // forearm direction (person faces right)
+  const hu = [Math.cos(hum), Math.sin(hum)], fu = [Math.cos(fdir), Math.sin(fdir)];
+  const origin = [A * hu[0], A * hu[1]], ins = [Dm * fu[0], Dm * fu[1]], hand = [HAND * fu[0], HAND * fu[1]];
+  const mv = [origin[0] - ins[0], origin[1] - ins[1]], ml = Math.hypot(...mv), mu = [mv[0] / ml, mv[1] / ml];
+  const tj = [-fu[0], -fu[1]];
+  const th = Math.acos(Math.max(-1, Math.min(1, mu[0] * tj[0] + mu[1] * tj[1])));
+  return { hu, fu, origin, ins, hand, mu, tj, th };
+}
+function drawPull() {
+  const flex = +$('aF').value, sh = +$('aS').value, F = +$('aM').value, Wt = +$('aW').value;
+  $('aFv').textContent = flex.toFixed(2) + ' rad'; $('aSv').textContent = sh.toFixed(2) + ' rad'; $('aMv').textContent = F + ' N'; $('aWv').textContent = Wt + ' N';
+  const M = pullModel(flex, sh);
+  const rot = F * Math.sin(M.th), par = F * Math.cos(M.th);
+  const tm = M.ins[0] * (F * M.mu[1]) - M.ins[1] * (F * M.mu[0]);   // r × F, counterclockwise + (flexion +)
+  const tw = M.hand[0] * (-Wt);
+  const need = Math.sin(M.th) > 0.01 ? -tw / (Math.sin(M.th) * Dm) : NaN;
+  $('aTh').textContent = M.th.toFixed(2) + ' rad'; $('aRot').textContent = f2(rot) + ' N';
+  $('aPar').textContent = f2(Math.abs(par)) + ' N ' + (par > 0.5 ? 'toward elbow' : par < -0.5 ? 'away from elbow' : '');
+  $('aTm').textContent = sgn(tm) + ' N·m'; $('aTw').textContent = sgn(tw) + ' N·m';
+  $('aNeed').textContent = isNaN(need) ? '—' : (need < 0 ? 'none (load helps flex)' : f2(need) + ' N');
+  const [c, g] = ctxOf('aCanvas'); const W = c.width, H = c.height; g.clearRect(0, 0, W, H);
+  const S = 900, ox = W * 0.42, oy = H * 0.52, P = p => [ox + p[0] * S, oy - p[1] * S];
+  const e = P([0, 0]), o = P(M.origin), i = P(M.ins), hnd = P(M.hand), shp = P([A * 1.05 * M.hu[0], A * 1.05 * M.hu[1]]);
+  g.lineCap = 'round';
+  g.strokeStyle = BONE; g.lineWidth = 16; g.beginPath(); g.moveTo(shp[0], shp[1]); g.lineTo(e[0], e[1]); g.lineTo(hnd[0], hnd[1]); g.stroke();
+  g.strokeStyle = MUSCLE; g.lineWidth = 7; g.beginPath(); g.moveTo(o[0], o[1]); g.lineTo(i[0], i[1]); g.stroke();
+  g.fillStyle = INK; g.beginPath(); g.arc(e[0], e[1], 7, 0, 2 * Math.PI); g.fill();
+  // components at the insertion
+  const k = 0.16 / Math.max(F, 1) * S;
+  const rd = [-M.fu[1], M.fu[0]], sgnr = (M.mu[0] * rd[0] + M.mu[1] * rd[1]) >= 0 ? 1 : -1;
+  const rTip = [i[0] + sgnr * rd[0] * rot * k, i[1] - sgnr * rd[1] * rot * k], pTip = [i[0] + M.tj[0] * par * k, i[1] - M.tj[1] * par * k];
+  arrow(g, i[0], i[1], i[0] + M.mu[0] * F * k, i[1] - M.mu[1] * F * k, BLUE, 5, 14);
+  arrow(g, i[0], i[1], rTip[0], rTip[1], ORANGE, 4, 12);
+  arrow(g, i[0], i[1], pTip[0], pTip[1], GREEN, 4, 12);
+  text(g, 'F', i[0] + M.mu[0] * F * k + 8, i[1] - M.mu[1] * F * k, BLUE, 15, 'left', 700);
+  // name each component at its tip, so the arrows don't rely on color alone
+  const halo = (s, x, y, col) => { g.font = '700 13px Inter, Arial, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+    g.lineWidth = 4; g.lineJoin = 'round'; g.strokeStyle = '#fff'; g.strokeText(s, x, y); g.fillStyle = col; g.fillText(s, x, y); };
+  if (Math.hypot(rTip[0] - i[0], rTip[1] - i[1]) > 18) halo('rotary', rTip[0] + 6, rTip[1] + 12, ORANGE);
+  if (Math.hypot(pTip[0] - i[0], pTip[1] - i[1]) > 18) halo('parallel', pTip[0] + 6, pTip[1] - 14, GREEN);
+  text(g, `θ = ${M.th.toFixed(2)} rad`, i[0] + 14, i[1] + 22, INK, 15, 'left', 700);
+  // dumbbell, gravity, and its moment arm
+  g.fillStyle = SOFT; g.beginPath(); g.arc(hnd[0], hnd[1], 11, 0, 2 * Math.PI); g.fill();
+  if (Wt > 0) arrow(g, hnd[0], hnd[1] + 12, hnd[0], hnd[1] + 12 + 1.6 * Wt, INK, 4, 12);
+  const yb = Math.max(e[1], hnd[1]) + 1.6 * Wt + 50;
+  g.strokeStyle = BLUE; g.lineWidth = 3; g.beginPath(); g.moveTo(e[0], yb); g.lineTo(hnd[0], yb); g.stroke();
+  g.setLineDash([4, 4]); g.lineWidth = 1; g.beginPath(); g.moveTo(e[0], e[1]); g.lineTo(e[0], yb); g.moveTo(hnd[0], hnd[1]); g.lineTo(hnd[0], yb); g.stroke(); g.setLineDash([]);
+  text(g, `dumbbell moment arm ${Math.abs(M.hand[0]).toFixed(2)} m`, (e[0] + hnd[0]) / 2, yb + 16, BLUE, 13, 'center', 700);
+  text(g, 'Blue = muscle force F   Orange = rotary   Green = parallel', 16, H - 16, SOFT, 12, 'left', 600);
+}
+['aF', 'aS', 'aM', 'aW'].forEach(id => $(id).addEventListener('input', drawPull));
+
+/* ---------- Pre-class / In-class mode (?mode=pre|in, default pre; ?embed=1 hides the switch) ---------- */
+(function () {
+  const params = new URLSearchParams(location.search);
+  if (params.get('embed') === '1') document.documentElement.classList.add('embed');
+  function setMode(m) {
+    document.querySelectorAll('.mode-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    document.querySelectorAll('[data-show]').forEach(el => { el.hidden = el.dataset.show !== m; });
+    document.documentElement.setAttribute('data-mode', m);
+    try { const u = new URL(location.href); u.searchParams.set('mode', m); history.replaceState(history.state, '', u.href); } catch (e) { /* file:// in some browsers */ }
+  }
+  document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  setMode(params.get('mode') === 'in' ? 'in' : 'pre');
+})();
+
+/* ---------- start ---------- */
+function draw() { renderSigns(); drawPlate(); drawTorque(); drawPull(); }
+newQuiz();
+window.addEventListener('hashchange', () => { const h = location.hash.replace('#', ''); if (TABS.includes(h)) showTab(h); });
+const start = location.hash.replace('#', '');
+showTab(TABS.includes(start) ? start : 'signs');
+</script>
+</body>
+</html>
