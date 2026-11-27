@@ -9,7 +9,7 @@
 <style>
   :root{
     --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158;
-    --stance:#2F6F63; --rust:#B8622A; --amber:#E8B23D; --line-blue:#3A5B8C; --purple:#7A5C8A; --line:#D8DED7; --radius:14px;
+    --stance:#2F6F63; --rust:#A3541F; --amber:#E8B23D; --amber-dk:#B08A1E; --line-blue:#3A5B8C; --purple:#7A5C8A; --line:#D8DED7; --radius:14px;
     --soft:#F1F4F0;
   }
   *{box-sizing:border-box;}
@@ -60,10 +60,10 @@
   .control{margin-bottom:12px;}
   .control-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:8px;}
   .control-label{font-weight:700;font-size:14px;}
-  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;color:#9A6F12;}
-  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:6px;background:var(--line);border-radius:4px;outline:none;margin:10px 0;}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
-  input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--amber);border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
+  .control-val{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;color:#8A6310;}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:6px;background:#AEB6AD;border-radius:4px;margin:10px 0;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--amber-dk);border:3px solid white;box-shadow:0 0 0 1px #1B2420,0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--amber-dk);border:3px solid white;box-shadow:0 0 0 1px #1B2420,0 1px 4px rgba(0,0,0,.3);cursor:pointer;}
   input[type=range]:disabled{opacity:.5;}
   .nudge{display:flex;gap:6px;}
 
@@ -128,6 +128,25 @@
   .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;font-weight:600;color:var(--ink-soft);margin-top:6px;}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .lsw{width:16px;height:3px;border-radius:2px;display:inline-block;}
+  /* Pre-class / In-class mode (shared spec) */
+  .mode-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 14px;}
+  .mode-btns{display:inline-flex;gap:4px;background:#E9ECE8;padding:4px;border-radius:11px;}
+  .mode-btn{font:inherit;font-weight:700;font-size:14px;border:0;background:transparent;color:#586158;padding:8px 14px;border-radius:8px;cursor:pointer;}
+  .mode-btn[aria-pressed="true"]{background:#1B2420;color:#fff;}
+  .mode-help{margin:0;font-size:14px;color:#586158;flex:1 1 260px;line-height:1.45;}
+  .guide{background:#fff;border:1px solid #D8DED7;border-left:4px solid #2F6F63;border-radius:12px;padding:14px 18px;margin:0 0 16px;}
+  .guide[data-show="in"]{border-left-color:#9A4F1E;}
+  .guide h2{font-size:17px;margin:0 0 6px;font-family:'Space Grotesk',sans-serif;} .guide h3{font-size:15px;margin:12px 0 4px;color:var(--ink);}
+  .guide ol,.guide ul{margin:4px 0 0;padding-left:22px;line-height:1.55;font-size:14.5px;}
+  .guide details{margin:4px 0;font-size:14.5px;} .guide summary{cursor:pointer;font-weight:600;}
+  .guide details p{margin:4px 0 8px 18px;color:#33392f;}
+  .confirm-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:#FBF3DF;border:1.5px solid #B08A1E;border-radius:12px;padding:10px 14px;margin:0 0 16px;font-size:14.5px;font-weight:600;}
+  [hidden]{display:none !important;}
+  :focus-visible{outline:3px solid #1F6B9E;outline-offset:3px;}
+  input[type=range]:focus-visible{outline:3px solid #1F6B9E;outline-offset:4px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+  html.embed .mode-btns{display:none;}
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{transition:none !important;animation:none !important;scroll-behavior:auto !important;} }
   footer{font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin-top:18px;}
 </style>
 </head>
@@ -136,12 +155,54 @@
   <header class="banner">
     <div class="kick">KINE 3620 · BIOMECHANICS · CLASS CHALLENGE</div>
     <h1>Launch Angle Challenge</h1>
-    <p class="subtitle">Where a thrown ball goes depends on three things at release: <b>speed</b>, <b>angle</b>, and <b>height</b>. Play five rounds, beat the other tables, and find out why 45° is not always the answer.</p>
+    <p class="subtitle">Where a thrown ball goes depends on three things at release: <b>speed</b>, <b>angle</b>, and <b>height</b>. Explore release angle on your own before class, then play five rounds as a team in class and find out why 0.79 rad (45°) is not always the answer.</p>
   </header>
 
-  <div class="seg" id="modeTabs" role="tablist">
-    <button type="button" data-mode="long" class="on">Long toss (distance)</button>
-    <button type="button" data-mode="acc">Hit the target (accuracy)</button>
+  <div class="mode-bar">
+    <div class="mode-btns" role="group" aria-label="Activity mode">
+      <button type="button" class="mode-btn" data-mode="pre" aria-pressed="true">Pre-class</button>
+      <button type="button" class="mode-btn" data-mode="in" aria-pressed="false">In-class</button>
+    </div>
+    <p class="mode-help" data-show="pre"><b>Pre-class:</b> work alone. Follow the guided steps for Lecture 19's reading in <b>The physics</b> card.</p>
+    <p class="mode-help" data-show="in"><b>In-class:</b> team game. Predict first, then play five rounds of Long toss or Hit the target.</p>
+  </div>
+
+  <section class="guide" data-show="pre" aria-labelledby="preTitle">
+    <h2 id="preTitle">Pre-class steps (Lecture 19 reading)</h2>
+    <ol>
+      <li>In <b>The physics</b> below, check that release speed v = 13 m/s and release height h = 2.1 m (a shot-put release; the page starts there). Keep Real athlete and Air drag off.</li>
+      <li>Move <b>Your release angle</b> until the range is as large as you can get it. Write down the angle (in rad) and the range. Then read <b>Best angle</b> to check.</li>
+      <li>Set h = 0. What is the best angle now, and how far does the throw go?</li>
+      <li>Set h back to 2.1 m and turn on <b>Real athlete</b> with k = 2.29 m/s per rad. Speed is 13 m/s at 0.61 rad (35°) and falls as you aim higher. What happens to the best angle?</li>
+      <li>Set your angle 0.09 rad (5°) above the best angle. How much range do you lose? Compare that with the <b>10% more speed</b> readout.</li>
+    </ol>
+    <h3>Check yourself</h3>
+    <details><summary>Why is the best angle below 0.79 rad (45°) when h &gt; 0?</summary><p>The ball starts above the landing height, so it has extra time to fall. A flatter throw uses that time to travel farther forward.</p></details>
+    <details><summary>Which adds more range, 10% more speed or a perfect angle?</summary><p>10% more speed. Range grows with speed squared, and the range curve is flat near the best angle.</p></details>
+    <details><summary>What did you get for steps 2 to 4?</summary><p>Step 2: about 0.73 rad (41.9°), 19.21 m. Step 3: 0.79 rad (45°), 17.23 m. Step 4: about 0.63 rad (36.2°), 18.79 m.</p></details>
+  </section>
+
+  <section class="guide" data-show="in" aria-labelledby="inTitle">
+    <h2 id="inTitle">Before you throw, predict</h2>
+    <ol>
+      <li>Will your best long-toss angle be above, at, or below 0.79 rad (45°)? Why?</li>
+      <li>If you could add 10% to release speed or pick the perfect angle, which helps more?</li>
+      <li>In Hit the target, two angles reach the target. Which one beats the runner?</li>
+    </ol>
+    <p class="note" style="margin:8px 0 0;">Write your table's predictions down. Check them in the results after round 5.</p>
+  </section>
+
+  <div class="confirm-bar" id="leaveBar" role="group" aria-labelledby="leaveMsg" hidden>
+    <span id="leaveMsg">Leave this game? Your current score will be lost.</span>
+    <button class="btn small" type="button" id="leaveYes">Yes, leave</button>
+    <button class="btn small primary" type="button" id="leaveNo">No, keep playing</button>
+  </div>
+
+  <div data-show="in">
+
+  <div class="seg" id="modeTabs" role="group" aria-label="Game type">
+    <button type="button" data-mode="long" class="on" aria-pressed="true">Long toss (distance)</button>
+    <button type="button" data-mode="acc" aria-pressed="false">Hit the target (accuracy)</button>
   </div>
 
   <!-- SETUP -->
@@ -153,16 +214,16 @@
         <label class="field-label" for="team">Team name</label>
         <input type="text" id="team" maxlength="30" autocomplete="off" placeholder="e.g., Table 4">
         <span class="field-label" style="margin-top:14px">Sport</span>
-        <div class="seg small" id="presetSeg">
-          <button type="button" data-p="baseball" class="on">Baseball</button>
-          <button type="button" data-p="softball">Softball</button>
-          <button type="button" data-p="javelin">Javelin-ish</button>
-          <button type="button" data-p="shot">Shot put</button>
+        <div class="seg small" id="presetSeg" role="group" aria-label="Sport">
+          <button type="button" data-p="baseball" class="on" aria-pressed="true">Baseball</button>
+          <button type="button" data-p="softball" aria-pressed="false">Softball</button>
+          <button type="button" data-p="javelin" aria-pressed="false">Javelin-ish</button>
+          <button type="button" data-p="shot" aria-pressed="false">Shot put</button>
         </div>
         <p class="note" id="presetNote" style="margin-top:8px"></p>
       </div>
       <div>
-        <div class="sw-row" id="raRow"><input type="checkbox" id="optRA"><label for="optRA">Real athlete (harder)<span class="note">You can't throw as fast when you aim higher. Your release speed drops as your release angle rises. Illustrative model: speed = top speed − k × angle. Idea from Linthorne NP. Optimum release angle in the shot put. <i>J Sports Sci</i> 2001;19:359–72.</span></label></div>
+        <div class="sw-row" id="raRow"><input type="checkbox" id="optRA"><label for="optRA">Real athlete (harder)<span class="note">You can't throw as fast when you aim higher. Your release speed drops as your release angle rises. Illustrative model: speed = v<sub>35</sub> − k × (θ − 0.61 rad). Idea from Linthorne NP. Optimum release angle in the shot put. <i>J Sports Sci</i> 2001;19:359–72.</span></label></div>
         <div class="sw-row" id="dragRow"><input type="checkbox" id="optDrag"><label for="optDrag">Air drag<span class="note" id="dragNote">Approximate air drag on a baseball.</span></label></div>
         <div class="sw-row"><input type="checkbox" id="optImp"><label for="optImp">Also show mph and feet</label></div>
         <div class="sw-row"><input type="checkbox" id="optSame" checked><label for="optSame">Same conditions for every team<span class="note">Leave this on for a fair class contest. Turn it off for new random conditions each game.</span></label></div>
@@ -179,17 +240,17 @@
       <div class="tot" id="tot"></div>
     </div>
     <div class="cond" id="cond"></div>
-    <canvas id="field" aria-label="Throwing field with the ball's path"></canvas>
+    <canvas id="field" role="img" aria-label="Throwing field with the ball's path. No throw yet."></canvas>
     <div class="ctrl-grid" id="ctrls">
       <div class="control">
-        <div class="control-head"><span class="control-label">Release angle</span><span class="control-val" id="angVal">30°</span></div>
-        <input type="range" id="ang" min="0" max="80" step="0.5" value="30" aria-label="Release angle in degrees">
-        <div class="row nudge"><button class="btn small" type="button" data-n="ang:-1">−1°</button><button class="btn small" type="button" data-n="ang:1">+1°</button><span class="live" id="angLive"></span></div>
+        <div class="control-head"><span class="control-label">Release angle</span><span class="control-val" id="angVal">0.52 rad (30°)</span></div>
+        <input type="range" id="ang" min="0" max="1.40" step="0.01" value="0.52" aria-label="Release angle in radians">
+        <div class="row nudge"><button class="btn small" type="button" data-n="ang:-0.01" aria-label="Lower the release angle by 0.01 rad">−0.01 rad</button><button class="btn small" type="button" data-n="ang:0.01" aria-label="Raise the release angle by 0.01 rad">+0.01 rad</button><span class="live" id="angLive"></span></div>
       </div>
       <div class="control" id="spdCtl">
         <div class="control-head"><span class="control-label">Release speed</span><span class="control-val" id="spdVal">25 m/s</span></div>
         <input type="range" id="spd" min="15" max="40" step="0.5" value="25" aria-label="Release speed in meters per second">
-        <div class="row nudge"><button class="btn small" type="button" data-n="spd:-0.5">−0.5</button><button class="btn small" type="button" data-n="spd:0.5">+0.5</button></div>
+        <div class="row nudge"><button class="btn small" type="button" data-n="spd:-0.5" aria-label="Lower the release speed by 0.5 m/s">−0.5 m/s</button><button class="btn small" type="button" data-n="spd:0.5" aria-label="Raise the release speed by 0.5 m/s">+0.5 m/s</button></div>
       </div>
       <div><button class="btn throw" id="throwBtn" type="button">Throw!</button></div>
     </div>
@@ -199,6 +260,7 @@
   <!-- FINAL RESULTS -->
   <section class="card final hidden" id="final"></section>
   <section class="card hidden" id="reflect"></section>
+  </div><!-- end in-class game -->
 
   <!-- PHYSICS -->
   <section class="card">
@@ -209,27 +271,28 @@
         x(t) = v·cosθ·t<br>
         y(t) = h + v·sinθ·t − ½·g·t²  &nbsp; (g = 9.81 m/s²)<br>
         Range: R = (v·cosθ / g) · ( v·sinθ + √(v²·sin²θ + 2gh) )<br>
-        Best angle (no drag): sinθ<sub>opt</sub> = 1 / √(2 + 2gh/v²) &nbsp;→ 45° only when h = 0
+        Best angle (no drag): sinθ<sub>opt</sub> = 1 / √(2 + 2gh/v²) &nbsp;→ 0.79 rad (45°) only when h = 0<br>Angles in rad; θ in degrees = θ in rad × 180/π
       </div>
       <div class="phys-grid">
         <div>
-          <div class="control"><div class="control-head"><span class="control-label">Release speed v</span><span class="control-val" id="pvVal"></span></div><input type="range" id="pv" min="5" max="45" step="0.5" value="34"></div>
-          <div class="control"><div class="control-head"><span class="control-label">Release height h</span><span class="control-val" id="phVal"></span></div><input type="range" id="ph" min="0" max="3" step="0.05" value="1.9"></div>
-          <div class="sw-row"><input type="checkbox" id="pRA"><label for="pRA">Real athlete (speed falls as angle rises)</label></div>
-          <div class="control" id="pkCtl"><div class="control-head"><span class="control-label">k (m/s lost per degree)</span><span class="control-val" id="pkVal"></span></div><input type="range" id="pk" min="0" max="0.15" step="0.01" value="0.10"></div>
+          <div class="control"><div class="control-head"><label class="control-label" for="pv">Release speed v</label><span class="control-val" id="pvVal"></span></div><input type="range" id="pv" min="5" max="45" step="0.5" value="34" aria-label="Release speed v in meters per second"></div>
+          <div class="control"><div class="control-head"><label class="control-label" for="ph">Release height h</label><span class="control-val" id="phVal"></span></div><input type="range" id="ph" min="0" max="3" step="0.05" value="1.9" aria-label="Release height h in meters"></div>
+          <div class="control"><div class="control-head"><label class="control-label" for="pa">Your release angle θ</label><span class="control-val" id="paVal"></span></div><input type="range" id="pa" min="0" max="1.40" step="0.01" value="0.52" aria-label="Your release angle in radians"></div>
+          <div class="sw-row"><input type="checkbox" id="pRA"><label for="pRA">Real athlete (speed falls as angle rises)<span class="note">v = v<sub>35</sub> − k × (θ − 0.61 rad). The speed you set is the speed at 0.61 rad (35°).</span></label></div>
+          <div class="control" id="pkCtl"><div class="control-head"><label class="control-label" for="pk">k (m/s lost per rad)</label><span class="control-val" id="pkVal"></span></div><input type="range" id="pk" min="0" max="8" step="0.01" value="5.73" aria-label="k, release speed lost per radian of release angle, in meters per second per radian"></div>
           <div class="sw-row"><input type="checkbox" id="pDrag"><label for="pDrag">Air drag (baseball model)</label></div>
           <button class="btn small" type="button" id="pSync">Use current game settings</button>
         </div>
         <div>
-          <canvas id="chart" aria-label="Range versus release angle chart"></canvas>
-          <div class="legend"><span><span class="lsw" style="background:var(--stance)"></span>Range at each angle (your settings)</span><span><span class="lsw" style="background:#B9C2B8"></span>Same speed, h = 0, no drag</span><span><span class="lsw" style="background:var(--ink-soft)"></span>45°</span><span><span class="lsw" style="background:var(--amber)"></span>Best angle</span></div>
+          <canvas id="chart" role="img" aria-label="Range versus release angle chart"></canvas>
+          <div class="legend"><span><span class="lsw" style="background:var(--stance)"></span>Range at each angle (your settings)</span><span><span class="lsw" style="background:#6B7570"></span>Same speed, h = 0, no drag (thin)</span><span><span class="lsw" style="background:var(--ink-soft)"></span>0.79 rad (45°), dashed</span><span><span class="lsw" style="background:var(--amber-dk)"></span>Best angle</span><span><span class="lsw" style="background:var(--rust)"></span>Your angle</span></div>
           <div class="readout" id="pOut"></div>
         </div>
       </div>
       <h3>Four facts to take away</h3>
-      <p><b>1. 45° is a special case.</b> It is the best angle only when the ball is released and lands at the same height, with no air drag. Release from above the ground and the best angle drops below 45°.</p>
+      <p><b>1. 0.79 rad (45°) is a special case.</b> It is the best angle only when the ball is released and lands at the same height, with no air drag. Release from above the ground and the best angle drops below 0.79 rad (45°).</p>
       <p><b>2. Speed matters most.</b> Range grows with speed squared. Double the release speed and the range roughly quadruples (exactly, when h = 0). Near the best angle the curve is flat on top, so a few degrees off costs very little.</p>
-      <p><b>3. Real athletes trade speed for angle.</b> People can't throw as fast upward as they can straight ahead, so release speed falls as release angle rises. That pushes the best angle lower still, and the best angle depends on the athlete (Linthorne NP. Optimum release angle in the shot put. <i>J Sports Sci</i> 2001;19:359–72. doi:10.1080/02640410152006135). The k value here is an illustrative model, not a measurement.</p>
+      <p><b>3. Real athletes trade speed for angle.</b> People can't throw as fast upward as they can straight ahead, so release speed falls as release angle rises. That pushes the best angle lower still, and the best angle depends on the athlete (Linthorne NP. Optimum release angle in the shot put. <i>J Sports Sci</i> 2001;19:359–72. doi:10.1080/02640410152006135). The k value here is an illustrative model, not a measurement. The shot-put preset (k = 2.29 m/s per rad, or 0.04 m/s per degree, around 0.61 rad) is the same model as the Lecture 19 slide.</p>
       <p><b>4. Accuracy has two answers.</b> If the throw is fast enough, two angles reach any target: a flat line drive and a high lob. The flat one gets there sooner, which is why fielders throw on a line.</p>
     </details>
   </section>
@@ -285,7 +348,9 @@ function path(v,deg,h,drag){
 }
 function rangeOf(v,deg,h,drag){return drag?simulate(v,deg*DEG,h,KD,0.005,false).R:rangeFormula(v,deg*DEG,h);}
 // "Real athlete" model: speed at a given angle
-function speedAt(c,deg){return c.ra?Math.max(1,c.v0-c.k*deg):c.v0;}
+// Same form as the Lecture 19 slide: v = v35 - k*(theta - 0.61 rad), k in m/s per rad. v0 is the speed at 35 deg.
+var PIVOT=35;
+function speedAt(c,deg){return c.ra?Math.max(1,c.v0-c.k*(deg-PIVOT)*DEG):c.v0;}
 // Best angle for distance under a model {v0,h,ra,k,drag}
 function bestAngle(c){
   if(!c.ra&&!c.drag){var o=optFormula(c.v0,c.h)/DEG;return {deg:o,R:rmaxFormula(c.v0,c.h),v:c.v0};}
@@ -346,16 +411,16 @@ function closest(pts,X,Y){
 
 /* ================= PRESETS (generic teaching values) ================= */
 var PRESETS={
-  baseball:{name:'Baseball',obj:'baseball',vRange:[30,38],vSlider:[15,40],hRange:[1.8,2.0],k:0.10,drag:true,
+  baseball:{name:'Baseball',obj:'baseball',vRange:[30,38],vSlider:[15,40],hRange:[1.8,2.0],k:5.73,drag:true,
     blurb:'Outfield throw. Top speed in long toss is about 30–38 m/s, released about 1.8–2.0 m above the ground.',
     targets:[{kind:'glove',name:"Cutoff man's glove",d:[24,42],y:1.8,r:0.35},{kind:'base',name:'Base (catch at knee height)',d:[25,40],y:0.5,r:0.4},{kind:'bucket',name:'Bucket',d:[14,28],y:0.4,r:0.3}]},
-  softball:{name:'Softball',obj:'softball',vRange:[22,30],vSlider:[12,32],hRange:[1.6,1.8],k:0.09,drag:false,
+  softball:{name:'Softball',obj:'softball',vRange:[22,30],vSlider:[12,32],hRange:[1.6,1.8],k:5.16,drag:false,
     blurb:'Outfield throw. Top speed about 22–30 m/s, released about 1.6–1.8 m above the ground.',
     targets:[{kind:'glove',name:"Cutoff player's glove",d:[18,32],y:1.6,r:0.35},{kind:'base',name:'Base (catch at knee height)',d:[18,30],y:0.5,r:0.4},{kind:'bucket',name:'Bucket',d:[10,22],y:0.4,r:0.3}]},
-  javelin:{name:'Javelin-ish',obj:'javelin',vRange:[22,28],vSlider:[12,32],hRange:[1.8,2.0],k:0.10,drag:false,
+  javelin:{name:'Javelin-ish',obj:'javelin',vRange:[22,28],vSlider:[12,32],hRange:[1.8,2.0],k:5.73,drag:false,
     blurb:'Treated as a simple point with no aerodynamics. A real javelin also gets lift and drag, so its best angle is different.',
     targets:[{kind:'marker',name:'Landing marker',d:[30,55],y:0,r:0.75},{kind:'hoop',name:'Hoop on a pole',d:[25,45],y:3,r:0.6}]},
-  shot:{name:'Shot put',obj:'shot',vRange:[10,14],vSlider:[6,15],hRange:[2.0,2.2],k:0.06,drag:false,
+  shot:{name:'Shot put',obj:'shot',vRange:[10,14],vSlider:[6,15],hRange:[2.0,2.2],k:2.29,drag:false,
     blurb:'A heavy ball pushed from about 2.1 m with a slow release speed (about 10–14 m/s). Drag barely matters for a shot.',
     targets:[{kind:'marker',name:'Landing marker',d:[8,16],y:0,r:0.4}]}
 };
@@ -369,7 +434,13 @@ var DB=load();if(!DB||typeof DB!=='object')DB={};if(!DB.pb)DB.pb={};
 
 function fmtV(v){return f1(v)+' m/s'+(S.imp?' ('+f1(v*2.23694)+' mph)':'');}
 function fmtD(m){return f1(m)+' m'+(S.imp?' ('+Math.round(m*3.28084)+' ft)':'');}
-function fmtA(d){return f1(d)+'°';}
+// Angles are kept in degrees inside the physics code; every display shows rad first, whole degrees in parentheses.
+// Degrees: whole number when the angle is a whole degree, else one decimal (so 0.78 rad (44.6°) is not shown as "45°").
+function fmtA(d){var r=d*DEG,dd=Math.abs(d-Math.round(d))<0.05?String(Math.round(d)):d.toFixed(1);return (Math.abs(r)<0.005?0:r).toFixed(2)+' rad ('+dd+'°)';}
+function fmtR(d){return (d*DEG).toFixed(2)+' rad';}
+function angDeg(){return +ang.value/DEG;}
+var RM=false;try{RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
+function scrollTo2(el,blk){try{el.scrollIntoView({behavior:RM?'auto':'smooth',block:blk||'start'});}catch(e){}}
 function pbKey(){return S.mode+'|'+S.preset+'|ra'+(S.mode==='long'&&S.ra?1:0)+'|dr'+(S.drag?1:0);}
 function settingsLabel(){var p=PRESETS[S.preset],t=[p.name];if(S.mode==='long'&&S.ra)t.push('Real athlete');if(S.drag)t.push('air drag');return t.join(', ');}
 
@@ -401,26 +472,33 @@ function makeRounds(){
 var ang=$('ang'),spd=$('spd');
 function refreshSetup(){
   var p=PRESETS[S.preset],long=S.mode==='long';
-  document.querySelectorAll('#modeTabs button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-mode')===S.mode);});
-  document.querySelectorAll('#presetSeg button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-p')===S.preset);});
+  document.querySelectorAll('#modeTabs button').forEach(function(b){var on=b.getAttribute('data-mode')===S.mode;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));});
+  document.querySelectorAll('#presetSeg button').forEach(function(b){var on=b.getAttribute('data-p')===S.preset;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));});
   $('setupTitle').textContent=long?'Long toss: throw it as far as you can':'Hit the target: accuracy and beat the runner';
-  $('setupSub').innerHTML=long?'Each round you get a top speed and a release height. You choose the release angle. Score = distance. After each throw you see the best possible angle and distance for that round, and how close you came (efficiency).'
+  $('setupSub').innerHTML=long?'Each round you get a release speed and a release height. You choose the release angle. Score = distance. After each throw you see the best possible angle and distance for that round, and how close you came (efficiency).'
     :'Each round has a target at a set distance and height, plus a runner. You choose release angle <b>and</b> speed. Score up to 100 points for accuracy, plus a 25-point bonus if your throw is catchable (within 1 m) and gets there before the runner.';
   $('presetNote').textContent=p.blurb;
   $('raRow').classList.toggle('disabled',!long);$('optRA').disabled=!long;if(!long)$('optRA').checked=false;else $('optRA').checked=S.ra;
   $('optDrag').disabled=!p.drag;if(!p.drag){S.drag=false;}$('optDrag').checked=S.drag;$('dragRow').classList.toggle('disabled',!p.drag);
   $('dragNote').textContent=p.drag?'Approximate quadratic drag on a baseball (0.145 kg, 7.4 cm, drag coefficient about 0.35). It slows the ball the whole way.':'The drag model is for a baseball, so it is only available for Baseball.';
   if(!long)$('raRow').querySelector('.note').innerHTML='Real athlete applies to Long toss. In this mode you set the speed yourself.';
-  else $('raRow').querySelector('.note').innerHTML='You can\'t throw as fast when you aim higher. Your release speed drops as your release angle rises. Illustrative model: speed = top speed − k × angle (k = '+p.k.toFixed(2)+' m/s per degree here). Idea from Linthorne NP. Optimum release angle in the shot put. <i>J Sports Sci</i> 2001;19:359–72.';
+  else $('raRow').querySelector('.note').innerHTML='You can\'t throw as fast when you aim higher. Your release speed drops as your release angle rises. Illustrative model: speed = v<sub>35</sub> − k × (θ − 0.61 rad), where v<sub>35</sub> is the speed at 0.61 rad (35°) and k = '+p.k.toFixed(2)+' m/s per rad here ('+(p.k*DEG).toFixed(2)+' m/s per degree). Idea from Linthorne NP. Optimum release angle in the shot put. <i>J Sports Sci</i> 2001;19:359–72.';
   var pb=DB.pb[pbKey()];
   $('pbBox').innerHTML='<b>Personal best</b> ('+esc(settingsLabel())+'): '+(pb?'<b>'+(long?fmtD(pb.score):pb.score+' pts')+'</b>'+(pb.team?' by '+esc(pb.team):''):'none yet on this device');
 }
+// Inline confirm bar (browser confirm dialogs are blocked in sandboxed iframes such as Canvas embeds)
+var pendingLeave=null,leaveFrom=null;
+function askLeave(msg,action,from){
+  if(!(S.game&&!S.game.over&&S.game.res.length)){action();return;}
+  pendingLeave=action;leaveFrom=from||null;$('leaveMsg').textContent=msg;$('leaveBar').hidden=false;$('leaveNo').focus();
+}
+function closeLeave(){$('leaveBar').hidden=true;pendingLeave=null;if(leaveFrom&&leaveFrom.focus)try{leaveFrom.focus();}catch(e){}leaveFrom=null;}
+$('leaveYes').addEventListener('click',function(){var a=pendingLeave;closeLeave();if(a)a();});
+$('leaveNo').addEventListener('click',closeLeave);
 $('modeTabs').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var m=b.getAttribute('data-mode');if(m===S.mode)return;
-  if(S.game&&!S.game.over&&S.game.res.length&&!confirm('Leave this game? Your current score will be lost.'))return;
-  S.mode=m;endGameView();refreshSetup();});
-$('presetSeg').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
-  if(S.game&&!S.game.over&&S.game.res.length&&!confirm('Change sport? Your current game will be lost.'))return;
-  S.preset=b.getAttribute('data-p');endGameView();refreshSetup();syncPhys();});
+  askLeave('Leave this game? Your current score will be lost.',function(){S.mode=m;endGameView();refreshSetup();},b);});
+$('presetSeg').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var pp=b.getAttribute('data-p');if(pp===S.preset)return;
+  askLeave('Change sport? Your current game will be lost.',function(){S.preset=pp;endGameView();refreshSetup();syncPhys();},b);});
 $('optRA').addEventListener('change',function(){S.ra=this.checked;endGameView();refreshSetup();});
 $('optDrag').addEventListener('change',function(){S.drag=this.checked;endGameView();refreshSetup();});
 $('optImp').addEventListener('change',function(){S.imp=this.checked;refreshSetup();if(S.game)renderRoundHead();updateLive();if(S.game&&S.game.lastHtml)renderResult(S.game.lastRes);if(S.game&&S.game.over)renderFinal();drawChart();});
@@ -440,10 +518,10 @@ function startGame(){
     $('startNote').textContent='';$('startBtn').textContent='Restart game';
     $('final').classList.add('hidden');$('reflect').classList.add('hidden');$('game').classList.remove('hidden');
     spd.min=p.vSlider[0];spd.max=p.vSlider[1];spd.value=Math.round((p.vSlider[0]+p.vSlider[1])/2);
-    ang.min=S.mode==='long'?0:-10;ang.max=80;ang.value=S.mode==='long'?25:15;
+    ang.min=S.mode==='long'?0:-0.17;ang.max=1.40;ang.value=S.mode==='long'?0.44:0.26;
     $('spdCtl').classList.toggle('hidden',S.mode==='long');$('ctrls').classList.toggle('one',S.mode==='long');
     startRound();
-    $('game').scrollIntoView({behavior:'smooth',block:'start'});
+    scrollTo2($('game'));
   },20);
 }
 function cfgOf(rd){var g=S.game;return {v0:rd.v0,h:rd.h,ra:g.ra,k:g.k,drag:g.drag};}
@@ -464,29 +542,30 @@ function renderRoundHead(){
   $('tot').innerHTML=(g.team?esc(g.team)+' · ':'')+'Total <span>'+(g.mode==='long'?fmtD(tot).replace(/ \(.*\)/,'')+'</span>':Math.round(tot)+'</span> pts');
   var c='';
   if(g.mode==='long'){
-    c+='<div class="pill">'+(g.ra?'Top speed (at 0°)':'Release speed')+'<b>'+fmtV(rd.v0)+'</b></div><div class="pill">Release height<b>'+fmtD(rd.h)+'</b></div>';
+    c+='<div class="pill">'+(g.ra?'Speed at 0.61 rad (35°)':'Release speed')+'<b>'+fmtV(rd.v0)+'</b></div><div class="pill">Release height<b>'+fmtD(rd.h)+'</b></div>';
     c+='<div class="pill">Sport<b>'+PRESETS[g.preset].name+(g.drag?' + drag':'')+'</b></div>';
   } else {
     c+='<div class="pill">Target<b>'+esc(rd.target.name)+'</b></div><div class="pill">Distance<b>'+fmtD(rd.target.x)+'</b></div><div class="pill">Target height<b>'+fmtD(rd.target.y)+'</b></div><div class="pill">Your release height<b>'+fmtD(rd.h)+'</b></div><div class="pill runner">Runner arrives in<b>'+f1(rd.limit)+' s</b></div>';
   }
   $('cond').innerHTML=c;
 }
-function curV(){var g=S.game,rd=g.rounds[g.idx];return g.mode==='long'?speedAt(cfgOf(rd),+ang.value):+spd.value;}
+function curV(){var g=S.game,rd=g.rounds[g.idx];return g.mode==='long'?speedAt(cfgOf(rd),angDeg()):+spd.value;}
 function updateLive(){
-  $('angVal').textContent=fmtA(+ang.value);$('spdVal').textContent=fmtV(+spd.value);
+  $('angVal').textContent=fmtA(angDeg());$('spdVal').textContent=fmtV(+spd.value);
+  ang.setAttribute('aria-valuetext',fmtA(angDeg()));spd.setAttribute('aria-valuetext',fmtV(+spd.value));
   if(!S.game){$('angLive').textContent='';return;}
   var g=S.game;
   $('angLive').textContent=g.mode==='long'&&g.ra?'Speed at this angle: '+fmtV(curV()):'';
-  if(!S.anim&&!g.thrown){scene.aim={deg:+ang.value,v:curV()};draw();}
+  if(!S.anim&&!g.thrown){scene.aim={deg:angDeg(),v:curV()};draw();}
 }
 ang.addEventListener('input',updateLive);spd.addEventListener('input',updateLive);
 document.querySelectorAll('[data-n]').forEach(function(b){b.addEventListener('click',function(){
-  var p=b.getAttribute('data-n').split(':'),el=$(p[0]);if(el.disabled)return;el.value=clamp(+el.value+ +p[1],+el.min,+el.max);updateLive();});});
+  var p=b.getAttribute('data-n').split(':'),el=$(p[0]);if(el.disabled)return;el.value=clamp(Math.round((+el.value+ +p[1])*100)/100,+el.min,+el.max);updateLive();});});
 $('throwBtn').addEventListener('click',doThrow);
 
 function doThrow(){
   var g=S.game;if(!g||g.thrown||S.anim)return;
-  var rd=g.rounds[g.idx],deg=+ang.value,v=curV();
+  var rd=g.rounds[g.idx],deg=angDeg(),v=curV();
   g.thrown=true;$('throwBtn').disabled=true;ang.disabled=true;spd.disabled=true;scene.aim=null;
   var P=path(v,deg,rd.h,g.drag),res={deg:deg,v:v,R:P.R,T:P.T,H:P.H};
   if(g.mode==='long'){
@@ -496,7 +575,7 @@ function doThrow(){
     res.plus10=rangeOf(v*1.1,deg,rd.h,g.drag);
     var o=path(b.v,b.deg,rd.h,g.drag);
     fitWorld(Math.max(P.R,b.R)*1.18,Math.max(P.H,o.H)*1.15);
-    animate(P,function(){scene.marks.push({x:P.R,label:fmtD(P.R).replace(/ \(.*\)/,''),color:'#B8622A'});scene.trails.push({pts:o.pts,color:'#E8B23D',dash:[7,6],w:2.5});scene.marks.push({x:b.R,label:'best '+f1(b.R)+' m',color:'#9A6F12',up:true});draw();finishThrow(res);});
+    animate(P,function(){scene.marks.push({x:P.R,label:fmtD(P.R).replace(/ \(.*\)/,''),color:'#A3541F'});scene.trails.push({pts:o.pts,color:'#B08A1E',dash:[7,6],w:2.5});scene.marks.push({x:b.R,label:'best '+f1(b.R)+' m',color:'#8A6310',up:true});draw();setFieldLabel('Throw at '+fmtA(deg)+' landed '+f1(P.R)+' m. Best this round: '+fmtA(b.deg)+' at '+f1(b.R)+' m.');finishThrow(res);});
   } else {
     var tg=rd.target,cl=closest(P.pts,tg.x,tg.y);
     res.miss=cl.d;res.tHit=cl.t;
@@ -510,7 +589,7 @@ function doThrow(){
     var ymax=P.H;ghosts.forEach(function(gp){gp.pts.forEach(function(p){if(p[2]>ymax)ymax=p[2];});});
     var xmax=Math.max(tg.x*1.25,Math.min(P.R,tg.x*2.2));
     fitWorld(xmax,ymax*1.12);
-    animate(P,function(){scene.marks.push({x:Math.min(P.R,xmax*0.99),label:'',color:'#B8622A'});ghosts.forEach(function(gh){scene.trails.push(gh);});draw();finishThrow(res);});
+    animate(P,function(){scene.marks.push({x:Math.min(P.R,xmax*0.99),label:'',color:'#A3541F'});ghosts.forEach(function(gh){scene.trails.push(gh);});draw();setFieldLabel('Throw at '+fmtA(deg)+' and '+f1(v)+' m/s missed the '+tg.name+' by '+f2(res.miss)+' m ('+res.dir+').');finishThrow(res);});
   }
 }
 function finishThrow(res){
@@ -531,9 +610,9 @@ function renderResult(res){
       '<div class="stat"><div class="l">Efficiency</div><div class="v">'+f1(res.eff)+'%</div><div class="s">of the best possible</div></div>'+
       '<div class="stat"><div class="l">Flight time</div><div class="v">'+f2(res.T)+' s</div><div class="s">peak height '+fmtD(res.H)+'</div></div>'+
       '<div class="stat"><div class="l">Best possible</div><div class="v">'+fmtD(res.bestR)+'</div><div class="s">at '+fmtA(res.bestDeg)+(g.ra?', '+fmtV(res.bestV):'')+'</div></div></div>';
-    h+='<div class="reveal"><b>The best angle this round was '+fmtA(res.bestDeg)+'</b>, not 45°. ';
+    h+='<div class="reveal"><b>The best angle this round was '+fmtA(res.bestDeg)+'</b>, not 0.79 rad (45°). ';
     var why=[];if(rd.h>0)why.push('you let go '+f1(rd.h)+' m above the ground');if(g.ra)why.push('your speed drops as you aim higher');if(g.drag)why.push('air drag slows the ball the longer it flies');
-    var wj=why.join(', ');h+='Why lower? '+wj.charAt(0).toUpperCase()+wj.slice(1)+'. A 45° throw would have gone '+fmtD(res.at45)+'. Being 5° above the best angle costs only '+f1(res.bestR-res.off5)+' m ('+f1((res.bestR-res.off5)/res.bestR*100)+'%). But 10% more speed at your angle would have added '+f1(res.plus10-res.R)+' m.</div>';
+    var wj=why.join(', ');h+='Why lower? '+wj.charAt(0).toUpperCase()+wj.slice(1)+'. A 0.79 rad (45°) throw would have gone '+fmtD(res.at45)+'. Being 0.09 rad (5°) above the best angle costs only '+f1(res.bestR-res.off5)+' m ('+f1((res.bestR-res.off5)/res.bestR*100)+'%). But 10% more speed at your angle would have added '+f1(res.plus10-res.R)+' m.</div>';
   } else {
     h+='<div class="stat hi"><div class="l">Points</div><div class="v">'+res.score+'</div><div class="s">'+res.acc+' accuracy'+(res.bonus?' + 25 runner bonus':'')+'</div></div>'+
       '<div class="stat"><div class="l">Miss distance</div><div class="v">'+(res.miss<0.01?'0.00':f2(res.miss))+' m</div><div class="s">'+res.dir+'</div></div>'+
@@ -552,7 +631,7 @@ function renderResult(res){
   }
   h+='<div class="row" style="margin-top:14px"><button class="btn primary" id="nextBtn" type="button">'+(last?'See final results':'Next round')+'</button></div>';
   $('result').innerHTML=h;$('result').classList.remove('hidden');g.lastHtml=true;
-  $('nextBtn').addEventListener('click',function(){if(last){finishGame();}else{g.idx++;startRound();$('game').scrollIntoView({behavior:'smooth',block:'start'});}});
+  $('nextBtn').addEventListener('click',function(){if(last){finishGame();}else{g.idx++;startRound();scrollTo2($('game'));}});
 }
 function finishGame(){
   var g=S.game;g.over=true;g.total=g.res.reduce(function(a,r){return a+r.score;},0);
@@ -560,7 +639,7 @@ function finishGame(){
   if(g.newPB){DB.pb[key]={score:g.mode==='long'?Math.round(g.total*10)/10:Math.round(g.total),team:g.team,date:new Date().toISOString().slice(0,10)};save(DB);}
   g.prevPB=old;
   $('game').classList.add('hidden');renderFinal();renderReflect();refreshSetup();
-  $('final').scrollIntoView({behavior:'smooth',block:'start'});
+  scrollTo2($('final'));
 }
 function renderFinal(){
   var g=S.game;if(!g||!g.over)return;
@@ -582,23 +661,24 @@ function renderFinal(){
     h+='<th class="wide-only">Target</th><th class="n">Angle, speed</th><th class="n">Miss</th><th class="n">Time</th><th class="n">Points</th></tr>';
     g.res.forEach(function(r,i){var rd=g.rounds[i];h+='<tr><td>'+(i+1)+'</td><td class="wide-only">'+esc(rd.target.name)+', '+rd.target.x+' m</td><td class="n">'+fmtA(r.deg)+', '+f1(r.v)+'</td><td class="n">'+f2(r.miss)+' m</td><td class="n">'+f2(r.tHit)+' s'+(r.beat?' ✓':'')+'</td><td class="n big">'+r.score+'</td></tr>';});
   }
-  h+='</table></div><div class="row" style="margin-top:16px"><button class="btn primary" type="button" id="againBtn">Play again</button><button class="btn" type="button" id="otherBtn">Try '+(g.mode==='long'?'Hit the target':'Long toss')+'</button><button class="btn" type="button" id="fsBtn">Full screen</button></div>';
+  h+='</table></div><div class="row" style="margin-top:16px"><button class="btn primary" type="button" id="againBtn">Play again</button><button class="btn" type="button" id="otherBtn">Try '+(g.mode==='long'?'Hit the target':'Long toss')+'</button>'+(document.fullscreenEnabled?'<button class="btn" type="button" id="fsBtn">Full screen</button>':'')+'</div>';
   $('final').innerHTML=h;$('final').classList.remove('hidden');
   $('againBtn').addEventListener('click',function(){endGameView();startGame();});
-  $('otherBtn').addEventListener('click',function(){S.mode=g.mode==='long'?'acc':'long';endGameView();refreshSetup();$('setup').scrollIntoView({behavior:'smooth'});});
-  $('fsBtn').addEventListener('click',function(){var el=$('final');try{if(document.fullscreenElement)document.exitFullscreen();else if(el.requestFullscreen)el.requestFullscreen();}catch(e){}});
+  $('otherBtn').addEventListener('click',function(){S.mode=g.mode==='long'?'acc':'long';endGameView();refreshSetup();scrollTo2($('setup'));});
+  // Full screen needs allow="fullscreen" on an iframe; the button is only shown when the browser allows it.
+  if($('fsBtn'))$('fsBtn').addEventListener('click',function(){var el=$('final');try{var pr=document.fullscreenElement?document.exitFullscreen():(el.requestFullscreen?el.requestFullscreen():null);if(pr&&pr.catch)pr.catch(function(){});}catch(e){}});
 }
 function qa(q,a){return '<details class="qa"><summary>'+q+'</summary><div>'+a+'</div></details>';}
 function renderReflect(){
   var g=S.game,h='<h2 class="ct">What did you learn?</h2><p class="sub">Talk it over at your table first. Then open each one to check your thinking.</p>';
   if(g.mode==='long'){
     var degs=g.res.map(function(r){return r.bestDeg;}),lo=Math.min.apply(null,degs),hi=Math.max.apply(null,degs),r0=g.res[0];
-    var a1='45° is the best angle only when the ball leaves the hand and lands at the same height, with no air. You released from about '+f1(g.rounds[0].h)+' m up, so the ball has extra time to fall and a flatter throw wins. Your best angles this game ran from '+fmtA(lo)+' to '+fmtA(hi)+'.';
+    var a1='0.79 rad (45°) is the best angle only when the ball leaves the hand and lands at the same height, with no air. You released from about '+f1(g.rounds[0].h)+' m up, so the ball has extra time to fall and a flatter throw wins. Your best angles this game ran from '+fmtA(lo)+' to '+fmtA(hi)+'.';
     if(g.ra)a1+=' With Real athlete on, aiming higher also costs you speed, which pushes the best angle lower still. Since that tradeoff differs from person to person, so does each athlete\'s best angle.';
     if(g.drag)a1+=' Air drag slows the ball the longer it is in the air, which also favors a lower, faster-arriving throw.';
-    h+=qa('1. Why was your best long-toss angle below 45°?',a1);
+    h+=qa('1. Why was your best long-toss angle below 0.79 rad (45°)?',a1);
     h+=qa('2. Which would help you more: 10% more release speed, or a perfect angle?','In round 1, a perfect angle would have added '+f1(r0.bestR-r0.R)+' m to your throw. 10% more speed at your own angle would have added '+f1(r0.plus10-r0.R)+' m. Range grows with speed squared: double the speed and the distance roughly quadruples. That is why training focuses on release speed more than on fine-tuning angle.');
-    h+=qa('3. Why did being a few degrees off cost you so little?','Near the best angle the range curve is flat on top. In round 1, throwing 5° above the best angle would have cost only '+f1(r0.bestR-r0.off5)+' m ('+f1((r0.bestR-r0.off5)/r0.bestR*100)+'%). Open <b>The physics</b> below to see the flat top of the curve.');
+    h+=qa('3. Why did being a few degrees off cost you so little?','Near the best angle the range curve is flat on top. In round 1, throwing 0.09 rad (5°) above the best angle would have cost only '+f1(r0.bestR-r0.off5)+' m ('+f1((r0.bestR-r0.off5)/r0.bestR*100)+'%). Open <b>The physics</b> below to see the flat top of the curve.');
   } else {
     var ex=null;g.res.forEach(function(r,i){if(!ex&&r.sol.length>=2)ex={r:r,i:i};});
     var a1='The flat line drive. It covers the same distance in much less time, so it beats the runner. The lob hangs in the air.';
@@ -657,12 +737,12 @@ function draw(){
   if(scene.aim){
     var a=scene.aim.deg*DEG,L=36+scene.aim.v*1.6;
     var ex=rx+Math.cos(a)*L,ey=ry-Math.sin(a)*L;
-    c.strokeStyle='#B8622A';c.lineWidth=3;c.setLineDash([]);c.beginPath();c.moveTo(rx,ry);c.lineTo(ex,ey);c.stroke();
-    c.fillStyle='#B8622A';c.beginPath();c.moveTo(ex,ey);c.lineTo(ex-Math.cos(a-0.4)*11,ey+Math.sin(a-0.4)*11);c.lineTo(ex-Math.cos(a+0.4)*11,ey+Math.sin(a+0.4)*11);c.closePath();c.fill();
+    c.strokeStyle='#A3541F';c.lineWidth=3;c.setLineDash([]);c.beginPath();c.moveTo(rx,ry);c.lineTo(ex,ey);c.stroke();
+    c.fillStyle='#A3541F';c.beginPath();c.moveTo(ex,ey);c.lineTo(ex-Math.cos(a-0.4)*11,ey+Math.sin(a-0.4)*11);c.lineTo(ex-Math.cos(a+0.4)*11,ey+Math.sin(a+0.4)*11);c.closePath();c.fill();
     // angle arc
-    c.strokeStyle='rgba(184,98,42,0.5)';c.lineWidth=1.5;c.beginPath();c.moveTo(rx,ry);c.lineTo(rx+28,ry);c.stroke();
+    c.strokeStyle='rgba(163,84,31,0.6)';c.lineWidth=1.5;c.beginPath();c.moveTo(rx,ry);c.lineTo(rx+28,ry);c.stroke();
     c.beginPath();c.arc(rx,ry,22,-Math.max(a,0),-Math.min(a,0),false);c.stroke();
-    c.fillStyle='#B8622A';c.font='700 13px "Space Grotesk", sans-serif';c.fillText(f1(scene.aim.deg)+'°',rx+30,ry-Math.max(4,Math.sin(a/2)*22));
+    c.fillStyle='#A3541F';c.font='700 13px "Space Grotesk", sans-serif';c.fillText(fmtR(scene.aim.deg),rx+30,ry-Math.max(4,Math.sin(a/2)*22));
   }
   // landing marks
   scene.marks.forEach(function(m){var X=px(m.x);c.strokeStyle=m.color;c.fillStyle=m.color;c.lineWidth=2;c.setLineDash([]);c.beginPath();c.moveTo(X,gy);c.lineTo(X,gy-(m.up?30:18));c.stroke();
@@ -670,7 +750,7 @@ function draw(){
     // player's mark: label to the left of the flag; "best" mark: label to the right (flipped near the edge, one row higher)
     if(m.label){c.font='700 12px "Space Grotesk", sans-serif';var right=m.up&&X<W-90;c.textAlign=right?'left':'right';c.fillText(m.label,X+(right?12:-4),gy-(m.up?44:22));}});
   // ball
-  if(scene.ball){c.fillStyle='#fff';c.strokeStyle='#B8622A';c.lineWidth=2.5;c.beginPath();c.arc(px(scene.ball[0]),py(scene.ball[1]),6,0,7);c.fill();c.stroke();}
+  if(scene.ball){c.fillStyle='#fff';c.strokeStyle='#A3541F';c.lineWidth=2.5;c.beginPath();c.arc(px(scene.ball[0]),py(scene.ball[1]),6,0,7);c.fill();c.stroke();}
   c.setLineDash([]);
 }
 function drawPts(pts,color,w,dash,tmax){
@@ -682,11 +762,11 @@ function drawPts(pts,color,w,dash,tmax){
 function drawTarget(t){
   var c=cx,X=px(t.x),Y=py(t.y),gy=py(0),r=Math.max(7,t.r*view.scale);
   c.setLineDash([]);
-  if(t.kind==='glove'){c.strokeStyle='#7A5C8A';c.lineWidth=2;c.beginPath();c.moveTo(X,gy);c.lineTo(X,Y+r);c.stroke();c.fillStyle='#B8622A';c.beginPath();c.arc(X,Y,r,0,7);c.fill();c.strokeStyle='#1B2420';c.lineWidth=1.5;c.stroke();}
+  if(t.kind==='glove'){c.strokeStyle='#7A5C8A';c.lineWidth=2;c.beginPath();c.moveTo(X,gy);c.lineTo(X,Y+r);c.stroke();c.fillStyle='#A3541F';c.beginPath();c.arc(X,Y,r,0,7);c.fill();c.strokeStyle='#1B2420';c.lineWidth=1.5;c.stroke();}
   else if(t.kind==='base'){c.fillStyle='#fff';c.strokeStyle='#1B2420';c.lineWidth=1.5;c.fillRect(X-9,gy-4,18,4);c.strokeRect(X-9,gy-4,18,4);c.strokeStyle='#7A5C8A';c.beginPath();c.moveTo(X,gy-4);c.lineTo(X,Y);c.stroke();c.fillStyle='#7A5C8A';c.beginPath();c.arc(X,Y,r,0,7);c.globalAlpha=0.35;c.fill();c.globalAlpha=1;c.stroke();}
   else if(t.kind==='bucket'){var hgt=Math.max(12,(t.y)*view.scale),bw=Math.max(14,t.r*2*view.scale);c.fillStyle='#3A5B8C';c.beginPath();c.moveTo(X-bw/2,gy-hgt);c.lineTo(X+bw/2,gy-hgt);c.lineTo(X+bw*0.38,gy);c.lineTo(X-bw*0.38,gy);c.closePath();c.fill();c.fillStyle='#1B2420';c.fillRect(X-bw/2,gy-hgt-2,bw,3);}
-  else if(t.kind==='hoop'){c.strokeStyle='#586158';c.lineWidth=2;c.beginPath();c.moveTo(X,gy);c.lineTo(X,Y+r);c.stroke();c.strokeStyle='#B8622A';c.lineWidth=3;c.beginPath();c.arc(X,Y,r,0,7);c.stroke();}
-  else {var rr=Math.max(9,t.r*view.scale);c.fillStyle='rgba(184,98,42,0.25)';c.strokeStyle='#B8622A';c.lineWidth=2;c.beginPath();c.ellipse(X,gy,rr,4,0,0,7);c.fill();c.stroke();c.beginPath();c.moveTo(X,gy);c.lineTo(X,gy-26);c.stroke();c.fillStyle='#B8622A';c.beginPath();c.moveTo(X,gy-26);c.lineTo(X+12,gy-22);c.lineTo(X,gy-18);c.fill();}
+  else if(t.kind==='hoop'){c.strokeStyle='#586158';c.lineWidth=2;c.beginPath();c.moveTo(X,gy);c.lineTo(X,Y+r);c.stroke();c.strokeStyle='#A3541F';c.lineWidth=3;c.beginPath();c.arc(X,Y,r,0,7);c.stroke();}
+  else {var rr=Math.max(9,t.r*view.scale);c.fillStyle='rgba(184,98,42,0.25)';c.strokeStyle='#A3541F';c.lineWidth=2;c.beginPath();c.ellipse(X,gy,rr,4,0,0,7);c.fill();c.stroke();c.beginPath();c.moveTo(X,gy);c.lineTo(X,gy-26);c.stroke();c.fillStyle='#A3541F';c.beginPath();c.moveTo(X,gy-26);c.lineTo(X+12,gy-22);c.lineTo(X,gy-18);c.fill();}
   c.fillStyle='#1B2420';c.font='600 11px Inter, sans-serif';c.textAlign=X>view.cw-90?'right':'center';c.fillText(t.x+' m',X,Math.min(Y,gy-28)-r-6);
 }
 function interp(pts,t){
@@ -697,7 +777,7 @@ function interp(pts,t){
 }
 function stopAnim(){if(S.anim){cancelAnimationFrame(S.anim.raf);clearTimeout(S.anim.to);S.anim=null;}}
 function animate(P,done){
-  var trail={pts:P.pts,color:'#B8622A',w:3,tmax:0};scene.trails.push(trail);
+  var trail={pts:P.pts,color:'#A3541F',w:3,tmax:0};scene.trails.push(trail);
   var dur=clamp(P.T/1.7,0.8,2.6)*1000,t0=performance.now(),me={};
   // requestAnimationFrame for smooth drawing, plus a timer so the throw still finishes if frames are paused (e.g., background tab)
   function frame(){
@@ -714,18 +794,19 @@ function animate(P,done){
 var ch=$('chart'),chx=ch.getContext('2d'),CH={w:500,h:280};
 function syncPhys(){
   var p=PRESETS[S.preset],g=S.game,rd=g&&g.rounds[g.idx];
-  $('pv').value=rd?(rd.v0||+spd.value):(p.vRange[0]+p.vRange[1])/2;$('ph').value=rd?rd.h:(p.hRange[0]+p.hRange[1])/2;$('pk').value=p.k;
+  $('pv').value=rd?(rd.v0||+spd.value):(p.vRange[0]+p.vRange[1])/2;$('ph').value=rd?rd.h:(p.hRange[0]+p.hRange[1])/2;$('pk').value=p.k;if(rd)$('pa').value=ang.value;
   $('pRA').checked=S.mode==='long'&&S.ra;$('pDrag').checked=S.drag;drawChart();
 }
 $('pSync').addEventListener('click',syncPhys);
-['pv','ph','pk'].forEach(function(id){$(id).addEventListener('input',drawChart);});
+['pv','ph','pk','pa'].forEach(function(id){$(id).addEventListener('input',drawChart);});
 ['pRA','pDrag'].forEach(function(id){$(id).addEventListener('change',drawChart);});
 function drawChart(){
-  var v=+$('pv').value,h=+$('ph').value,k=+$('pk').value,ra=$('pRA').checked,dr=$('pDrag').checked;
-  $('pvVal').textContent=fmtV(v);$('phVal').textContent=fmtD(h);$('pkVal').textContent=k.toFixed(2);$('pkCtl').classList.toggle('hidden',!ra);
+  var v=+$('pv').value,h=+$('ph').value,k=+$('pk').value,ra=$('pRA').checked,dr=$('pDrag').checked,ua=+$('pa').value/DEG;
+  $('pvVal').textContent=fmtV(v);$('phVal').textContent=fmtD(h);$('pkVal').textContent=k.toFixed(2)+' m/s per rad';$('paVal').textContent=fmtA(ua);$('pkCtl').classList.toggle('hidden',!ra);
+  $('pv').setAttribute('aria-valuetext',fmtV(v));$('ph').setAttribute('aria-valuetext',fmtD(h));$('pk').setAttribute('aria-valuetext',k.toFixed(2)+' m/s per rad');$('pa').setAttribute('aria-valuetext',fmtA(ua));
   if(!$('physCard').open)return;
   var s=sizeCanvas(ch,1.8,1.35);CH.w=s.w;CH.h=s.h;
-  var c=chx,W=CH.w,H=CH.h,L=48,R=12,T=12,B=34,cfg={v0:v,h:h,ra:ra,k:k,drag:dr};
+  var c=chx,W=CH.w,H=CH.h,L=48,R=12,T=12,B=44,cfg={v0:v,h:h,ra:ra,k:k,drag:dr};
   var data=[],ref=[],ymax=0;
   for(var d=0;d<=90;d+=1){var r=rangeOf(speedAt(cfg,d),d,h,dr),r0=rangeFormula(v,d*DEG,0);data.push(r);ref.push(r0);ymax=Math.max(ymax,r,r0);}
   var b=bestAngle(cfg);ymax=niceStep(ymax/5)*Math.ceil(ymax/niceStep(ymax/5));
@@ -733,16 +814,19 @@ function drawChart(){
   c.clearRect(0,0,W,H);c.font='11px Inter, sans-serif';c.fillStyle='#586158';c.strokeStyle='#E3E7E2';c.lineWidth=1;
   var st=niceStep(ymax/5);c.textAlign='right';
   for(var y=0;y<=ymax+0.01;y+=st){c.beginPath();c.moveTo(L,Y(y));c.lineTo(W-R,Y(y));c.stroke();c.fillText(Math.round(y),L-6,Y(y)+4);}
-  c.textAlign='center';for(var a=0;a<=90;a+=15){c.fillText(a+'°',X(a),H-B+15);}
-  c.fillText('Release angle',L+(W-L-R)/2,H-4);
+  c.textAlign='center';for(var a=0;a<=90;a+=15){c.fillText((a*DEG).toFixed(2),X(a),H-B+13);c.font='9.5px Inter, sans-serif';c.fillText('('+a+'°)',X(a),H-B+24);c.font='11px Inter, sans-serif';}
+  c.fillText('Release angle (rad)',L+(W-L-R)/2,H-1);
   c.save();c.translate(12,T+(H-T-B)/2);c.rotate(-Math.PI/2);c.fillText('Range (m)',0,0);c.restore();
   function line(arr,col,w){c.strokeStyle=col;c.lineWidth=w;c.beginPath();arr.forEach(function(r,i){if(i===0)c.moveTo(X(i),Y(r));else c.lineTo(X(i),Y(r));});c.stroke();}
-  line(ref,'#B9C2B8',2);line(data,'#2F6F63',3);
+  line(ref,'#6B7570',1.5);line(data,'#2F6F63',3);
   c.setLineDash([5,5]);c.strokeStyle='#586158';c.lineWidth=1.5;c.beginPath();c.moveTo(X(45),T);c.lineTo(X(45),H-B);c.stroke();c.setLineDash([]);
-  c.strokeStyle='#E8B23D';c.lineWidth=2.5;c.beginPath();c.moveTo(X(b.deg),T);c.lineTo(X(b.deg),H-B);c.stroke();
-  c.fillStyle='#E8B23D';c.beginPath();c.arc(X(b.deg),Y(b.R),5,0,7);c.fill();
+  c.strokeStyle='#B08A1E';c.lineWidth=2.5;c.beginPath();c.moveTo(X(b.deg),T);c.lineTo(X(b.deg),H-B);c.stroke();
+  c.fillStyle='#B08A1E';c.beginPath();c.arc(X(b.deg),Y(b.R),5,0,7);c.fill();
+  var ur=rangeOf(speedAt(cfg,ua),ua,h,dr),uv=speedAt(cfg,ua),u10=rangeOf(uv*1.1,ua,h,dr);
+  c.fillStyle='#A3541F';c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.arc(X(ua),Y(ur),6,0,7);c.fill();c.stroke();
+  ch.setAttribute('aria-label','Range versus release angle. Best angle '+fmtA(b.deg)+' gives '+f1(b.R)+' m. Your angle '+fmtA(ua)+' gives '+f1(ur)+' m.');
   var r45=rangeOf(speedAt(cfg,45),45,h,dr),r2=rangeOf(speedAt({v0:2*v,h:h,ra:ra,k:k,drag:dr},b.deg),b.deg,h,dr),f=closedFormNote(cfg);
-  $('pOut').innerHTML='<div class="pill">Best angle<b>'+fmtA(b.deg)+'</b></div><div class="pill">Max range<b>'+fmtD(b.R)+'</b></div><div class="pill">Range at 45°<b>'+fmtD(r45)+'</b></div><div class="pill">Double the speed<b>'+fmtD(r2)+'</b></div>'+(f?'<p class="note" style="flex-basis:100%;margin:4px 0 0">'+f+'</p>':'');
+  $('pOut').innerHTML='<div class="pill">Your angle<b>'+fmtA(ua)+'</b></div><div class="pill">Range at your angle<b>'+fmtD(ur)+'</b></div><div class="pill">10% more speed at your angle<b>'+fmtD(u10)+'</b></div>'+(ra?'<div class="pill">Speed at your angle<b>'+fmtV(uv)+'</b></div>':'')+'<div class="pill">Best angle<b>'+fmtA(b.deg)+'</b></div><div class="pill">Max range<b>'+fmtD(b.R)+'</b></div><div class="pill">Range at 0.79 rad (45°)<b>'+fmtD(r45)+'</b></div><div class="pill">Double the speed<b>'+fmtD(r2)+'</b></div>'+(f?'<p class="note" style="flex-basis:100%;margin:4px 0 0">'+f+'</p>':'');
 }
 function closedFormNote(c){
   if(c.ra||c.drag)return 'With '+(c.ra&&c.drag?'Real athlete and drag':c.ra?'Real athlete':'drag')+' on, the best angle is found numerically (no simple formula).'+(c.drag?' Drag is approximate.':'');
@@ -766,7 +850,39 @@ if(window.ResizeObserver){
   new ResizeObserver(function(){var fw=Math.round(cv.getBoundingClientRect().width);if(fw&&fw!==cv._drawnW)resizeField();}).observe(cv);
   new ResizeObserver(function(){var cw=Math.round(ch.getBoundingClientRect().width);if(cw&&cw!==ch._drawnW)drawChart();}).observe(ch);
 }
+function setFieldLabel(t){cv.setAttribute('aria-label','Throwing field. '+t);}
 refreshSetup();resizeField();syncPhys();
+
+/* ---------- Pre-class / In-class mode + embed ----------
+   ?mode=pre (default): single-player guided exploration in The physics card; team game hidden.
+   ?mode=in: the 5-round team game with the predict prompts. ?embed=1: inside the Unit 3 Explorer. */
+(function () {
+  const params = new URLSearchParams(location.search);
+  if (params.get('embed') === '1') {
+    document.documentElement.classList.add('embed');
+    // Tell the Unit 3 Explorer how tall this page is (postMessage works from file:// too). Sizing only; no state.
+    if (window.parent !== window) {
+      const sendHeight = () => {
+        const cs = getComputedStyle(document.body);
+        const h = Math.ceil(document.body.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom));
+        try { window.parent.postMessage({ unit3Height: h, unit2Height: h }, '*'); } catch (e) { /* no parent */ }
+      };
+      window.addEventListener('load', () => { sendHeight(); setTimeout(sendHeight, 800); });
+      if (window.ResizeObserver) new ResizeObserver(sendHeight).observe(document.body);
+    }
+  }
+  function setMode(m) {
+    document.querySelectorAll('.mode-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+    document.querySelectorAll('[data-show]').forEach(el => { el.hidden = el.dataset.show !== m; });
+    document.documentElement.setAttribute('data-mode', m);
+    if (m === 'pre') { $('leaveBar').hidden = true; $('physCard').open = true; drawChart(); } else { resizeField(); }
+    try { const u = new URL(location.href); u.searchParams.set('mode', m); history.replaceState(history.state, '', u.href); } catch (e) { /* file:// in some browsers */ }
+  }
+  document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  // Pre-class starts at the reading's example (v = 13 m/s, h = 2.1 m, k = 2.29 m/s per rad).
+  if (params.get('mode') !== 'in') { $('pv').value = 13; $('ph').value = 2.1; $('pk').value = 2.29; }
+  setMode(params.get('mode') === 'in' ? 'in' : 'pre');
+})();
 
 /* ================= SELF-TEST (console only) ================= */
 (function selfTest(){
@@ -782,9 +898,10 @@ refreshSetup();resizeField();syncPhys();
     if(p[1]>0)ok('optimum below 45° when h>0 (v='+p[0]+')',o<45);
   });
   var num=simulate(30,35*DEG,1.9,0,0.004,false).R,an=rangeFormula(30,35*DEG,1.9);ok('RK4 with zero drag matches the formula',Math.abs(num-an)<0.02,num.toFixed(3)+' vs '+an.toFixed(3));
-  var nd=bestAngle({v0:35,h:1.9,ra:false,k:0,drag:false}),wd=bestAngle({v0:35,h:1.9,ra:false,k:0,drag:true}),ra=bestAngle({v0:35,h:1.9,ra:true,k:0.10,drag:false});
+  var nd=bestAngle({v0:35,h:1.9,ra:false,k:0,drag:false}),wd=bestAngle({v0:35,h:1.9,ra:false,k:0,drag:true}),ra=bestAngle({v0:35,h:1.9,ra:true,k:5.73,drag:false});
   ok('drag lowers the best angle and the range',wd.deg<nd.deg-3&&wd.R<nd.R,wd.deg.toFixed(1)+'° vs '+nd.deg.toFixed(1)+'°');
   ok('Real athlete lowers the best angle',ra.deg<nd.deg,ra.deg.toFixed(1)+'° vs '+nd.deg.toFixed(1)+'°');
+  var s47=bestAngle({v0:13,h:2.1,ra:true,k:0.04/DEG,drag:false});ok('slide 47 model: best angle 0.63 rad (36.2 deg), 18.79 m',Math.abs(s47.deg-36.24)<0.05&&Math.abs(s47.R-18.79)<0.01,s47.deg.toFixed(2)+' deg, '+s47.R.toFixed(3)+' m');
   var sol=solveAngles(30,1.9,35,1.8,false);
   ok('two solution angles, no drag',sol.length===2&&sol[0]<sol[1]);
   sol.forEach(function(a){ok('no-drag solution '+a.toFixed(2)+'° hits the target',Math.abs(yAt(30,a,1.9,false,35)-1.8)<0.005);});
