@@ -10,8 +10,8 @@
 <style>
 :root{
   --bg:#F6F7F5; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#586158; --soft:#F1F4F0;
-  --stance:#2F6F63; --rust:#B8622A; --blue:#3A5B8C; --amber:#E8B23D; --violet:#7A6A9E; --gray:#8D978F;
-  --line:#D8DED7; --radius:14px; --shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);
+  --stance:#2F6F63; --rust:#A5571F; --blue:#3A5B8C; --amber:#E8B23D; --violet:#7A6A9E; --gray:#8D978F;
+  --line:#D8DED7; --ctl:#6B756D; --focus:#1F6B9E; --radius:14px; --shadow:0 1px 2px rgba(27,36,32,0.06), 0 8px 24px rgba(27,36,32,0.05);
   --warn-bg:#F5E7DC; --ok-bg:#E4EEEA;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
@@ -21,14 +21,14 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#141917; --card:#1D2421; --ink:#E9EEE9; --ink-soft:#A3AEA5; --soft:#252D29;
-    --stance:#5DB5A3; --rust:#E08A55; --blue:#7CA2D6; --amber:#E8B23D; --violet:#A99BCB; --gray:#7B857D;
-    --line:#35413B; --shadow:0 1px 2px rgba(0,0,0,0.4); --warn-bg:#3A2A1E; --ok-bg:#1F3530; color-scheme:dark;
+    --stance:#5DB5A3; --rust:#E08A55; --blue:#7CA2D6; --amber:#E8B23D; --violet:#A99BCB; --gray:#8D978F;
+    --line:#35413B; --ctl:#8A958D; --focus:#7CA2D6; --shadow:0 1px 2px rgba(0,0,0,0.4); --warn-bg:#3A2A1E; --ok-bg:#1F3530; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#141917; --card:#1D2421; --ink:#E9EEE9; --ink-soft:#A3AEA5; --soft:#252D29;
-  --stance:#5DB5A3; --rust:#E08A55; --blue:#7CA2D6; --amber:#E8B23D; --violet:#A99BCB; --gray:#7B857D;
-  --line:#35413B; --shadow:0 1px 2px rgba(0,0,0,0.4); --warn-bg:#3A2A1E; --ok-bg:#1F3530; color-scheme:dark;
+  --stance:#5DB5A3; --rust:#E08A55; --blue:#7CA2D6; --amber:#E8B23D; --violet:#A99BCB; --gray:#8D978F;
+  --line:#35413B; --ctl:#8A958D; --focus:#7CA2D6; --shadow:0 1px 2px rgba(0,0,0,0.4); --warn-bg:#3A2A1E; --ok-bg:#1F3530; color-scheme:dark;
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px);}
 *{box-sizing:border-box;}
@@ -44,7 +44,28 @@ h2.ct{margin:0 0 10px;font-family:'Space Grotesk',Arial,sans-serif;font-size:15p
 .seg{display:inline-flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px;flex-wrap:wrap;}
 .seg button{border:none;background:transparent;padding:8px 14px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink-soft);font-family:'Inter',Arial,sans-serif;}
 .seg button.on{background:var(--ink);color:var(--card);}
-.btn{border:1.5px solid var(--line);background:var(--card);border-radius:9px;padding:8px 12px;font-weight:600;font-size:13px;cursor:pointer;color:var(--ink);font-family:'Inter',Arial,sans-serif;}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--card);}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;}
+input[type=range]:focus-visible{outline:3px solid var(--focus);outline-offset:4px;}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+[hidden]{display:none !important;}
+.mode-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 12px;}
+.mode-help{margin:0;font-size:14px;color:var(--ink-soft);flex:1 1 260px;line-height:1.45;}
+html.embed .mode-btns{display:none;}
+.guide{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--stance);border-radius:12px;padding:14px 18px;margin:0 0 16px;}
+.guide.in{border-left-color:var(--rust);}
+.guide h2{font-family:'Space Grotesk',Arial,sans-serif;font-size:17px;margin:0 0 6px;}
+.guide h3{font-size:14.5px;margin:12px 0 4px;}
+.guide ol,.guide ul{margin:4px 0 0;padding-left:22px;line-height:1.55;font-size:14.5px;}
+.guide details{margin:4px 0;font-size:14.5px;}
+.guide details p{margin:4px 0 8px 18px;color:var(--ink-soft);}
+.model-tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:0.02em;padding:2px 8px;border-radius:999px;border:1.5px solid var(--ctl);color:var(--ink-soft);margin-left:6px;vertical-align:middle;}
+.ctl-label{display:block;font-size:13.5px;font-weight:700;margin-top:10px;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+@media (max-width:760px){.two{grid-template-columns:1fr;}}
+html[data-view="landing"] .jump-only{display:none !important;}
+html:not([data-view="landing"]) .land-only{display:none !important;}
+.btn{border:1.5px solid var(--ctl);background:var(--card);border-radius:9px;padding:8px 12px;font-weight:600;font-size:13px;cursor:pointer;color:var(--ink);font-family:'Inter',Arial,sans-serif;}
 .btn:hover{background:var(--soft);}
 .btn.primary{background:var(--stance);border-color:var(--stance);color:#fff;}
 .btn.small{padding:6px 10px;font-size:12.5px;}
@@ -56,10 +77,10 @@ h2.ct{margin:0 0 10px;font-family:'Space Grotesk',Arial,sans-serif;font-size:15p
 .sw{width:11px;height:11px;border-radius:3px;display:inline-block;}
 canvas{display:block;width:100%;touch-action:none;cursor:crosshair;}
 
-input[type=range]{width:100%;-webkit-appearance:none;height:4px;background:var(--line);border-radius:4px;outline:none;margin:14px 0 6px;}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;}
-input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;}
-select,input[type=number]{font-family:'Inter',Arial,sans-serif;font-size:13px;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:var(--ctl);border-radius:4px;margin:14px 0 6px;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--amber);border:2px solid #1B2420;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--amber);border:2px solid #1B2420;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;}
+select,input[type=number]{font-family:'Inter',Arial,sans-serif;font-size:13px;padding:6px 8px;border:1.5px solid var(--ctl);border-radius:8px;background:var(--card);color:var(--ink);}
 input[type=number]{width:78px;}
 .phase-badge{display:inline-block;padding:5px 12px;border-radius:999px;font-family:'Space Grotesk',Arial,sans-serif;font-weight:700;font-size:14px;color:#fff;}
 .readouts{display:grid;grid-template-columns:1fr auto;gap:6px 14px;font-size:14px;margin-top:12px;}
@@ -76,7 +97,7 @@ table.t td.n{font-family:'Space Grotesk',Arial,sans-serif;font-weight:600;white-
 #stage{background:var(--soft);border-radius:10px;cursor:default;}
 video{width:100%;max-height:320px;border-radius:10px;background:#000;display:block;}
 .marks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
-.mk{display:flex;flex-direction:column;gap:4px;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12.5px;}
+.mk{display:flex;flex-direction:column;gap:4px;border:1.5px solid var(--ctl);border-radius:10px;padding:8px 10px;font-size:12.5px;}
 .mk b{font-family:'Space Grotesk',Arial,sans-serif;font-size:13px;}
 .mk .t{color:var(--ink-soft);}
 .mk.done{border-color:var(--stance);background:var(--ok-bg);}
@@ -102,8 +123,78 @@ label.f{font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:
 <body>
 <div class="wrap">
   <h1>Countermovement Jump Explorer</h1>
-  <p class="subtitle">Explore how the force from the ground and the motion of your center of mass (COM) change through one jump, or measure the height of your own jump from a video.</p>
-  <div class="seg" id="modeSeg" style="margin-bottom:16px"><button id="mdExplore" class="on" type="button">Explore the jump</button><button id="mdMeasure" type="button">Measure your jump height</button></div>
+  <p class="subtitle">See how the force from the ground and the motion of your center of mass (COM) change through one jump and its landing, or measure your own jump from a video. Up is +z.</p>
+
+  <div class="mode-bar">
+    <div class="seg mode-btns" role="group" aria-label="Activity mode">
+      <button type="button" class="mode-btn" data-mode="pre" aria-pressed="true">Pre-class</button>
+      <button type="button" class="mode-btn" data-mode="in" aria-pressed="false">In-class</button>
+    </div>
+    <p class="mode-help" data-show="pre"><b>Pre-class:</b> work alone through the guided steps for the reading's "Before class" list.</p>
+    <p class="mode-help" data-show="in" hidden><b>In-class:</b> partner activity. Predict first, test it with the tool, then talk it through.</p>
+  </div>
+  <div class="mode-bar">
+    <div class="seg" role="group" aria-label="View">
+      <button type="button" class="view-btn" data-view="jump" aria-pressed="true">Jump (Lecture 15)</button>
+      <button type="button" class="view-btn" data-view="landing" aria-pressed="false">Landing (Lecture 16)</button>
+      <button type="button" class="view-btn" data-view="measure" aria-pressed="false">Measure from video</button>
+    </div>
+  </div>
+
+  <section class="guide" data-guide="pre-jump" aria-labelledby="gPJ">
+    <h2 id="gPJ">Pre-class: guided steps (Lecture 15 reading)</h2>
+    <ol>
+      <li>Use the <b>Jump to</b> buttons (or the slider) to visit four moments: <b>Fastest downward velocity</b> (the end of unweighting, where vGRF crosses BW), <b>Lowest point</b>, <b>Takeoff</b> and <b>Top of flight</b>.</li>
+      <li>At each moment, write down COM velocity, COM acceleration and vGRF from <b>What is happening right now</b>.</li>
+      <li>In <b>Impulse by phase</b> and <b>Jump summary</b>, write down the net impulse to takeoff, the takeoff velocity and the jump height by both methods.</li>
+    </ol>
+    <h3>Check yourself</h3>
+    <details><summary>vGRF reads 0.38 BW during unweighting. Which way is the COM accelerating?</summary><p>Down (−z). a = (vGRF − BW) ÷ m = (0.38 − 1) × 9.81 = −6.08 m/s².</p></details>
+    <details><summary>The net impulse to takeoff is 196 N·s and the mass is 75.0 kg. What is the takeoff velocity?</summary><p>v = J ÷ m = 196.14 ÷ 75.0 = 2.62 m/s (+z). Then h = v² ÷ (2g) = 2.62² ÷ 19.62 = 0.35 m.</p></details>
+    <h3>Challenge questions (bring your answers to class)</h3>
+    <ul>
+      <li>Two athletes have the same mass and the same peak vGRF, but athlete A jumps higher. What could be different about their force–time curves?</li>
+      <li>An athlete has a flight time of 0.58 s. Estimate the takeoff velocity and the jump height.</li>
+      <li>An athlete lands with a deeper knee bend than at takeoff. Does the flight time method overestimate or underestimate jump height?</li>
+    </ul>
+  </section>
+
+  <section class="guide in" data-guide="in-jump" aria-labelledby="gIJ" hidden>
+    <h2 id="gIJ">In-class: partner prompts (Lecture 15)</h2>
+    <ol>
+      <li><b>Predict:</b> at the lowest point, what are COM velocity and COM acceleration? <b>Then test:</b> press <b>Jump to: Lowest point</b>.</li>
+      <li><b>Predict:</b> when vGRF falls back to body weight at the end of unweighting, what is special about velocity? <b>Then test:</b> press <b>Fastest downward velocity</b>.</li>
+      <li><b>Predict:</b> in flight, what is COM acceleration, and does it depend on jump height? <b>Then test:</b> read the acceleration chart in flight.</li>
+      <li><b>Two routes, one takeoff velocity:</b> one partner uses <b>Impulse by phase</b> (v = J ÷ m), the other uses <b>Two ways to count work</b> (v = √(2 × net work ÷ m)). Do you get the same takeoff velocity?</li>
+      <li><b>Measure:</b> switch to <b>Measure from video</b>. Film each other jumping, mark takeoff and landing, and compare your height with the example's 0.35 m. How big is the likely error at your frame rate?</li>
+    </ol>
+    <h3>Discuss</h3>
+    <ul><li>Why does net impulse predict jump height better than peak force?</li><li>Unweighting and braking impulses cancel. So which phase sets takeoff velocity?</li></ul>
+  </section>
+
+  <section class="guide" data-guide="pre-landing" aria-labelledby="gPL" hidden>
+    <h2 id="gPL">Pre-class: guided steps (Lecture 16 reading)</h2>
+    <ol>
+      <li>In <b>Landing numbers from the example</b>, write down the contact velocity, the impact peak (BW), the time to the peak, the loading rate and the stopping distance.</li>
+      <li>Use the slider to move from <b>Initial contact</b> to <b>Lowest point</b>. Watch COM velocity go from negative to zero while vGRF stays above body weight.</li>
+      <li>In the <b>Drop-landing model</b>, set the drop height to 0.45 m. Find the stopping distance that keeps the average vGRF at 3.00 BW.</li>
+    </ol>
+    <h3>Check yourself</h3>
+    <details><summary>What stopping distance keeps the average vGRF at 3.00 BW from a 0.45 m drop?</summary><p>F_avg = BW(1 + h ÷ d), so 3 = 1 + 0.45 ÷ d and d = 0.45 ÷ 2 = 0.23 m (0.225 m).</p></details>
+    <details><summary>Why are the impulse and work averages for the example close but not equal?</summary><p>The impulse method averages force over time. The work method averages force over distance. They match only if force is constant during the stop.</p></details>
+  </section>
+
+  <section class="guide in" data-guide="in-landing" aria-labelledby="gIL" hidden>
+    <h2 id="gIL">In-class: partner prompts (Lecture 16)</h2>
+    <ol>
+      <li><b>Predict:</b> from a 0.30 m drop, what is the average vGRF if you stop over 0.15 m, and over 0.30 m? <b>Then test:</b> set the <b>Drop-landing model</b> sliders.</li>
+      <li><b>Predict:</b> if you double the stopping distance, what happens to the stop time? <b>Then test:</b> read the stop time in the model.</li>
+      <li><b>Measure:</b> switch to <b>Measure from video</b>. Film one soft landing and one stiff landing. Mark takeoff, initial contact and the lowest point, then save both and compare stop time and estimated average vGRF.</li>
+    </ol>
+    <h3>Discuss</h3>
+    <ul><li>Which landing would you coach, and what cue would you give?</li><li>The example's loading rate is above 100 BW/s. Why does a short time to peak matter for the ACL?</li></ul>
+  </section>
+
   <div id="exploreMode">
 
   <div class="card">
@@ -113,9 +204,11 @@ label.f{font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:
       <div><b>Force plate</b>A sensor you stand on. It measures how hard you push into it, and how hard it pushes back on you.</div>
       <div><b>vGRF (vertical ground reaction force)</b>The upward push of the ground on you, measured by the force plate. Its unit is the newton (N).</div>
       <div><b>BW (body weight)</b>Your mass × 9.81 m/s². When you stand still the ground pushes up with exactly 1 BW.</div>
-      <div><b>Acceleration</b>How quickly velocity is changing. Up (+Z) is positive and down (−Z) is negative.</div>
-      <div><b>+Z and −Z (up and down)</b>Up is positive (+Z) and down is negative (−Z) on every chart. A positive value points up and a negative value points down.</div>
-      <div><b>Phase</b>One stage of the jump. The colored bands on every chart show where each phase starts and ends.</div>
+      <div><b>Acceleration</b>How quickly velocity is changing. Up (+z) is positive and down (−z) is negative.</div>
+      <div><b>+z and −z (up and down)</b>Up is positive (+z) and down is negative (−z) on every chart. A positive value points up and a negative value points down.</div>
+      <div><b>Phase</b>One stage of the jump. The colored bands on every chart show where each phase starts and ends. The letter at the top of each band on the first chart names it (Q, U, B, P, F, L).</div>
+      <div class="land-only"><b>Loading rate</b>How fast vGRF rises after initial contact: change in force ÷ change in time (N/s or BW/s).</div>
+      <div class="land-only"><b>Stopping distance and time</b>How far the COM moves down, and how long it takes, from initial contact until COM velocity reaches zero (the lowest point).</div>
     </div>
     <p class="note" id="srcNote" style="margin-top:10px">The example data are a simulated, representative jump for a 75 kg athlete. They are not real athlete data.</p>
   </div>
@@ -124,26 +217,29 @@ label.f{font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:
     <div>
       <div class="card">
         <div class="toprow">
-          <div class="seg" id="viewSeg">
-            <button id="vTime" class="on" type="button">Time series</button>
-            <button id="vFd" type="button">Force vs. position</button>
+          <div class="seg jump-only" id="viewSeg" role="group" aria-label="Chart type">
+            <button id="vTime" class="on" type="button" aria-pressed="true">Time series</button>
+            <button id="vFd" type="button" aria-pressed="false">Force vs. position</button>
           </div>
-          <div class="seg" id="unitSeg">
-            <button id="uN" class="on" type="button">Force in N</button>
-            <button id="uBW" type="button">Force in BW</button>
+          <div class="seg" id="unitSeg" role="group" aria-label="Force units">
+            <button id="uN" class="on" type="button" aria-pressed="true">Force in N</button>
+            <button id="uBW" type="button" aria-pressed="false">Force in BW</button>
           </div>
         </div>
         <div class="legend" id="legend"></div>
         <div class="row" style="margin-bottom:6px"><label class="f"><input type="checkbox" id="evChk"> Label key moments</label><span class="note" id="evLegend"></span></div>
+        <p class="note land-only" style="margin:0 0 6px">The charts zoom in from just before initial contact to after the COM stops. Time zero is initial contact.</p>
         <div id="tsView" class="charts">
-          <div class="cd"><b>COM position (cm).</b> How high your center of mass is compared with standing. Above zero (+Z) means higher than standing. Below zero (−Z) means lower.</div><canvas id="c0" role="img" aria-label="COM position over time" height="120"></canvas>
-          <div class="cd"><b>COM velocity (m/s).</b> How fast your COM is moving. Up (+Z) is positive and down (−Z) is negative. Zero means it has stopped for an instant.</div><canvas id="c1" role="img" aria-label="COM velocity over time" height="120"></canvas>
-          <div class="cd"><b>COM acceleration (m/s²).</b> How quickly velocity is changing. Positive (+Z) means upward and negative (−Z) means downward. In the air it is −9.81 m/s², the pull of gravity.</div><canvas id="c2" role="img" aria-label="COM acceleration over time" height="120"></canvas>
+          <div class="cd"><b>COM position (cm).</b> How high your center of mass is compared with standing. Above zero (+z) means higher than standing. Below zero (−z) means lower.</div><canvas id="c0" role="img" aria-label="COM position over time" height="120"></canvas>
+          <div class="cd"><b>COM velocity (m/s).</b> How fast your COM is moving. Up (+z) is positive and down (−z) is negative. Zero means it has stopped for an instant.</div><canvas id="c1" role="img" aria-label="COM velocity over time" height="120"></canvas>
+          <div class="cd"><b>COM acceleration (m/s²).</b> How quickly velocity is changing. Positive (+z) means upward and negative (−z) means downward. In the air it is −9.81 m/s², the pull of gravity.</div><canvas id="c2" role="img" aria-label="COM acceleration over time" height="120"></canvas>
           <div class="cd"><b>vGRF.</b> How hard the ground pushes up on you. The dashed line is body weight. Above it, the ground pushes up harder than your weight. Below it, less.</div><canvas id="c3" role="img" aria-label="Vertical ground reaction force over time" height="160"></canvas>
+          <p class="note">Drag on a chart to move the cursor, or use the slider and the step buttons below (arrow keys work on the slider).</p>
         </div>
         <div id="fdView" class="hidden">
           <canvas id="cfd" role="img" aria-label="Vertical ground reaction force against COM position" height="360"></canvas>
-          <p class="note">Each point is one moment from the start of the countermovement to takeoff. The curve starts at the standing point (0 cm, 1 BW). It moves left as your COM goes down, then right as your COM comes back up. The area between the curve and the body weight line is the net work. The jump summary table lists net work for each phase.</p>
+          <p class="note">Each point is one moment from the start of the countermovement to takeoff. The curve starts at the standing point (0 cm, 1 BW). It moves left as your COM goes down, then right as your COM comes back up. The area between the curve and the body weight line is the net work. The work table lists net work for each phase.</p>
+          <p class="note" id="fdSummary"></p>
         </div>
       </div>
 
@@ -167,8 +263,9 @@ label.f{font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:
       <div class="card">
         <h2 class="ct">What is happening right now</h2>
         <span class="phase-badge" id="badge">Quiet stance</span>
+        <p class="sr-only" id="live" aria-live="polite"></p>
         <div class="readouts">
-          <span class="k">Time since movement started</span><span class="val" id="rT">0.00 s</span>
+          <span class="k" id="rTk">Time since movement started</span><span class="val" id="rT">0.00 s</span>
           <span class="k">COM position (vs. standing)</span><span class="val" id="rY">0.0 cm</span>
           <span class="k">COM velocity</span><span class="val" id="rV">0.00 m/s</span>
           <span class="k">COM acceleration (change in velocity)</span><span class="val" id="rA">0.0 m/s²</span>
@@ -180,10 +277,10 @@ label.f{font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:
         <p class="note">The arrow is the force the ground applies to you. The feet and the colored ground show when you are touching the ground. Distances are not drawn to scale.</p>
       </div>
 
-      <div class="card">
+      <div class="card jump-only">
         <h2 class="ct">Sync a video of a jump</h2>
         <p class="sub">Optional. Upload a side-view video of someone doing a countermovement jump. Step through it frame by frame and mark four moments. After that the charts follow your video, so you can see what the force, velocity and position look like at each point in the real movement. Your video stays on your device.</p>
-        <input type="file" id="vidFile" accept="video/*">
+        <input type="file" id="vidFile" accept="video/*" aria-label="Choose a jump video to sync with the charts">
         <div id="vidWrap" class="hidden">
           <video id="vid" playsinline muted controls></video>
           <div class="row" style="margin-top:10px">
@@ -200,26 +297,60 @@ label.f{font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:
     </div>
   </div>
 
-  <div class="card">
+  <div class="card land-only">
+    <h2 class="ct">Landing numbers from the example</h2>
+    <p class="sub">Computed from the example force data, from initial contact (first sample with vGRF of at least 20 N) to the lowest point (COM velocity = 0). Each row shows the equation it uses.</p>
+    <table class="t" id="landTable"></table>
+  </div>
+
+  <div class="card land-only">
+    <h2 class="ct">Drop-landing model <span class="model-tag">Model, not data</span></h2>
+    <p class="sub">A simple model of stepping off a box. The COM falls the box height h, then slows to a stop over the stopping distance d. It assumes steady slowing, so it gives averages, not the real force curve.</p>
+    <div class="two">
+      <div>
+        <label class="ctl-label" for="mdH">Drop height h: <span id="mdHv">0.30 m</span></label>
+        <input type="range" id="mdH" min="0.20" max="0.60" step="0.01" value="0.30">
+        <label class="ctl-label" for="mdD">Stopping distance d: <span id="mdDv">0.15 m</span></label>
+        <input type="range" id="mdD" min="0.05" max="0.40" step="0.005" value="0.15">
+        <label class="ctl-label" for="mdM">Body mass: <span id="mdMv">75 kg</span></label>
+        <input type="range" id="mdM" min="40" max="120" step="1" value="75">
+        <div class="readouts" id="mdOut" aria-live="polite"></div>
+      </div>
+      <div>
+        <canvas id="mdPlot" role="img" aria-label="Model: average vGRF against stopping distance" height="260" style="cursor:default"></canvas>
+        <p class="note">Model curve: average vGRF ÷ BW = 1 + h ÷ d for the drop height you chose. The dot is your stopping distance. Not measured data.</p>
+      </div>
+    </div>
+    <div class="eq" id="mdEq"></div>
+  </div>
+
+  <div class="card jump-only">
     <h2 class="ct">The phases of the jump</h2>
-    <p class="sub">Time zero is the instant the countermovement starts. Each phase begins where the previous one ends.</p>
+    <p class="sub">Time zero is the instant the countermovement starts. Each phase begins where the previous one ends. In running (Lecture 13), braking and propulsion describe the anterior–posterior force (F<sub>y</sub>). In the CMJ they describe vertical phases.</p>
     <table class="t" id="phaseTable"></table>
   </div>
 
-  <div class="card">
+  <div class="card jump-only">
+    <h2 class="ct">Impulse by phase</h2>
+    <p class="sub">Impulse J = ∫F dt (the area under a force–time curve). Net impulse uses vGRF − BW, and it equals the change in momentum: J<sub>net</sub> = Δp = m × Δv.</p>
+    <table class="t" id="impTable"></table>
+    <p class="note" style="margin-top:10px" id="impNote"></p>
+  </div>
+
+  <div class="card jump-only">
     <h2 class="ct">Jump summary</h2>
     <p class="sub">These numbers update from the data. The last column says what each one means.</p>
     <table class="t" id="sumTable"></table>
   </div>
 
-  <div class="card">
+  <div class="card jump-only">
     <h2 class="ct">Two ways to count work</h2>
-    <p class="sub">Work is force × distance, but which force? The two columns use the same jump and the same COM motion. They give different answers because they use different forces.</p>
+    <p class="sub">Work is force × distance, but which force? All three columns use the same jump and the same COM motion. They give different answers because they use different forces.</p>
     <table class="t" id="workTable"></table>
-    <p class="note" style="margin-top:10px"><b>Net work on the COM</b> uses the net force (vGRF − body weight). It tells you how the COM&rsquo;s motion energy changes. It is positive when the COM speeds up and negative when it slows down. In unweighting the net force and the motion are both downward, so net work is positive.<br><br><b>Work by the ground force alone</b> uses only vGRF. The ground pushes up, so this work is negative whenever the COM moves down, including unweighting, and positive when the COM moves up.<br><br>Gravity accounts for the difference: net work = work by the ground force + work by gravity. The signs differ in unweighting, so always check which force a graph or equation is using.</p>
+    <p class="note" style="margin-top:10px"><b>Net work on the COM</b> uses the net force (vGRF − body weight). It equals the change in the COM&rsquo;s kinetic energy (net work = ΔKE). It is positive when the COM speeds up and negative when it slows down. In unweighting the net force and the motion are both downward, so net work is positive.<br><br><b>Work by the ground force alone</b> uses only vGRF. The ground pushes up, so this work is negative whenever the COM moves down, including unweighting, and positive when the COM moves up.<br><br><b>Work by gravity</b> is −BW × Δz. It is positive while the COM moves down and negative while it moves up.<br><br>Net work = work by the ground force + work by gravity. The signs differ in unweighting, so always check which force a graph or equation is using. Values are rounded to whole joules, so a row can be off by 1 J.</p>
   </div>
 
-  <div class="card">
+  <div class="card jump-only">
     <h2 class="ct">Check your thinking</h2>
     <p class="sub">Try each one using the charts first, then open the answer.</p>
     <details><summary>1. At the lowest point, what are COM velocity and COM acceleration?</summary>
@@ -229,11 +360,11 @@ label.f{font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:
     <details><summary>3. During flight vGRF is zero. What is COM acceleration, and does it depend on jump height?</summary>
       <div class="qa">Read the acceleration trace during flight.<span class="ans">Acceleration is −9.81 m/s², the same for every jump. Gravity is the only force, so the jump is a projectile.</span></div></details>
     <details><summary>4. Which phase gives the COM its takeoff velocity, and how does the impulse–momentum theorem show it?</summary>
-      <div class="qa">Compare net impulse and m × takeoff velocity in the summary table.<span class="ans">Net impulse (force beyond body weight × time) from the start of the movement to takeoff equals mass × takeoff velocity, because the COM starts at rest. Unweighting adds negative impulse, braking cancels it, and propulsion supplies the positive impulse that sets takeoff velocity.</span></div></details>
+      <div class="qa">Compare the rows of the Impulse by phase table.<span class="ans">Net impulse (the area between vGRF and body weight) from the start of the movement to takeoff equals mass × takeoff velocity, because the COM starts at rest. Unweighting adds negative impulse, braking cancels it, and propulsion supplies the positive impulse that sets takeoff velocity.</span></div></details>
     <details><summary>5. Why do the takeoff velocity and flight time methods give nearly the same jump height here?</summary>
       <div class="qa">Compare the two heights in the summary table.<span class="ans">Both assume your COM is at the same height when you leave the ground and when you land. If you land with your knees bent or tuck your legs in the air, the flight time method gives a wrong answer. A video also limits flight time to the length of one frame.</span></div></details>
   </div>
-  <p class="note">Up is positive (+Z) and down is negative (−Z) on every chart. COM acceleration = (vGRF − body weight) ÷ mass. Velocity comes from adding up acceleration over time, and position comes from adding up velocity, starting when the countermovement begins. In the air only gravity acts, so the COM follows a smooth arc (projectile motion).</p>
+  <p class="note">Up is positive (+z) and down is negative (−z) on every chart. COM acceleration = (vGRF − body weight) ÷ mass. Velocity comes from adding up acceleration over time, and position comes from adding up velocity, starting when the countermovement begins. In the air only gravity acts, so the COM follows a smooth arc (projectile motion).</p>
   </div>
 
   <div id="measureMode" class="hidden">
@@ -241,8 +372,8 @@ label.f{font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:
       <div>
         <div class="card">
           <h2 class="ct">Measure your jump height from a video</h2>
-          <p class="sub">This uses the flight time method from class: h = g × t² ÷ 8, where t is the time your feet are off the ground. You find the two moments by stepping through your video one frame at a time. Your video stays on your device.</p>
-          <input type="file" id="mFile" accept="video/*">
+          <p class="sub">This uses the flight time method from class: h = g × t² ÷ 8, where t is the time your feet are off the ground. You find the moments by stepping through your video one frame at a time. Mark the lowest point after landing too, and the tool estimates how long and how far you took to stop (Lecture 16). Your video stays on your device.</p>
+          <input type="file" id="mFile" accept="video/*" aria-label="Choose a video of your jump">
           <div id="mWrap" class="hidden">
             <div id="mStage" style="position:relative;margin-top:10px"><video id="mvid" playsinline muted controls style="max-height:440px"></video><canvas id="mOverlay" style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none"></canvas><div id="cBanner" class="hidden" style="position:absolute;left:8px;right:8px;top:8px;background:rgba(0,0,0,0.78);color:#fff;padding:7px 10px;border-radius:8px;font-size:13px;line-height:1.4;pointer-events:none"></div></div>
             <div class="row" style="margin-top:10px">
@@ -296,7 +427,7 @@ label.f{font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:
       <div>
         <div class="card">
           <h2 class="ct">Your result</h2>
-          <div id="mResult"><p class="sub">Mark takeoff and landing to see your jump height.</p></div>
+          <div id="mResult" aria-live="polite"><p class="sub">Mark takeoff and landing to see your jump height.</p></div>
           <div class="row" style="margin-top:10px"><button class="btn primary small" id="mSave" type="button" disabled>Save this jump</button><button class="btn small" id="mClear" type="button">Clear saved jumps</button></div>
           <table class="t" id="mTable" style="margin-top:10px"></table>
         </div>
@@ -312,7 +443,7 @@ label.f{font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:
         </div>
         <div class="card">
           <h2 class="ct">Words you will see</h2>
-          <p class="note"><b>Takeoff:</b> the first frame where both feet are off the ground.<br><b>Landing:</b> the first frame where a foot touches the ground.<br><b>Flight time:</b> the time between takeoff and landing.<br><b>Frame:</b> one still picture in the video. At 30 frames per second, one frame lasts 0.033 s.</p>
+          <p class="note"><b>Takeoff:</b> the first frame where both feet are off the ground.<br><b>Landing (initial contact):</b> the first frame where a foot touches the ground.<br><b>Lowest point:</b> the frame where the body stops moving down after landing (deepest knee bend). Optional; it gives the stop time.<br><b>Flight time:</b> the time between takeoff and landing.<br><b>Frame:</b> one still picture in the video. At 30 frames per second, one frame lasts 0.033 s.</p>
         </div>
       </div>
     </div>
@@ -327,18 +458,26 @@ var EX_FS=500;
 var EX_F=[735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 735.8, 739.1, 739.1, 739.0, 738.7, 738.3, 737.6, 736.8, 735.7, 734.5, 733.0, 731.3, 729.4, 727.2, 724.7, 722.1, 719.1, 715.9, 712.5, 708.7, 704.7, 700.4, 695.9, 691.0, 685.9, 680.5, 674.9, 668.9, 662.7, 656.3, 649.6, 642.6, 635.3, 627.9, 620.2, 612.3, 604.1, 595.8, 587.2, 578.5, 569.6, 560.6, 551.4, 542.1, 532.7, 523.1, 513.5, 503.9, 494.2, 484.5, 474.8, 465.1, 455.4, 445.8, 436.2, 426.8, 417.5, 408.3, 399.2, 390.4, 381.7, 373.3, 365.0, 357.1, 349.4, 342.1, 335.0, 328.3, 321.9, 315.9, 310.3, 305.1, 300.3, 296.0, 292.1, 288.6, 285.7, 283.2, 281.2, 279.7, 278.7, 278.2, 278.1, 278.0, 278.2, 278.4, 278.8, 279.3, 280.0, 280.8, 281.8, 282.9, 284.1, 285.5, 287.0, 288.7, 290.5, 292.5, 294.6, 296.9, 299.3, 301.9, 304.6, 307.5, 310.5, 313.6, 317.0, 320.4, 324.0, 327.8, 331.7, 335.8, 340.0, 344.4, 348.9, 353.5, 358.3, 363.3, 368.4, 373.6, 379.0, 384.5, 390.2, 396.0, 402.0, 408.0, 414.3, 420.6, 427.1, 433.7, 440.5, 447.4, 454.4, 461.5, 468.8, 476.2, 483.7, 491.3, 499.1, 506.9, 514.9, 523.0, 531.2, 539.5, 547.9, 556.5, 565.1, 573.8, 582.7, 591.6, 600.6, 609.7, 619.0, 628.2, 637.6, 647.1, 656.6, 666.3, 676.0, 685.8, 695.6, 705.6, 715.6, 725.6, 735.7, 745.9, 756.2, 766.5, 776.9, 787.3, 797.7, 808.3, 818.8, 829.4, 840.1, 850.8, 861.5, 872.2, 883.0, 893.8, 904.7, 915.6, 926.5, 937.4, 948.3, 959.3, 970.2, 981.2, 992.2, 1003.2, 1014.2, 1025.2, 1036.2, 1047.3, 1058.3, 1069.3, 1080.3, 1091.3, 1102.2, 1113.2, 1124.2, 1135.1, 1146.0, 1156.9, 1167.8, 1178.6, 1189.4, 1200.2, 1211.0, 1221.7, 1232.4, 1243.0, 1253.6, 1264.2, 1274.7, 1285.2, 1295.7, 1306.0, 1316.4, 1326.7, 1336.9, 1347.1, 1357.2, 1367.2, 1377.2, 1387.1, 1397.0, 1406.8, 1416.5, 1426.2, 1435.8, 1445.3, 1454.7, 1464.1, 1473.3, 1482.5, 1491.6, 1500.6, 1509.6, 1518.4, 1527.2, 1535.8, 1544.4, 1552.9, 1561.3, 1569.5, 1577.7, 1585.8, 1593.8, 1601.6, 1609.4, 1617.1, 1624.6, 1632.0, 1639.4, 1646.6, 1653.7, 1660.6, 1667.5, 1674.2, 1680.9, 1687.4, 1693.7, 1700.0, 1706.1, 1712.1, 1718.0, 1723.7, 1729.3, 1734.8, 1740.1, 1745.3, 1750.4, 1755.3, 1760.1, 1764.8, 1769.3, 1773.7, 1777.9, 1782.0, 1786.0, 1789.8, 1793.5, 1797.0, 1800.4, 1803.6, 1806.7, 1809.6, 1812.4, 1815.1, 1817.6, 1819.9, 1822.1, 1824.2, 1826.1, 1827.8, 1829.4, 1830.9, 1832.2, 1833.4, 1834.4, 1835.2, 1835.9, 1836.5, 1836.9, 1837.1, 1837.2, 1837.2, 1837.0, 1836.7, 1836.2, 1835.6, 1834.8, 1833.9, 1832.8, 1831.6, 1830.3, 1828.8, 1827.1, 1825.4, 1823.4, 1821.4, 1819.2, 1816.9, 1814.4, 1811.8, 1809.1, 1806.2, 1803.2, 1800.1, 1796.9, 1793.5, 1790.0, 1786.3, 1782.6, 1778.7, 1774.7, 1770.6, 1766.4, 1762.1, 1757.6, 1751.8, 1741.0, 1724.9, 1703.8, 1677.6, 1646.7, 1611.2, 1571.3, 1527.3, 1479.5, 1428.2, 1373.7, 1316.3, 1256.4, 1194.4, 1130.6, 1065.5, 999.3, 932.6, 865.7, 799.0, 732.9, 667.7, 603.9, 541.9, 481.8, 424.1, 369.2, 317.2, 268.4, 223.2, 181.7, 144.2, 110.7, 81.5, 56.6, 36.2, 20.4, 9.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 180.3, 359.4, 536.4, 710.8, 882.2, 1064.9, 1267.6, 1481.1, 1696.1, 1903.3, 2093.6, 2257.6, 2386.2, 2470.0, 2500.0, 2491.6, 2469.1, 2436.0, 2395.8, 2352.1, 2308.3, 2268.1, 2235.0, 2212.4, 2203.9, 2204.7, 2207.5, 2212.1, 2218.2, 2225.6, 2234.0, 2243.4, 2253.4, 2263.8, 2274.4, 2285.0, 2295.4, 2305.3, 2314.5, 2322.8, 2330.0, 2335.8, 2340.1, 2342.6, 2343.0, 2340.5, 2334.4, 2324.9, 2312.3, 2296.7, 2278.5, 2257.8, 2234.9, 2210.0, 2183.4, 2155.2, 2125.7, 2095.2, 2063.9, 2032.0, 1999.8, 1967.4, 1935.2, 1903.3, 1872.0, 1841.5, 1812.0, 1783.9, 1757.3, 1732.4, 1708.3, 1683.7, 1658.8, 1633.6, 1608.1, 1582.5, 1556.6, 1530.7, 1504.7, 1478.8, 1452.8, 1427.0, 1401.4, 1375.9, 1350.8, 1325.9, 1301.4, 1277.4, 1253.8, 1230.7, 1208.2, 1186.4, 1165.2, 1144.8, 1125.1, 1106.3, 1088.3, 1071.4, 1055.4, 1040.4, 1026.0, 1011.6, 997.2, 982.8, 968.5, 954.3, 940.1, 926.1, 912.1, 898.3, 884.6, 871.0, 857.6, 844.3, 831.2, 818.4, 805.7, 793.2, 781.0, 769.0, 757.2, 745.7, 734.5, 723.6, 712.9, 702.6, 692.6, 682.9, 673.5, 664.5, 655.8, 647.6, 639.7, 632.2, 625.1, 618.4, 612.1, 606.3, 600.9, 596.0, 591.5, 587.6, 584.1, 581.1, 578.6, 576.6, 575.2, 574.3, 574.0, 574.2, 574.8, 575.4, 576.1, 576.9, 577.7, 578.6, 579.5, 580.5, 581.5, 582.6, 583.7, 584.8, 586.0, 587.2, 588.5, 589.7, 591.0, 592.3, 593.7, 595.0, 596.4, 597.7, 599.1, 600.5, 601.9, 603.3, 604.7, 606.2, 607.6, 609.0, 610.4, 611.8, 613.2, 614.6, 616.0, 617.4, 618.8, 620.1, 621.5, 622.8, 624.1, 625.4, 626.7, 627.9, 629.2, 630.4, 631.6, 632.8, 633.9, 635.0, 636.1, 637.2, 638.2, 639.2, 640.1, 641.0, 641.9, 642.8, 643.6, 644.3, 645.1, 645.8, 646.6, 647.4, 648.3, 649.2, 650.1, 651.0, 652.0, 652.9, 653.9, 655.0, 656.0, 657.1, 658.2, 659.3, 660.4, 661.5, 662.7, 663.9, 665.1, 666.3, 667.5, 668.8, 670.1, 671.3, 672.6, 673.9, 675.2, 676.5, 677.8, 679.1, 680.4, 681.8, 683.1, 684.4, 685.7, 687.1, 688.4, 689.7, 691.0, 692.3, 693.6, 694.9, 696.1, 697.4, 698.6, 699.8, 701.0, 702.2, 703.4, 704.5, 705.6, 706.7, 707.7, 708.8, 709.8, 710.7, 711.7, 712.6, 713.4, 714.2, 715.0, 715.8, 716.5, 717.1, 717.8, 718.4, 719.1, 719.7, 720.3, 720.8, 721.4, 721.9, 722.5, 723.0, 723.5, 724.0, 724.4, 724.9, 725.3, 725.7, 726.1, 726.5, 726.8, 727.2, 727.5, 727.9, 728.2, 728.5, 728.7, 729.0, 729.2, 729.5, 729.7, 729.9, 730.1, 730.3, 730.5, 730.6, 730.8, 730.9, 731.0, 731.2, 731.3, 731.4, 731.5, 731.6, 731.6, 731.7, 731.8, 731.8, 731.9, 731.9, 732.0, 732.0, 732.1, 732.1, 732.1, 732.2, 732.2, 732.2, 732.2, 732.3, 732.3, 732.3, 732.4, 732.4, 732.4, 732.5, 732.5, 732.6, 732.7, 732.7, 732.8, 732.9, 733.0, 733.1, 733.2, 733.3, 733.4, 733.5, 733.6, 733.7, 733.8, 733.9, 734.0, 734.1, 734.2, 734.3, 734.4, 734.4, 734.5, 734.6, 734.6, 734.7, 734.8, 734.8, 734.9, 734.9, 735.0, 735.0, 735.0, 735.1, 735.1, 735.2, 735.2, 735.2, 735.3, 735.3, 735.3, 735.3, 735.4, 735.4, 735.4, 735.4, 735.5, 735.5, 735.5, 735.5, 735.5, 735.5, 735.6, 735.6, 735.6, 735.6, 735.6, 735.6, 735.6, 735.6, 735.6, 735.6, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7, 735.7];
 
 var PH=[
-  {k:'quiet',name:'Quiet stance',cv:'--gray',desc:'You stand still. The ground pushes up with exactly your body weight.'},
-  {k:'unw',name:'Unweighting',cv:'--rust',desc:'You start to bend your knees and your COM speeds up downward. The ground pushes up with less than your body weight.'},
-  {k:'brk',name:'Braking',cv:'--amber',desc:'You slow your downward motion. The ground pushes up with more than your body weight until your COM stops at its lowest point.'},
-  {k:'prop',name:'Propulsion',cv:'--stance',desc:'You push hard against the ground and your COM speeds up upward until your feet leave the ground.'},
-  {k:'fl',name:'Flight',cv:'--blue',desc:'Your feet are off the ground, so there is no ground force. Only gravity acts, pulling you down at 9.81 m/s².'},
-  {k:'land',name:'Landing',cv:'--violet',desc:'Your feet hit the ground again. The ground force spikes as it stops your downward motion.'}
+  {k:'quiet',k0:'Q',name:'Quiet stance',cv:'--gray',desc:'You stand still. The ground pushes up with exactly your body weight.'},
+  {k:'unw',k0:'U',name:'Unweighting',cv:'--rust',desc:'You start to bend your knees and your COM speeds up downward. The ground pushes up with less than your body weight.'},
+  {k:'brk',k0:'B',name:'Braking',cv:'--amber',desc:'You slow your downward motion. The ground pushes up with more than your body weight until your COM stops at its lowest point.'},
+  {k:'prop',k0:'P',name:'Propulsion',cv:'--stance',desc:'You push hard against the ground and your COM speeds up upward until your feet leave the ground.'},
+  {k:'fl',k0:'F',name:'Flight',cv:'--blue',desc:'Your feet are off the ground, so there is no ground force. Only gravity acts, pulling you down at 9.81 m/s².'},
+  {k:'land',k0:'L',name:'Landing',cv:'--violet',desc:'Your feet hit the ground again. The ground force spikes as it stops your downward motion.'}
 ];
+var appView='jump', iEnd=0, jA=0, jB=0, lA=0, lB=0, liveT=0;
 var S=null, cur=0, i0=0, showEv=false, unitBW=false, view='time', playing=false, lastTs=0, rafId=0;
 var charts=[];
 var vid=document.getElementById('vid'), vidURL=null, marks={start:null,low:null,to:null,land:null}, syncing=false;
 function $(id){return document.getElementById(id);}
 function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function lum(hex){
+  var m=/^#?([0-9a-f]{6})$/i.exec(hex);if(!m)return 0.5;
+  var c=[0,2,4].map(function(k){var x=parseInt(m[1].substr(k,2),16)/255;return x<=0.03928?x/12.92:Math.pow((x+0.055)/1.055,2.4);});
+  return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];
+}
+/* text color with the better WCAG contrast on a fill: white or dark ink */
+function inkOn(hex){var L=lum(hex),cw=1.05/(L+0.05),ci=(L+0.05)/(lum('#1B2420')+0.05);return cw>=ci?'#FFFFFF':'#1B2420';}
 function mf(x,d){var s=Math.abs(x).toFixed(d);return (x<0&&Number(s)!==0?'−':'')+s;}
 function sf(x,d){var s=Math.abs(x).toFixed(d);return (Number(s)===0?'':(x<0?'−':'+'))+s;}
 
@@ -376,7 +515,25 @@ function analyze(t,Fin,opt){
   var ipv=low,vm=-1e9;for(i=low;i<=to;i++){if(v[i]>vm){vm=v[i];ipv=i;}}
   var iap=to;for(i=to;i<ld;i++){if(v[i]<=0){iap=i;break;}}
   var T=t[ld]-t[to];
+  // Lowest point: interpolate the instant v crosses zero between samples (low-1, low), so the
+  // unweighting and braking impulses cancel exactly (net impulse to the lowest point = m × 0).
+  var fz=(v[low]-v[low-1])!==0?(0-v[low-1])/(v[low]-v[low-1]):1;
+  var tLow=t[low-1]+fz*(t[low]-t[low-1]),yLow=y[low-1]+fz*(y[low]-y[low-1]);
+  // Landing: initial contact = ld. Lowest point after landing = first v >= 0 (interpolated).
+  var st=-1;for(i=ld+1;i<n;i++){if(v[i]>=0){st=i;break;}}
+  var L=null;
+  if(st>0){
+    var fs2=(0-v[st-1])/(v[st]-v[st-1]);
+    var tSt=t[st-1]+fs2*(t[st]-t[st-1]),ySt=y[st-1]+fs2*(y[st]-y[st-1]);
+    var ipk=ld,fpk=0;for(i=ld;i<st;i++){if(F[i]>fpk){fpk=F[i];ipk=i;}}
+    // impact peak = first local maximum after contact (the 'first peak')
+    var iim=ld;for(i=ld+1;i<st-1;i++){if(F[i]>=F[i-1]&&F[i]>F[i+1]){iim=i;break;}}
+    var vc=v[ld],ts=tSt-t[ld],ds=y[ld]-ySt,he=vc*vc/(2*G);
+    L={ic:ld,st:st,tSt:tSt,ySt:ySt,vc:vc,he:he,ipk:ipk,fpk:fpk,iim:iim,fim:F[iim],tim:t[iim]-t[ld],
+       lr:(F[iim]-F[ld])/(t[iim]-t[ld]),ts:ts,ds:ds,fImp:bw+m*(-vc)/ts,fWork:bw*(1+he/ds)};
+  }
   return {ipv:ipv,vpk:vm,iap:iap,t:t,F:F,a:a,v:v,y:y,n:n,bw:bw,m:m,on:on,iv:iv,low:low,to:to,ld:ld,vmin:vmin,vto:vto,yto:yto,T:T,
+    tLow:tLow,yLow:yLow,L:L,
     hTO:vto*vto/(2*G),hFT:G*T*T/8,pf:pf,ipf:ipf,pp:pp,ipp:ipp,imp:imp,depth:depth,fs:(n-1)/(t[n-1]-t[0])};
 }
 function phaseOf(i){
@@ -384,6 +541,9 @@ function phaseOf(i){
 }
 function bounds(){return [0,S.on,S.iv,S.low,S.to,S.ld,S.n-1];}
 function evList(){
+  if(appView==='landing'&&S.L){
+    return [{i:S.ld-Math.round(0.03*S.fs),name:'Just before contact'},{i:S.ld,name:'Initial contact'},{i:S.L.iim,name:'Impact peak'},{i:S.L.st,name:'Lowest point (COM stops)'}];
+  }
   var e=[{i:S.on,name:'Start of movement'},{i:S.iv,name:'Fastest downward velocity'},{i:S.low,name:'Lowest point'},{i:S.ipf,name:'Peak force'},
          {i:S.ipv,name:'Fastest upward velocity'},{i:S.to,name:'Takeoff'},{i:S.iap,name:'Top of flight'},{i:S.ld,name:'Landing'}];
   e.sort(function(a,b){return a.i-b.i;});
@@ -393,12 +553,22 @@ function evList(){
 /* ---------- load data ---------- */
 function useData(t,F,opt,label){
   S=analyze(t,F,opt);
-  i0=0;while(i0<S.n&&S.t[i0]<S.t[S.on]-0.4)i0++;
-  cur=Math.max(i0,S.on-Math.round(0.2*S.fs));
-  var sl=$('slider');sl.min=i0;sl.max=S.n-1;sl.value=cur;
+  jA=0;while(jA<S.n&&S.t[jA]<S.t[S.on]-0.4)jA++;
+  jB=S.n-1;
+  lA=Math.max(0,S.ld-Math.round(0.06*S.fs));
+  lB=S.L?Math.min(S.n-1,S.L.st+Math.round(0.25*S.fs)):S.n-1;
   $('srcNote').textContent=label;
-  buildTables();buildJump();buildMarks();syncStatus();draw();
+  buildTables();buildLanding();applyWindow(true);buildMarks();syncStatus();draw();
 }
+function applyWindow(reset){
+  var land=(appView==='landing');
+  i0=land?lA:jA;iEnd=land?lB:jB;
+  if(reset||cur<i0||cur>iEnd)cur=land?S.ld:Math.max(i0,S.on-Math.round(0.2*S.fs));
+  var sl=$('slider');sl.min=i0;sl.max=iEnd;sl.value=cur;
+  $('rTk').textContent=land?'Time since initial contact':'Time since movement started';
+  buildJump();
+}
+function tRef(){return appView==='landing'?S.t[S.ld]:S.t[S.on];}
 function exampleData(){
   var t=[],i;for(i=0;i<EX_F.length;i++)t.push(i/EX_FS);
   useData(t,EX_F,{qw:0.4,flip:false},'Example data are a simulated, representative jump for a 75 kg athlete. They are not real athlete data.');
@@ -419,17 +589,18 @@ var CDEF=[
  {id:'c2',label:'COM acceleration (m/s²)',col:'--violet',get:function(i){return S.a[i];},zero:true,g:true,dec:1},
  {id:'c3',label:'vGRF',col:'--stance',get:function(i){return unitBW?S.F[i]/S.bw:S.F[i];},bw:true,dec:0,axis:true}
 ];
+function evOn(){return showEv||appView==='landing';}
 function sizeCanvas(cv,hCss){
   var dpr=window.devicePixelRatio||1,w=cv.clientWidth||300;
   cv.width=Math.round(w*dpr);cv.height=Math.round(hCss*dpr);cv.style.height=hCss+'px';
   var c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);return {c:c,W:w,H:hCss};
 }
 function drawChart(d,idx){
-  var extra=(showEv&&idx===0)?30:0,cv=$(d.id),hh=(d.axis?170:124)+extra,z=sizeCanvas(cv,hh),c=z.c,W=z.W,H=z.H;
+  var extra=(idx===0?14:0)+((evOn()&&idx===0)?30:0),cv=$(d.id),hh=(d.axis?170:124)+extra,z=sizeCanvas(cv,hh),c=z.c,W=z.W,H=z.H;
   var L=58,R=12,Tp=16+extra,B=d.axis?30:6;
-  var g={c:c,W:W,H:H,L:L,R:R,Tp:Tp,B:B,t0:S.t[i0],t1:S.t[S.n-1]};
+  var g={c:c,W:W,H:H,L:L,R:R,Tp:Tp,B:B,t0:S.t[i0],t1:S.t[iEnd]};
   var lo=1e18,hi=-1e18,i,val;
-  for(i=i0;i<S.n;i++){val=d.get(i);if(val<lo)lo=val;if(val>hi)hi=val;}
+  for(i=i0;i<=iEnd;i++){val=d.get(i);if(val<lo)lo=val;if(val>hi)hi=val;}
   if(d.g){lo=Math.min(lo,-G);} 
   if(d.zero){lo=Math.min(lo,0);hi=Math.max(hi,0);} 
   var pad=(hi-lo)*0.08;lo-=pad;hi+=pad;
@@ -440,9 +611,10 @@ function drawChart(d,idx){
   c.clearRect(0,0,W,H);
   var bnd=bounds(),k;
   for(k=0;k<6;k++){
-    var x0=xmap(g,Math.max(S.t[bnd[k]],g.t0)),x1=xmap(g,S.t[bnd[k+1]]);
-    if(bnd[k+1]<=i0)continue;
+    if(bnd[k+1]<=i0||bnd[k]>=iEnd)continue;
+    var x0=xmap(g,Math.max(S.t[bnd[k]],g.t0)),x1=xmap(g,Math.min(S.t[bnd[k+1]],g.t1));
     c.globalAlpha=0.16;c.fillStyle=css(PH[k].cv);c.fillRect(x0,Tp,x1-x0,H-Tp-B);c.globalAlpha=1;
+    if(idx===0&&x1-x0>12){c.fillStyle=css('--ink');c.font='700 11px Space Grotesk, Arial, sans-serif';c.textAlign='center';c.textBaseline='bottom';c.fillText(PH[k].k0,(x0+x1)/2,Tp-2);}
   }
   c.strokeStyle=css('--line');c.fillStyle=css('--ink-soft');c.lineWidth=1;c.font='11px Inter, Arial, sans-serif';c.textAlign='right';c.textBaseline='middle';
   nt.ticks.forEach(function(tv){
@@ -454,20 +626,21 @@ function drawChart(d,idx){
   if(d.g){c.setLineDash([2,4]);c.strokeStyle=css('--violet');c.beginPath();c.moveTo(L,ym(-G));c.lineTo(W-R,ym(-G));c.stroke();c.setLineDash([]);c.fillStyle=css('--violet');c.textAlign='left';c.fillText('−g (−9.81)',L+6,ym(-G)-8);}
   if(d.bw){var bv=unitBW?1:S.bw;c.setLineDash([4,4]);c.strokeStyle=css('--ink-soft');c.beginPath();c.moveTo(L,ym(bv));c.lineTo(W-R,ym(bv));c.stroke();c.setLineDash([]);c.fillStyle=css('--ink-soft');c.textAlign='left';c.fillText('body weight',L+6,ym(bv)-8);}
   c.strokeStyle=css(d.col);c.lineWidth=2.6;c.lineJoin='round';c.beginPath();
-  var step=Math.max(1,Math.floor((S.n-i0)/900));
-  for(i=i0;i<S.n;i+=step){var xx=xmap(g,S.t[i]),yy=ym(d.get(i));if(i===i0)c.moveTo(xx,yy);else c.lineTo(xx,yy);}
+  var step=Math.max(1,Math.floor((iEnd-i0)/900));
+  for(i=i0;i<=iEnd;i+=step){var xx=xmap(g,S.t[i]),yy=ym(d.get(i));if(i===i0)c.moveTo(xx,yy);else c.lineTo(xx,yy);}
   c.stroke();
-  if(d.zero){c.fillStyle=css('--ink-soft');c.font='600 11px Inter, Arial, sans-serif';c.textAlign='right';c.textBaseline='top';c.fillText('↑ +Z (up)',W-R-4,Tp+3);c.textBaseline='bottom';c.fillText('↓ −Z (down)',W-R-4,H-B-12);}
+  if(d.zero){c.fillStyle=css('--ink-soft');c.font='600 11px Inter, Arial, sans-serif';c.textAlign='right';c.textBaseline='top';c.fillText('↑ +z (up)',W-R-4,Tp+3);c.textBaseline='bottom';c.fillText('↓ −z (down)',W-R-4,H-B-12);}
   c.fillStyle=css('--ink');c.font='600 12px Space Grotesk, Arial, sans-serif';c.textAlign='left';c.textBaseline='top';
   c.fillText(d.bw?('vGRF ('+(unitBW?'BW':'N')+')'):d.label,L+6,Tp+3);
+  var land=(appView==='landing');
   if(d.axis){
     c.fillStyle=css('--ink-soft');c.font='11px Inter, Arial, sans-serif';c.textAlign='center';c.textBaseline='top';
-    var t0=S.t[S.on];var a=Math.ceil((g.t0-t0)/0.5)*0.5;
-    for(var tt=a;tt+t0<=g.t1+1e-9;tt+=0.5){var x=xmap(g,tt+t0);c.fillText(tt.toFixed(1),x,H-B+6);c.strokeStyle=css('--line');c.beginPath();c.moveTo(x,H-B);c.lineTo(x,H-B+4);c.stroke();}
-    c.fillText('Time since movement start (s)',(L+W-R)/2,H-14);
+    var t0=tRef(),ts=land?0.05:0.5;var a=Math.ceil((g.t0-t0)/ts-1e-9)*ts;
+    for(var tt=a;tt+t0<=g.t1+1e-9;tt+=ts){var x=xmap(g,tt+t0);c.fillText(land?String(Math.round(tt*1000)).replace('-','−'):tt.toFixed(1),x,H-B+6);c.strokeStyle=css('--line');c.beginPath();c.moveTo(x,H-B);c.lineTo(x,H-B+4);c.stroke();}
+    c.fillText(land?'Time since initial contact (ms)':'Time since movement start (s)',(L+W-R)/2,H-14);
   }
-  if(d.axis){var fx=(xmap(g,S.t[S.to])+xmap(g,S.t[S.ld]))/2;c.fillStyle=css('--blue');c.font='600 12px Inter, Arial, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('In the air',fx,Tp+(H-Tp-B)*0.42);c.fillText('no ground contact',fx,Tp+(H-Tp-B)*0.42+15);}
-  if(showEv){
+  if(d.axis&&!land){var fx=(xmap(g,S.t[S.to])+xmap(g,S.t[S.ld]))/2;c.fillStyle=css('--blue');c.font='600 12px Inter, Arial, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('In the air',fx,Tp+(H-Tp-B)*0.42);c.fillText('no ground contact',fx,Tp+(H-Tp-B)*0.42+15);}
+  if(evOn()){
     var ev=evList(),q;
     for(q=0;q<ev.length;q++){
       var ex=xmap(g,S.t[ev[q].i]);
@@ -507,7 +680,7 @@ function drawFD(){
 function drawStage(){
   var cv=$('stage'),z=sizeCanvas(cv,320),c=z.c,W=z.W,H=z.H;
   c.clearRect(0,0,W,H);
-  var gy=H-36,topPad=46,peak=S.yto+S.hTO,ymin=S.depth;
+  var gy=H-36,topPad=46,peak=S.yto+S.hTO,ymin=Math.min(S.depth,S.L?S.L.ySt:0);
   var scale=(gy-46-topPad)/(peak-ymin);
   var yp=function(m){return (gy-46)-(m-ymin)*scale;};
   var p=phaseOf(cur),contact=(p!==4),col=css(PH[p].cv),cx=W*0.62,ax=W*0.2,cyy=yp(S.y[cur]);
@@ -538,52 +711,76 @@ function drawStage(){
   }
   // COM
   c.strokeStyle=css('--card');c.lineWidth=3;c.fillStyle=col;c.beginPath();c.arc(cx,cyy,15,0,6.2832);c.fill();c.stroke();
-  c.fillStyle='#fff';c.font='700 11px Space Grotesk, Arial, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('COM',cx,cyy);
+  c.fillStyle=inkOn(col);c.font='700 11px Space Grotesk, Arial, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('COM',cx,cyy);
   // contact pill
   var label=contact?'Feet on the ground':'In the air',pw=contact?150:104;
   c.fillStyle=col;c.beginPath();
   if(c.roundRect){c.roundRect(W-pw-12,10,pw,26,13);}else{c.rect(W-pw-12,10,pw,26);}
-  c.fill();c.fillStyle='#fff';c.font='700 12px Space Grotesk, Arial, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(label,W-pw/2-12,23);
-  c.fillStyle=css('--ink-soft');c.font='11px Inter, Arial, sans-serif';c.textAlign='left';c.textBaseline='top';c.fillText('cm from standing',8,6);c.fillText('↑ +Z (up)    ↓ −Z (down)',8,22);
+  c.fill();c.fillStyle=inkOn(col);c.font='700 12px Space Grotesk, Arial, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(label,W-pw/2-12,23);
+  c.fillStyle=css('--ink-soft');c.font='11px Inter, Arial, sans-serif';c.textAlign='left';c.textBaseline='top';c.fillText('cm from standing',8,6);c.fillText('↑ +z (up)    ↓ −z (down)',8,22);
 }
 function draw(){
   if(!S)return;
-  if(view==='time'){CDEF.forEach(drawChart);}else{drawFD();}
+  if(appView==='measure')return;
+  if(view==='time'||appView==='landing'){CDEF.forEach(drawChart);}else{drawFD();}
   drawStage();readouts();
   $('slider').value=cur;
 }
+function phaseName(i){
+  var p=phaseOf(i);
+  if(p===5&&S.L)return i<S.L.st?'Landing: slowing the fall':'Landing: COM stopped, settling';
+  return PH[p].name;
+}
 function readouts(){
-  var p=phaseOf(cur),tr=S.t[cur]-S.t[S.on];
-  var b=$('badge');b.textContent=PH[p].name;b.style.background=css(PH[p].cv);
-  $('rT').textContent=mf(tr,2)+' s';
-  function dirT(x,e){return x>e?'  ↑ +Z':(x<-e?'  ↓ −Z':'');}
+  var p=phaseOf(cur),tr=S.t[cur]-tRef(),land=(appView==='landing');
+  var b=$('badge'),bc=css(PH[p].cv);b.textContent=phaseName(cur);b.style.background=bc;b.style.color=inkOn(bc);
+  $('rT').textContent=land?(mf(tr*1000,0)+' ms'):(mf(tr,2)+' s');
+  var vt=(land?mf(tr*1000,0)+' ms after contact':mf(tr,2)+' s')+', '+phaseName(cur);
+  $('slider').setAttribute('aria-valuetext',vt);
+  clearTimeout(liveT);var lv=vt+'. COM velocity '+mf(S.v[cur],2)+' m/s. vGRF '+Math.round(S.F[cur])+' N, '+(S.F[cur]/S.bw).toFixed(2)+' BW.';
+  liveT=setTimeout(function(){$('live').textContent=lv;},400);
+  function dirT(x,e){return x>e?'  ↑ +z':(x<-e?'  ↓ −z':'');}
   $('rY').textContent=mf(S.y[cur]*100,1)+' cm'+dirT(S.y[cur]*100,0.5);
   $('rV').textContent=mf(S.v[cur],2)+' m/s'+dirT(S.v[cur],0.05);
-  $('rA').textContent=mf(S.a[cur],1)+' m/s²'+dirT(S.a[cur],0.5);
+  $('rA').textContent=mf(S.a[cur],2)+' m/s²'+dirT(S.a[cur],0.5);
   $('rF').textContent=Math.round(S.F[cur])+' N ('+(S.F[cur]/S.bw).toFixed(2)+' BW)';
   $('rC').textContent=(p===4)?'No, in the air':'Yes, feet on the ground';
-  $('eq').innerHTML='<span class="lab">vGRF = mass × (acceleration + g), where g = 9.81 m/s² is gravity</span>'+S.m.toFixed(1)+' kg × ('+mf(S.a[cur],1)+' + 9.81) m/s² = <b>'+Math.round(S.m*(S.a[cur]+G))+' N</b>';
+  $('eq').innerHTML='<span class="lab">vGRF = mass × (acceleration + g), where g = 9.81 m/s² is gravity</span>'+S.m.toFixed(1)+' kg × ('+mf(S.a[cur],2)+' + 9.81) m/s² = <b>'+Math.round(S.m*(S.a[cur]+G))+' N</b>';
   $('timeLab').textContent=PH[p].desc;
 }
 function buildTables(){
   var b=bounds(),k;
+  // phase start times; propulsion starts at the interpolated lowest point (v = 0)
+  var ts=[S.t[b[0]],S.t[b[1]],S.t[b[2]],S.tLow,S.t[b[4]],S.t[b[5]],S.t[S.n-1]];
   var h='<tr><th>Phase</th><th>What is happening</th><th style="text-align:right">Starts at (s)</th><th style="text-align:right">Lasts (ms)</th></tr>';
   for(k=0;k<6;k++){
-    var st=S.t[b[k]]-S.t[S.on],du=(S.t[b[k+1]]-S.t[b[k]])*1000;
-    if(k===5)du=(S.t[S.n-1]-S.t[S.ld])*1000;
-    h+='<tr><td style="white-space:nowrap"><span class="dotp" style="background:var('+PH[k].cv+')"></span>'+PH[k].name+'</td><td>'+PH[k].desc+'</td><td class="n">'+mf(st,2)+'</td><td class="n">'+Math.round(du)+'</td></tr>';
+    var st=ts[k]-S.t[S.on],du=(ts[k+1]-ts[k])*1000;
+    h+='<tr><td style="white-space:nowrap"><span class="dotp" style="background:var('+PH[k].cv+')"></span>'+PH[k].k0+' · '+PH[k].name+'</td><td>'+PH[k].desc+'</td><td class="n">'+mf(st,2)+'</td><td class="n">'+Math.round(du)+'</td></tr>';
   }
   $('phaseTable').innerHTML=h;
+  // impulse by phase: J_net = m × Δv (v at the lowest point is 0 by interpolation); vGRF impulse = J_net + BW × Δt
+  var vB=[0,S.v[S.iv],0,S.vto],tB=[S.t[S.on],S.t[S.iv],S.tLow,S.t[S.to]];
+  var IP=[],names=['Unweighting','Braking','Propulsion'];
+  for(k=0;k<3;k++){var jn=S.m*(vB[k+1]-vB[k]),dt=tB[k+1]-tB[k];IP.push({n:names[k],jn:jn,dt:dt,jg:jn+S.bw*dt,dv:vB[k+1]-vB[k]});}
+  var jt=S.m*S.vto,dtt=tB[3]-tB[0];
+  var ih='<tr><th>Phase</th><th style="text-align:right">Lasts (s)</th><th style="text-align:right">Net impulse, vGRF − BW (N·s)</th><th style="text-align:right">Impulse of vGRF alone (N·s)</th><th style="text-align:right">Change in COM velocity (m/s)</th></tr>';
+  IP.forEach(function(r){ih+='<tr><td>'+r.n+'</td><td class="n">'+r.dt.toFixed(3)+'</td><td class="n">'+sf(r.jn,0)+'</td><td class="n">'+sf(r.jg,0)+'</td><td class="n">'+sf(r.dv,2)+'</td></tr>';});
+  ih+='<tr><td><b>Whole push, start to takeoff</b></td><td class="n">'+dtt.toFixed(3)+'</td><td class="n">'+sf(jt,0)+'</td><td class="n">'+sf(jt+S.bw*dtt,0)+'</td><td class="n">'+sf(S.vto,2)+'</td></tr>';
+  $('impTable').innerHTML=ih;
+  function wsum(a,b){var wn=0,wv=0,i;for(i=a+1;i<=b;i++){var dy=S.y[i]-S.y[i-1];wn+=0.5*((S.F[i]-S.bw)+(S.F[i-1]-S.bw))*dy;wv+=0.5*(S.F[i]+S.F[i-1])*dy;}return [wn,wv,wn-wv];}
+  var P1=wsum(S.on,S.iv),P2=wsum(S.iv,S.low),P3=wsum(S.low,S.to),PT=wsum(S.on,S.to);
+  var vW=Math.sqrt(2*Math.max(0,P3[0])/S.m);
+  $('impNote').innerHTML='Unweighting and braking cancel (the COM is at rest again at the lowest point), so propulsion sets the takeoff velocity. <b>Two routes, one takeoff velocity:</b> impulse gives v = J<sub>net</sub> ÷ m = '+jt.toFixed(2)+' ÷ '+S.m.toFixed(1)+' = <b>'+S.vto.toFixed(2)+' m/s</b>. Work gives v = √(2 × net work ÷ m) = √(2 × '+P3[0].toFixed(2)+' ÷ '+S.m.toFixed(1)+') = <b>'+vW.toFixed(2)+' m/s</b>. The lowest point is found by interpolating between samples where velocity crosses zero.';
   var rows=[
     ['Body weight',Math.round(S.bw)+' N ('+S.m.toFixed(1)+' kg)','The force of gravity on the athlete. The ground pushes up this much when standing still.'],
     ['Lowest COM position',mf(S.depth*100,1)+' cm','How far the COM dropped below standing height during the countermovement.'],
-    ['Peak vGRF',Math.round(S.pf)+' N ('+(S.pf/S.bw).toFixed(2)+' BW)','The largest force the ground applied during the jump.'],
+    ['Peak vGRF',Math.round(S.pf)+' N ('+(S.pf/S.bw).toFixed(2)+' BW)','The largest force the ground applied before takeoff.'],
     ['Fastest downward velocity',mf(S.vmin,2)+' m/s','Happens at the end of unweighting, when vGRF crosses body weight.'],
     ['Fastest upward velocity',mf(S.vpk,2)+' m/s','The highest COM velocity. It happens just before takeoff, when vGRF falls back through body weight.'],
     ['Takeoff velocity',mf(S.vto,2)+' m/s','How fast the COM moves upward as the feet leave the ground. It sets how high the jump goes.'],
-    ['Net impulse, start to takeoff',S.imp.toFixed(0)+' N·s','Force above or below body weight, added up over time. Impulse = force × time.'],
+    ['Net impulse, start to takeoff',jt.toFixed(0)+' N·s','The area between vGRF and body weight, added up over time (J = ∫F dt).'],
     ['Mass × takeoff velocity',(S.m*S.vto).toFixed(0)+' kg·m/s','The momentum at takeoff. It equals the net impulse (impulse–momentum theorem).'],
-    ['Peak power during propulsion',Math.round(S.pp)+' W ('+(S.pp/S.m).toFixed(1)+' W/kg)','The highest value of vGRF × COM velocity while pushing off. Power is how fast energy is delivered.'],
+    ['Peak power during propulsion',Math.round(S.pp)+' W ('+(S.pp/S.m).toFixed(1)+' W/kg)','The highest value of P = vGRF × COM velocity while pushing off. It uses vGRF, not the net force (like work by the ground force alone).'],
     ['Flight time',(S.T*1000).toFixed(0)+' ms','How long the feet are off the ground.'],
     ['Jump height from takeoff velocity',(S.hTO*100).toFixed(1)+' cm','Calculated with v² ÷ (2g). It is how far the COM rises after takeoff.'],
     ['Jump height from flight time',(S.hFT*100).toFixed(1)+' cm','Calculated with g × t² ÷ 8. It should match the other method if takeoff and landing positions are the same.']
@@ -591,26 +788,85 @@ function buildTables(){
   var s2='<tr><th>Measure</th><th style="text-align:right">Value</th><th>What it means</th></tr>';
   rows.forEach(function(r){s2+='<tr><td>'+r[0]+'</td><td class="n">'+r[1]+'</td><td>'+r[2]+'</td></tr>';});
   $('sumTable').innerHTML=s2;
-  function wsum(a,b){var wn=0,wv=0,i;for(i=a+1;i<=b;i++){var dy=S.y[i]-S.y[i-1];wn+=0.5*((S.F[i]-S.bw)+(S.F[i-1]-S.bw))*dy;wv+=0.5*(S.F[i]+S.F[i-1])*dy;}return [wn,wv];}
-  var P1=wsum(S.on,S.iv),P2=wsum(S.iv,S.low),P3=wsum(S.low,S.to),PT=wsum(S.on,S.to);
-  var w='<tr><th>Phase</th><th style="text-align:right">Net work on the COM (J)</th><th style="text-align:right">Work by the ground force alone (J)</th></tr>';
+  var w='<tr><th>Phase</th><th style="text-align:right">Net work on the COM (J)</th><th style="text-align:right">Work by the ground force alone (J)</th><th style="text-align:right">Work by gravity (J)</th></tr>';
   [['Unweighting',P1],['Braking',P2],['Propulsion',P3],['Whole push, start to takeoff',PT]].forEach(function(r){
-    w+='<tr><td>'+r[0]+'</td><td class="n">'+sf(r[1][0],0)+'</td><td class="n">'+sf(r[1][1],0)+'</td></tr>';});
+    w+='<tr><td>'+r[0]+'</td><td class="n">'+sf(r[1][0],0)+'</td><td class="n">'+sf(r[1][1],0)+'</td><td class="n">'+sf(r[1][2],0)+'</td></tr>';});
   $('workTable').innerHTML=w;
+  $('fdSummary').textContent='Text summary: the curve starts at 0 cm and 1.00 BW, dips to '+(Math.min.apply(null,Array.prototype.slice.call(S.F,S.on,S.iv+1))/S.bw).toFixed(2)+' BW in unweighting, reaches its lowest position of '+mf(S.depth*100,1)+' cm, peaks at '+(S.pf/S.bw).toFixed(2)+' BW, and ends at takeoff at '+mf(S.yto*100,1)+' cm and 0 BW. Net work in propulsion is '+P3[0].toFixed(0)+' J.';
+  // dynamic text alternatives for the four time-series charts
+  $('c0').setAttribute('aria-label','COM position over time. Lowest '+mf(S.depth*100,1)+' cm in the countermovement, '+mf(S.yto*100,1)+' cm at takeoff, peak about '+mf((S.yto+S.hTO)*100,1)+' cm in flight.');
+  $('c1').setAttribute('aria-label','COM velocity over time. Most negative '+mf(S.vmin,2)+' m/s at the end of unweighting, zero at the lowest point, '+mf(S.vto,2)+' m/s at takeoff'+(S.L?', '+mf(S.L.vc,2)+' m/s at initial contact.':'.'));
+  $('c2').setAttribute('aria-label','COM acceleration over time. Negative in unweighting, positive in braking and most of propulsion, −9.81 m/s² in flight.');
+  $('c3').setAttribute('aria-label','Vertical ground reaction force over time. 1.00 BW in quiet stance, below BW in unweighting, peak '+(S.pf/S.bw).toFixed(2)+' BW in braking and propulsion, 0 in flight'+(S.L?', landing peak '+(S.L.fim/S.bw).toFixed(2)+' BW.':'.'));
+}
+function buildLanding(){
+  var L=S.L,box=$('landTable');
+  if(!L){box.innerHTML='<tr><td class="note">The COM never stopped after landing in these data, so the landing numbers cannot be computed.</td></tr>';return;}
+  var tpk=L.tim,dF=L.fim-S.F[L.ic];
+  var r=[
+    ['Contact velocity',mf(L.vc,2)+' m/s','v = v<sub>takeoff</sub> − g × t<sub>flight</sub> = '+S.vto.toFixed(2)+' − 9.81 × '+S.T.toFixed(3)],
+    ['Equivalent drop height',L.he.toFixed(2)+' m','h = v² ÷ (2g) = '+Math.abs(L.vc).toFixed(2)+'² ÷ 19.62'],
+    ['Impact peak vGRF',Math.round(L.fim)+' N ('+(L.fim/S.bw).toFixed(2)+' BW)','The first peak after contact. BW = '+Math.round(S.bw)+' N'],
+    ['Time from contact to peak',(tpk*1000).toFixed(0)+' ms',''],
+    ['Loading rate',(L.lr/1000).toFixed(2)+' kN/s ('+(L.lr/S.bw).toFixed(2)+' BW/s)','ΔF ÷ Δt = ('+Math.round(L.fim)+' − '+Math.round(S.F[L.ic])+') N ÷ '+tpk.toFixed(3)+' s'],
+    ['Stop time (contact to lowest point)',(L.ts*1000).toFixed(0)+' ms ('+L.ts.toFixed(3)+' s)','Until COM velocity reaches 0'],
+    ['Stopping distance',L.ds.toFixed(2)+' m ('+(L.ds*100).toFixed(1)+' cm)','How far the COM moves down from contact to the lowest point'],
+    ['Average vGRF by impulse',Math.round(L.fImp)+' N ('+(L.fImp/S.bw).toFixed(2)+' BW)','F<sub>avg</sub> = BW + m|v| ÷ t = '+Math.round(S.bw)+' + '+S.m.toFixed(1)+' × '+Math.abs(L.vc).toFixed(2)+' ÷ '+L.ts.toFixed(3)],
+    ['Average vGRF by work',Math.round(L.fWork)+' N ('+(L.fWork/S.bw).toFixed(2)+' BW)','F<sub>avg</sub> = BW(1 + h ÷ d) = '+Math.round(S.bw)+' × (1 + '+L.he.toFixed(2)+' ÷ '+L.ds.toFixed(2)+')']
+  ];
+  var h='<tr><th>Measure</th><th style="text-align:right">Value</th><th>Equation</th></tr>';
+  r.forEach(function(x){h+='<tr><td>'+x[0]+'</td><td class="n">'+x[1]+'</td><td>'+x[2]+'</td></tr>';});
+  h+='<tr><td colspan="3" class="note">The impulse average is a time average and the work average is a distance average. They agree closely but not exactly because vGRF is not constant during the stop. The equation lines use rounded inputs, so the last digit can differ.</td></tr>';
+  box.innerHTML=h;
 }
 function buildJump(){
   var ev=evList(),h='<span class="note">Jump to:</span>',lg='';
   ev.forEach(function(e,k){h+='<button class="btn small" type="button" data-j="'+e.i+'">'+(k+1)+' '+e.name+'</button>';lg+=(k?', ':'')+(k+1)+' '+e.name;});
-  $('jumpRow').innerHTML=h;$('evLegend').textContent=showEv?('Dashed lines: '+lg):'';
+  $('jumpRow').innerHTML=h;$('evLegend').textContent=evOn()?('Dashed lines: '+lg):'';
 }
 function buildLegend(){
-  var h='';PH.forEach(function(p){h+='<span><i class="sw" style="background:var('+p.cv+')"></i>'+p.name+'</span>';});
+  var h='';PH.forEach(function(p){h+='<span><i class="sw" style="background:var('+p.cv+')"></i>'+p.k0+' · '+p.name+'</span>';});
   $('legend').innerHTML=h;
 }
 
+/* ---------- drop-landing model (model, not data) ---------- */
+function model(){
+  var h=Number($('mdH').value),d=Number($('mdD').value),m=Number($('mdM').value);
+  var v=-Math.sqrt(2*G*h),bw=m*G,f=bw*(1+h/d),t=2*d/Math.abs(v),fi=bw+m*Math.abs(v)/t;
+  $('mdHv').textContent=h.toFixed(2)+' m';$('mdDv').textContent=d.toFixed(3).replace(/0$/,'')+' m';$('mdMv').textContent=m+' kg';
+  $('mdH').setAttribute('aria-valuetext',h.toFixed(2)+' meters');$('mdD').setAttribute('aria-valuetext',d.toFixed(3)+' meters');$('mdM').setAttribute('aria-valuetext',m+' kilograms');
+  $('mdOut').innerHTML='<span class="k">Contact velocity</span><span class="val">'+mf(v,2)+' m/s</span>'+
+    '<span class="k">Body weight</span><span class="val">'+bw.toFixed(2)+' N</span>'+
+    '<span class="k">Average vGRF</span><span class="val">'+f.toFixed(2)+' N ('+(f/bw).toFixed(2)+' BW)</span>'+
+    '<span class="k">Stop time (steady slowing)</span><span class="val">'+t.toFixed(3)+' s</span>';
+  $('mdEq').innerHTML='<span class="lab">Model equations: v = −√(2gh); F<sub>avg</sub> = BW(1 + h ÷ d); steady slowing gives t = 2d ÷ |v|, and BW + m|v| ÷ t gives the same average</span>'+
+    'v = −√(2 × 9.81 × '+h.toFixed(2)+') = <b>'+mf(v,2)+' m/s</b> · F<sub>avg</sub> = '+bw.toFixed(2)+' × (1 + '+h.toFixed(2)+' ÷ '+d.toFixed(3)+') = <b>'+f.toFixed(2)+' N = '+(f/bw).toFixed(2)+' BW</b> · check: '+bw.toFixed(2)+' + '+m+' × '+Math.abs(v).toFixed(2)+' ÷ '+t.toFixed(3)+' = '+fi.toFixed(2)+' N';
+  drawModel(h,d);
+}
+function drawModel(h,d){
+  var cv=$('mdPlot');if(!cv.offsetParent)return;
+  var z=sizeCanvas(cv,260),c=z.c,W=z.W,H=z.H,L=46,R=12,Tp=14,B=36;
+  var d0=0.05,d1=0.40,f1=1+0.60/0.05,f0=1;
+  f1=Math.min(f1,1+h/d0)+0.5;
+  var X=function(x){return L+(x-d0)/(d1-d0)*(W-L-R);},Y=function(y){return Tp+(f1-y)/(f1-f0)*(H-Tp-B);};
+  c.clearRect(0,0,W,H);c.font='11px Inter, Arial, sans-serif';c.lineWidth=1;
+  niceTicks(f0,f1,5).ticks.forEach(function(tv){c.strokeStyle=css('--line');c.beginPath();c.moveTo(L,Y(tv));c.lineTo(W-R,Y(tv));c.stroke();c.fillStyle=css('--ink-soft');c.textAlign='right';c.textBaseline='middle';c.fillText(tv.toFixed(0),L-6,Y(tv));});
+  [0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40].forEach(function(tv){c.fillStyle=css('--ink-soft');c.textAlign='center';c.textBaseline='top';c.fillText(tv.toFixed(2),X(tv),H-B+5);});
+  c.textAlign='center';c.textBaseline='bottom';c.fillText('Stopping distance d (m)',(L+W-R)/2,H-2);
+  c.save();c.translate(12,(Tp+H-B)/2);c.rotate(-Math.PI/2);c.textAlign='center';c.textBaseline='top';c.fillText('Average vGRF (BW)',0,0);c.restore();
+  c.setLineDash([4,4]);c.strokeStyle=css('--ink-soft');c.beginPath();c.moveTo(L,Y(1));c.lineTo(W-R,Y(1));c.stroke();c.setLineDash([]);
+  c.strokeStyle=css('--stance');c.lineWidth=2.6;c.beginPath();
+  for(var i=0;i<=80;i++){var x=d0+(d1-d0)*i/80,y=1+h/x;if(i===0)c.moveTo(X(x),Y(y));else c.lineTo(X(x),Y(y));}c.stroke();
+  var yd=1+h/d;c.fillStyle=css('--ink');c.strokeStyle=css('--card');c.lineWidth=2.5;c.beginPath();c.arc(X(d),Y(yd),6.5,0,6.2832);c.fill();c.stroke();
+  c.fillStyle=css('--ink');c.font='600 12px Space Grotesk, Arial, sans-serif';c.textAlign=X(d)>W*0.6?'right':'left';c.textBaseline='bottom';c.fillText(yd.toFixed(2)+' BW',X(d)+(X(d)>W*0.6?-10:10),Y(yd)-6);
+  c.fillStyle=css('--ink-soft');c.font='600 11px Inter, Arial, sans-serif';c.textAlign='right';c.textBaseline='top';c.fillText('Model, not data',W-R-2,Tp+2);
+  cv.setAttribute('aria-label','Model, not data: average vGRF against stopping distance for a '+h.toFixed(2)+' m drop. At d = '+d.toFixed(3)+' m the average is '+yd.toFixed(2)+' BW.');
+}
+['mdH','mdD','mdM'].forEach(function(id){$(id).addEventListener('input',model);});
+
 /* ---------- interaction ---------- */
 function setCur(i,fromVideo){
-  cur=Math.max(i0,Math.min(S.n-1,Math.round(i)));
+  cur=Math.max(i0,Math.min(iEnd,Math.round(i)));
   draw();
   if(!fromVideo)seekVideo();
 }
@@ -635,10 +891,11 @@ $('jumpRow').addEventListener('click',function(e){var b=e.target.closest('button
 $('evChk').addEventListener('change',function(){showEv=this.checked;buildJump();draw();});
 $('stepB').addEventListener('click',function(){stopPlay();setCur(cur-Math.max(1,Math.round(0.01*S.fs)),false);});
 $('stepF').addEventListener('click',function(){stopPlay();setCur(cur+Math.max(1,Math.round(0.01*S.fs)),false);});
-function setView(v){view=v;$('vTime').classList.toggle('on',v==='time');$('vFd').classList.toggle('on',v==='fd');$('tsView').classList.toggle('hidden',v!=='time');$('fdView').classList.toggle('hidden',v!=='fd');$('unitSeg').style.visibility=v==='time'?'visible':'hidden';draw();}
+function pressed(id,on){var e=$(id);e.classList.toggle('on',on);e.setAttribute('aria-pressed',String(on));}
+function setView(v){view=v;var fd=(v==='fd'&&appView!=='landing');pressed('vTime',!fd);pressed('vFd',fd);$('tsView').classList.toggle('hidden',fd);$('fdView').classList.toggle('hidden',!fd);$('unitSeg').style.visibility=fd?'hidden':'visible';draw();}
 $('vTime').addEventListener('click',function(){setView('time');});
 $('vFd').addEventListener('click',function(){setView('fd');});
-function setUnit(b){unitBW=b;$('uN').classList.toggle('on',!b);$('uBW').classList.toggle('on',b);draw();}
+function setUnit(b){unitBW=b;pressed('uN',!b);pressed('uBW',b);draw();}
 $('uN').addEventListener('click',function(){setUnit(false);});
 $('uBW').addEventListener('click',function(){setUnit(true);});
 
@@ -651,7 +908,7 @@ function stopPlay(){
 function startPlay(){
   if(!S)return;
   playing=true;$('play').textContent='Pause';
-  if(cur>=S.n-2)cur=i0;
+  if(cur>=iEnd-1)cur=i0;
   var sp=Number($('speed').value);
   if(syncedVideo()){
     seekVideo();vid.playbackRate=sp;
@@ -670,7 +927,7 @@ function startPlay(){
       if(!playing)return;
       if(!lastTs)lastTs=ts;
       tcur+=(ts-lastTs)/1000*sp;lastTs=ts;
-      if(tcur>=S.t[S.n-1]){setCur(S.n-1,false);stopPlay();return;}
+      if(tcur>=S.t[iEnd]){setCur(iEnd,false);stopPlay();return;}
       setCur(idxAtTime(tcur),false);
       rafId=requestAnimationFrame(loop);
     };
@@ -750,8 +1007,8 @@ function syncStatus(){
   else{h='<div class="msg ok">Synced with all four marks. The charts and video now move together.</div>';}
   if(marks.to!==null&&marks.land!==null&&marks.land>marks.to){
     var tf=marks.land-marks.to,fp=Number($('fps').value),hv=G*tf*tf/8;
-    var dT=1/fp,dh=G*tf*dT/4;
-    h+='<div class="msg ok">Video flight time = '+(tf*1000).toFixed(0)+' ms, so jump height = g·t² ÷ 8 = <b>'+(hv*100).toFixed(1)+' cm</b>. One frame at '+fp+' fps changes flight time by '+(dT*1000).toFixed(0)+' ms, which changes height by about '+(dh*100).toFixed(1)+' cm per marked frame. The example force data give '+(S.hFT*100).toFixed(1)+' cm, but they come from a different jump.</div>';
+    var dT=1/fp,dh1=G*tf*dT/4,dh2=G*tf*2*dT/4;
+    h+='<div class="msg ok">Video flight time = '+(tf*1000).toFixed(0)+' ms, so jump height = g·t² ÷ 8 = <b>'+(hv*100).toFixed(1)+' cm</b>. One frame at '+fp+' fps is '+(dT*1000).toFixed(0)+' ms. Likely error (both marks off by one frame): about ± '+(dh2*100).toFixed(1)+' cm (± '+(dh1*100).toFixed(1)+' cm per mark). The example force data give '+(S.hFT*100).toFixed(1)+' cm, but they come from a different jump.</div>';
   }
   box.innerHTML=h;
 }
@@ -770,25 +1027,35 @@ $('vF').addEventListener('click',function(){vstep(1);});
 $('fps').addEventListener('change',syncStatus);
 
 
-/* ---------- modes ---------- */
-function setMode(m){
-  $('mdExplore').classList.toggle('on',m==='explore');$('mdMeasure').classList.toggle('on',m==='measure');
-  $('exploreMode').classList.toggle('hidden',m!=='explore');$('measureMode').classList.toggle('hidden',m!=='measure');
-  if(m==='measure'){stopPlay();}
-  if(m==='explore'){redraw();}
+/* ---------- views: Jump | Landing | Measure ---------- */
+var appMode='pre';
+function showGuides(){
+  var key=appMode+'-'+(appView==='landing'?'landing':'jump');
+  document.querySelectorAll('[data-guide]').forEach(function(el){el.hidden=(el.getAttribute('data-guide')!==key);});
 }
-$('mdExplore').addEventListener('click',function(){setMode('explore');});
-$('mdMeasure').addEventListener('click',function(){setMode('measure');});
+function setAppView(v,noUrl){
+  if(v!=='landing'&&v!=='measure')v='jump';
+  stopPlay();appView=v;
+  document.documentElement.setAttribute('data-view',v);
+  document.querySelectorAll('.view-btn').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-view')===v));});
+  $('exploreMode').classList.toggle('hidden',v==='measure');$('measureMode').classList.toggle('hidden',v!=='measure');
+  if(S&&v!=='measure'){applyWindow(true);setView(view);model();}
+  showGuides();
+  if(!noUrl){try{var u=new URL(location.href);u.searchParams.set('view',v);history.replaceState(history.state,'',u.href);}catch(e){}}
+  if(v==='measure'){ovDraw();cCompute();}
+}
+document.querySelectorAll('.view-btn').forEach(function(b){b.addEventListener('click',function(){setAppView(b.getAttribute('data-view'));});});
+window.onModeChange=function(m){appMode=m;showGuides();};
 
 /* ---------- measure jump height from video (flight time method) ---------- */
-var mv=$('mvid'),mURL=null,mm={to:null,land:null},attempts=[],lastRes=null;
+var mv=$('mvid'),mURL=null,mm={to:null,land:null,low:null},attempts=[],lastRes=null;
 function mRec(){return Number($('mRec').value);}
 function mPlay(){return Number($('mPlay').value);}
 function mFrames(){return Math.round(mv.currentTime*mPlay());}
 function mLab(){$('mFrameLab').textContent='Frame '+mFrames()+' ('+mv.currentTime.toFixed(3)+' s on the video clock)';}
 function mStep(n){mv.pause();mv.currentTime=Math.max(0,Math.min(mv.duration||1e9,(mFrames()+n)/mPlay()+1e-6));}
 function mBuildMarks(){
-  var items=[['to','Takeoff','First frame where both feet are off the ground'],['land','Landing','First frame where a foot touches the ground']],h='';
+  var items=[['to','Takeoff','First frame where both feet are off the ground'],['land','Landing (initial contact)','First frame where a foot touches the ground'],['low','Lowest point (optional)','Frame where the body stops moving down after landing']],h='';
   items.forEach(function(m){
     var d=mm[m[0]]!==null;
     h+='<div class="mk'+(d?' done':'')+'"><b>'+m[1]+'</b><span class="t">'+(d?('Frame '+Math.round(mm[m[0]]*mPlay())):m[2])+'</span><div class="row"><button class="btn small" data-m="'+m[0]+'" type="button">'+(d?'Re-mark here':'Mark here')+'</button>'+(d?'<button class="btn small" data-c="'+m[0]+'" type="button">Clear</button>':'')+'</div></div>';
@@ -803,23 +1070,39 @@ function mCompute(){
   var rec=mRec(),t=n/rec,h=G*t*t/8,dt=2/rec,dh=G*t*dt/4,v=G*t/2;
   var warn='';
   if(t>1.0)warn='<div class="msg warn">A flight time over 1 second is longer than almost any human jump. Check your marks and your frame rate settings.</div>';
-  lastRes={t:t,h:h,n:n};$('mSave').disabled=false;
+  // landing estimates from the lowest-point mark (assumes steady slowing; estimates only)
+  var land='',ls=null;
+  if(mm.low!==null){
+    var nl=Math.round((mm.low-mm.land)*mPlay());
+    if(nl<=0){land='<div class="msg warn">The lowest point must come after landing. Re-mark it.</div>';}
+    else{
+      var tsp=nl/rec,vc=-G*t/2,ds=Math.abs(vc)*tsp/2,fb=1+h/ds;
+      ls={ts:tsp,ds:ds,fb:fb};
+      land='<h2 class="ct" style="margin-top:14px">Landing estimate</h2><div class="readouts">'+
+        '<span class="k">Contact velocity (−g × t ÷ 2)</span><span class="val">'+mf(vc,2)+' m/s</span>'+
+        '<span class="k">Stop time (contact to lowest point)</span><span class="val">'+(tsp*1000).toFixed(0)+' ms</span>'+
+        '<span class="k">Stopping distance (|v| × t ÷ 2)</span><span class="val">'+ds.toFixed(2)+' m</span>'+
+        '<span class="k">Average vGRF, BW(1 + h ÷ d)</span><span class="val">'+fb.toFixed(2)+' BW</span></div>'+
+        '<p class="note" style="margin-top:6px">Estimates. They assume the COM lands at its takeoff height and slows at a steady rate. Compare a soft and a stiff landing rather than trusting one number.</p>';
+    }
+  }
+  lastRes={t:t,h:h,n:n,ls:ls};$('mSave').disabled=false;
   box.innerHTML='<div class="bigv">'+(h*100).toFixed(1)+' cm</div><div class="note" style="margin-bottom:8px">'+(h*100/2.54).toFixed(1)+' inches</div>'+
-    '<div class="readouts"><span class="k">Frames in the air</span><span class="val">'+n+'</span><span class="k">Flight time</span><span class="val">'+(t*1000).toFixed(0)+' ms</span><span class="k">Takeoff velocity (g × t ÷ 2)</span><span class="val">'+v.toFixed(2)+' m/s</span><span class="k">Likely error</span><span class="val">± '+(dh*100).toFixed(1)+' cm</span></div>'+
-    '<div class="eq"><span class="lab">h = g × t² ÷ 8</span>h = 9.81 × '+t.toFixed(3)+'² ÷ 8 = <b>'+h.toFixed(3)+' m</b></div>'+
-    '<p class="note" style="margin-top:8px">The likely error assumes each mark could be off by one frame. At '+rec+' frames per second one frame is '+(1000/rec).toFixed(1)+' ms.</p>'+warn;
+    '<div class="readouts"><span class="k">Frames in the air</span><span class="val">'+n+'</span><span class="k">Flight time</span><span class="val">'+(t*1000).toFixed(0)+' ms</span><span class="k">Takeoff velocity (g × t ÷ 2)</span><span class="val">'+v.toFixed(2)+' m/s</span><span class="k">Likely error (both marks)</span><span class="val">± '+(dh*100).toFixed(1)+' cm</span></div>'+
+    '<div class="eq"><span class="lab">h = g × t² ÷ 8</span>h = 9.81 × '+t.toFixed(3)+'² ÷ 8 = <b>'+h.toFixed(2)+' m</b></div>'+
+    '<p class="note" style="margin-top:8px">The likely error assumes both marks (takeoff and landing) could each be off by one frame, about ± '+(dh*50).toFixed(1)+' cm per mark. At '+rec+' frames per second one frame is '+(1000/rec).toFixed(1)+' ms.</p>'+warn+land;
 }
 function mTable(){
   var best=0;attempts.forEach(function(a){if(a.h>best)best=a.h;});
-  var h='<tr><th>Jump</th><th style="text-align:right">Flight time (ms)</th><th style="text-align:right">Height (cm)</th><th style="text-align:right">Height (in)</th></tr>';
-  if(!attempts.length)h+='<tr><td colspan="4" class="note">Saved jumps will appear here.</td></tr>';
-  attempts.forEach(function(a,i){h+='<tr><td>'+(i+1)+(a.h===best&&attempts.length>1?' (best)':'')+'</td><td class="n">'+(a.t*1000).toFixed(0)+'</td><td class="n">'+(a.h*100).toFixed(1)+'</td><td class="n">'+(a.h*100/2.54).toFixed(1)+'</td></tr>';});
+  var h='<tr><th>Jump</th><th style="text-align:right">Flight time (ms)</th><th style="text-align:right">Height (cm)</th><th style="text-align:right">Stop time (ms)</th><th style="text-align:right">Avg vGRF est. (BW)</th></tr>';
+  if(!attempts.length)h+='<tr><td colspan="5" class="note">Saved jumps will appear here.</td></tr>';
+  attempts.forEach(function(a,i){h+='<tr><td>'+(i+1)+(a.h===best&&attempts.length>1?' (best)':'')+'</td><td class="n">'+(a.t*1000).toFixed(0)+'</td><td class="n">'+(a.h*100).toFixed(1)+'</td><td class="n">'+(a.ls?(a.ls.ts*1000).toFixed(0):'–')+'</td><td class="n">'+(a.ls?a.ls.fb.toFixed(2):'–')+'</td></tr>';});
   $('mTable').innerHTML=h;
 }
 $('mFile').addEventListener('change',function(){
   var f=this.files&&this.files[0];if(!f)return;
   if(mURL)URL.revokeObjectURL(mURL);
-  mURL=URL.createObjectURL(f);mv.src=mURL;mm={to:null,land:null};mBuildMarks();mCompute();
+  mURL=URL.createObjectURL(f);mv.src=mURL;mm={to:null,land:null,low:null};mBuildMarks();mCompute();
   $('mWrap').classList.remove('hidden');
 });
 mv.addEventListener('seeked',mLab);mv.addEventListener('timeupdate',mLab);mv.addEventListener('loadedmetadata',mLab);
@@ -834,8 +1117,11 @@ $('mMarks').addEventListener('click',function(e){
 });
 $('mRec').addEventListener('change',mCompute);
 $('mPlay').addEventListener('change',function(){mBuildMarks();mCompute();});
-$('mSave').addEventListener('click',function(){if(lastRes){attempts.push({t:lastRes.t,h:lastRes.h});mTable();}});
-$('mClear').addEventListener('click',function(){attempts=[];mTable();});
+$('mSave').addEventListener('click',function(){if(lastRes){attempts.push({t:lastRes.t,h:lastRes.h,ls:lastRes.ls});mTable();}});
+$('mClear').addEventListener('click',function(){
+  if(!attempts.length)return;
+  var b=this;if(b.getAttribute('data-armed')!=='1'){b.setAttribute('data-armed','1');b.textContent='Press again to clear';setTimeout(function(){b.removeAttribute('data-armed');b.textContent='Clear saved jumps';},4000);return;}
+  b.removeAttribute('data-armed');b.textContent='Clear saved jumps';attempts=[];mTable();});
 mBuildMarks();mTable();
 
 
@@ -977,19 +1263,45 @@ ov.addEventListener('pointerdown',function(e){
 });
 mv.addEventListener('seeked',function(){ovDraw();});
 mv.addEventListener('loadedmetadata',function(){ovDraw();$('comCard').classList.remove('hidden');cStatus();cCompute();});
-window.addEventListener('resize',function(){if(!$('measureMode').classList.contains('hidden')){ovDraw();cCompute();}});
+window.addEventListener('resize',function(){if(appView==='measure'){ovDraw();cCompute();}});
 $('mFile').addEventListener('change',function(){sc={p:[],ppm:null};cpts=[];cSetMode(null);$('cLen').value='';cCompute();});
 $('mRec').addEventListener('change',cCompute);$('mPlay').addEventListener('change',function(){cpts=[];cRefresh();});
 ['mMarks'].forEach(function(id){$(id).addEventListener('click',function(){cpts=[];setTimeout(cRefresh,0);});});
 cSetMode(null);cCompute();
 
 /* ---------- init ---------- */
-function redraw(){if(S)draw();}
+function redraw(){if(S){draw();if(appView==='landing')model();}}
 window.addEventListener('resize',redraw);
 if(window.ResizeObserver){new ResizeObserver(redraw).observe(document.querySelector('.layout'));}
 if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)');if(mq.addEventListener)mq.addEventListener('change',redraw);}
 new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 buildLegend();buildMarks();exampleData();
+
+/* ---------- Pre-class / In-class mode, ?view=, ?embed=1 ---------- */
+var params=new URLSearchParams(location.search);
+if(params.get('embed')==='1'){
+  document.documentElement.classList.add('embed');
+  // Tell the Unit 3 Explorer how tall this page is (postMessage works from file:// too). Sizing only; no state.
+  if(window.parent!==window){
+    var sendHeight=function(){
+      var cs=getComputedStyle(document.body);
+      var hgt=Math.ceil(document.body.offsetHeight+parseFloat(cs.marginTop)+parseFloat(cs.marginBottom));
+      try{window.parent.postMessage({unit3Height:hgt},'*');}catch(e){/* no parent */}
+    };
+    window.addEventListener('load',function(){sendHeight();setTimeout(sendHeight,800);});
+    if(window.ResizeObserver)new ResizeObserver(sendHeight).observe(document.body);
+  }
+}
+function setMode(m){
+  document.querySelectorAll('.mode-btn').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-mode')===m));});
+  document.querySelectorAll('[data-show]').forEach(function(el){el.hidden=el.getAttribute('data-show')!==m;});
+  document.documentElement.setAttribute('data-mode',m);
+  try{var u=new URL(location.href);u.searchParams.set('mode',m);history.replaceState(history.state,'',u.href);}catch(e){/* file:// in some browsers */}
+  if(typeof window.onModeChange==='function')window.onModeChange(m);
+}
+document.querySelectorAll('.mode-btn').forEach(function(b){b.addEventListener('click',function(){setMode(b.getAttribute('data-mode'));});});
+setMode(params.get('mode')==='in'?'in':'pre');
+setAppView(params.get('view')||'jump',true);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(redraw);
 })();
 </script>
