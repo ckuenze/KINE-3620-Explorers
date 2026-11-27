@@ -29,10 +29,11 @@ Each tool is a single HTML file that runs in any modern web browser. There's not
 
 | Tool | Topic | Use |
 |---|---|---|
-| [Countermovement Jump Explorer](countermovement-jump-explorer/) | Force, impulse, COM motion, and jump height in the CMJ | In-class |
-| [Reaction Time Lab](reaction-time-lab/) | Simple and choice reaction time, Hick's law, feints, and reactive agility, with a class contest scoreboard | In-class |
-| [Throwing Phase Explorer](throwing-phase-explorer/) | Phases, events, and shoulder and elbow loading in baseball vs. windmill softball pitching | Pre-class |
-| [Launch Angle Challenge](launch-angle-challenge/) | Release speed, angle, and height in throwing for distance and accuracy, as a 5-round team game | In-class |
+| [Unit 3 Explorer](unit3-explorer/) | One tab per lecture (L15–L19) with a Pre-class / In-class switch on each. `unit3-explorer-offline.html` is a single file that works offline. | Pre-class and in-class |
+| [Countermovement Jump Explorer](countermovement-jump-explorer/) | Force, impulse, work, COM motion, and jump height in the CMJ (L15), plus a landing view: contact velocity, peak force, loading rate, and stopping distance (L16) | Pre-class and in-class |
+| [Reaction Time Lab](reaction-time-lab/) | Simple and choice reaction time, Hick's law, cues and fakes (L17). `?mode=board` opens the instructor's class contest scoreboard | Pre-class and in-class |
+| [Throwing Phase Explorer](throwing-phase-explorer/) | Phases, events, proximal-to-distal sequencing, and shoulder and elbow loading in baseball vs. windmill softball pitching (L18) | Pre-class and in-class |
+| [Launch Angle Challenge](launch-angle-challenge/) | Release speed, angle, and height in throwing for distance and accuracy, with a 5-round team game (L19) | Pre-class and in-class |
 
 ## How to open a tool
 
