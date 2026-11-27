@@ -183,17 +183,19 @@
           <title id="svgTitle">Right leg in stance; COM near its low point.</title>
           <line x1="10" y1="212" x2="230" y2="212" stroke="#6F786F" stroke-width="3" stroke-linecap="round"/>
           <!-- other (left) leg: dashed -->
-          <line id="otherLeg" x1="120" y1="80" x2="120" y2="206" stroke="#6F786F" stroke-width="5" stroke-dasharray="7 5" stroke-linecap="round"/>
-          <ellipse id="otherFoot" cx="128" cy="208" rx="16" ry="5" fill="none" stroke="#6F786F" stroke-width="2.5" stroke-dasharray="4 3"/>
-          <!-- this (right) leg: solid -->
-          <line id="thisLeg" x1="120" y1="80" x2="120" y2="206" stroke="#1B2420" stroke-width="6" stroke-linecap="round"/>
-          <ellipse id="thisFoot" cx="128" cy="208" rx="16" ry="6" fill="#2F6F63" stroke="#1B2420" stroke-width="1.5"/>
+          <polyline id="otherLeg" points="120,80 120,140 120,200" fill="none" stroke="#6F786F" stroke-width="5" stroke-dasharray="7 5" stroke-linecap="round" stroke-linejoin="round"/>
+          <polygon id="otherFoot" points="120,200 112,210 144,210" fill="none" stroke="#6F786F" stroke-width="2.5" stroke-dasharray="4 3" stroke-linejoin="round"/>
+          <!-- this (right) leg: solid. Hip, knee, and ankle joints drawn as dots -->
+          <polyline id="thisLeg" points="120,80 120,140 120,200" fill="none" stroke="#1B2420" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          <polygon id="thisFoot" points="120,200 112,210 144,210" fill="#2F6F63" stroke="#1B2420" stroke-width="1.5" stroke-linejoin="round"/>
+          <circle id="thisKnee" cx="120" cy="140" r="4" fill="#FFFFFF" stroke="#1B2420" stroke-width="2"/>
+          <circle id="thisAnkle" cx="120" cy="200" r="3.5" fill="#FFFFFF" stroke="#1B2420" stroke-width="2"/>
           <circle id="comDot" cx="120" cy="70" r="9" fill="#E8B23D" stroke="#1B2420" stroke-width="2"/>
           <text id="comLabel" x="136" y="66" class="com-label">COM</text>
           <text x="12" y="236" class="com-label" style="font-weight:600;fill:#586158">walking direction →</text>
         </svg>
       </div>
-      <p class="svg-note">Solid leg = the right leg we are tracking. Dashed leg = the left leg, half a cycle (50%) behind. The amber dot is the <b>whole-body</b> COM: it rises to a high point in each midstance and dips to a low point in each double support, and it moves smoothly through toe off.</p>
+      <p class="svg-note">Solid leg = the right leg we are tracking. Dashed leg = the left leg, half a cycle (50%) behind. The hip, knee, and ankle bend in typical walking patterns (illustrative, seen as if on a treadmill). The amber dot is the <b>whole-body</b> COM: it rises to a high point in each midstance and dips to a low point in each double support, and it moves smoothly through toe off.</p>
     </div>
   </div>
 
@@ -244,29 +246,74 @@ phases.forEach(p => {
 
 function phaseIndex(pct){ const i = phases.findIndex(p => pct >= p.start && pct < p.end); return i < 0 ? phases.length - 1 : i; }
 
-// Simple kinematic picture (illustrative). Foot position relative to the hip, in px.
-const HIPX = 120, GROUND = 206, D = 52, CLEAR = 18;
-function footOf(pct){
+// Simple sagittal-plane picture (illustrative), seen as if on a treadmill: the hip stays at one x and the ground moves back.
+// Stance: the foot stays on the ground and rolls over the heel (0-7%), sits flat (7-40%), then rolls over the toes
+// (40-60%, heel off). The knee is placed from the hip and ankle positions, so hip and knee bend follow from the
+// foot and COM motion. Swing: the ankle follows a smooth arc forward, so the knee flexes to clear the foot.
+const HIPX = 120, GROUND = 210, THIGH = 63, SHANK = 61, HEEL = 9, TOE = 25, ANK_H = 9, R = Math.PI / 180;
+const X_IC = 38, V = 2.1, HEEL_OFF = 34;        // heel lands 44 px ahead of the hip; the ground moves back 1.9 px per 1% of the cycle
+const ease = s => 0.5 - 0.5 * Math.cos(Math.PI * Math.min(1, Math.max(0, s)));
+function footFrom(ank, pitch){     // pitch in rad, toe up +; returns heel and toe (y down, relative to the hip)
+  const f = [Math.cos(pitch), -Math.sin(pitch)], d = [Math.sin(pitch), Math.cos(pitch)];
+  return { heel: [ank[0] - HEEL * f[0] + ANK_H * d[0], ank[1] - HEEL * f[1] + ANK_H * d[1]],
+           toe:  [ank[0] + TOE * f[0] + ANK_H * d[0],  ank[1] + TOE * f[1] + ANK_H * d[1]] };
+}
+function stanceAnkle(pct, h){      // h = hip height above the ground (px)
+  const heelX = X_IC - V * pct;
+  if (pct < HEEL_OFF) {            // heel rocker, then foot flat: pivot about the heel
+    const pitch = (pct < 7 ? 15 * (1 - ease(pct / 7)) : 0) * R;
+    const f = [Math.cos(pitch), -Math.sin(pitch)], d = [Math.sin(pitch), Math.cos(pitch)];
+    return { ank: [heelX + HEEL * f[0] - ANK_H * d[0], h + HEEL * f[1] - ANK_H * d[1]], pitch };
+  }
+  const pitch = -62 * Math.pow((pct - HEEL_OFF) / (60 - HEEL_OFF), 1.8) * R;   // forefoot rocker: pivot about the toes
+  const toeX = heelX + HEEL + TOE, f = [Math.cos(pitch), -Math.sin(pitch)], d = [Math.sin(pitch), Math.cos(pitch)];
+  return { ank: [toeX - TOE * f[0] - ANK_H * d[0], h - TOE * f[1] - ANK_H * d[1]], pitch };
+}
+function legOf(pct, h){            // joint positions relative to the hip (y down)
   pct = ((pct % 100) + 100) % 100;
-  if (pct < 60) return { x: HIPX + D - 2 * D * (pct / 60), lift: 0, stance: true };
-  const s = (pct - 60) / 40;
-  return { x: HIPX - D + 2 * D * (0.5 - 0.5 * Math.cos(Math.PI * s)), lift: CLEAR * Math.sin(Math.PI * s), stance: false };
+  const kneeOf = (ank) => {
+    const D = Math.min(Math.hypot(ank[0], ank[1]), THIGH + SHANK - 0.01);
+    const dir = Math.atan2(ank[0], ank[1]);
+    const alpha = Math.acos((THIGH * THIGH + D * D - SHANK * SHANK) / (2 * THIGH * D));   // knee bends forward
+    const knee = [THIGH * Math.sin(dir + alpha), THIGH * Math.cos(dir + alpha)];
+    return { knee, shank: Math.atan2(ank[0] - knee[0], ank[1] - knee[1]) };               // shank angle from vertical
+  };
+  let ank, pitch, knee;
+  if (pct < 60) { ({ ank, pitch } = stanceAnkle(pct, h)); knee = kneeOf(ank).knee; }
+  else {                           // swing: smooth arc from the toe-off pose to the next initial-contact pose
+    const s = (pct - 60) / 40, A = stanceAnkle(60, h), B = stanceAnkle(0, h);
+    const lift = 12 * Math.sin(Math.PI * Math.pow(s, 0.75));
+    ank = [A.ank[0] + (B.ank[0] - A.ank[0]) * ease(s), A.ank[1] + (B.ank[1] - A.ank[1]) * s - lift];
+    const k = kneeOf(ank); knee = k.knee;
+    // ankle angle (foot pitch minus shank angle): plantarflexed at toe off, back to about neutral by mid swing,
+    // then the foot blends into its initial-contact pose
+    const dfToe = A.pitch - kneeOf(A.ank).shank;
+    const df = dfToe * (1 - ease(s / 0.33));
+    pitch = k.shank + df;
+    if (s > 0.7) { const w = ease((s - 0.7) / 0.3); pitch = pitch * (1 - w) + B.pitch * w; }
+  }
+  const { heel, toe } = footFrom(ank, pitch);
+  return { knee, ank, heel, toe, stance: pct < 60 };
 }
 // COM height: smooth, two highs per cycle (each midstance, ~30% and ~80%) and two lows (each double support, ~5% and ~55%)
 function comRise(pct){ return Math.cos(2 * Math.PI * (pct - 30) / 50); } // +1 high, -1 low
 
 function drawLegs(pct){
-  const rise = comRise(pct), hipY = 88 - 10 * rise;
-  const a = footOf(pct), b = footOf(pct + 50);
-  $('thisLeg').setAttribute('x1', HIPX); $('thisLeg').setAttribute('y1', hipY);
-  $('thisLeg').setAttribute('x2', a.x); $('thisLeg').setAttribute('y2', GROUND - a.lift);
-  $('thisFoot').setAttribute('cx', a.x + 8); $('thisFoot').setAttribute('cy', GROUND + 2 - a.lift);
+  const rise = comRise(pct), h = 128.6 + 3 * rise;
+  const a = legOf(pct, h), b = legOf(pct + 50, h);
+  const hipY = GROUND - h;
+  const P = (q) => (HIPX + q[0]).toFixed(1) + ',' + (hipY + q[1]).toFixed(1);
+  const hipPt = HIPX + ',' + hipY.toFixed(1);
+  $('thisLeg').setAttribute('points', [hipPt, P(a.knee), P(a.ank)].join(' '));
+  $('thisFoot').setAttribute('points', [P(a.ank), P(a.heel), P(a.toe)].join(' '));
   $('thisFoot').setAttribute('fill', a.stance ? '#2F6F63' : '#9A4F1E');
-  $('thisLeg').setAttribute('stroke-opacity', a.stance ? '1' : '0.75');
-  $('otherLeg').setAttribute('x1', HIPX); $('otherLeg').setAttribute('y1', hipY);
-  $('otherLeg').setAttribute('x2', b.x); $('otherLeg').setAttribute('y2', GROUND - b.lift);
-  $('otherFoot').setAttribute('cx', b.x + 8); $('otherFoot').setAttribute('cy', GROUND + 2 - b.lift);
+  $('thisLeg').setAttribute('stroke-opacity', a.stance ? '1' : '0.8');
+  $('thisKnee').setAttribute('cx', HIPX + a.knee[0]); $('thisKnee').setAttribute('cy', hipY + a.knee[1]);
+  $('thisAnkle').setAttribute('cx', HIPX + a.ank[0]); $('thisAnkle').setAttribute('cy', hipY + a.ank[1]);
+  $('otherLeg').setAttribute('points', [hipPt, P(b.knee), P(b.ank)].join(' '));
+  $('otherFoot').setAttribute('points', [P(b.ank), P(b.heel), P(b.toe)].join(' '));
   $('comDot').setAttribute('cy', hipY - 12); $('comLabel').setAttribute('y', hipY - 16);
+  a.x = HIPX + a.ank[0];
   const comTxt = rise > 0.5 ? 'COM near its high point' : rise < -0.5 ? 'COM near its low point' : (Math.sin(2 * Math.PI * (pct - 30) / 50) < 0 ? 'COM rising' : 'COM falling');
   const footTxt = a.stance ? (a.x > HIPX + 4 ? 'right foot on the ground ahead of the hip' : a.x < HIPX - 4 ? 'right foot on the ground behind the hip' : 'right foot on the ground under the hip')
                            : 'right foot swinging forward';
