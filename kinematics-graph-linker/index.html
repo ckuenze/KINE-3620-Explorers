@@ -715,7 +715,9 @@ function selfTest(){
 // ===================== Init =====================
 updConstLabels();
 buildQuiz();
-setScenario('bolt');
+// ?scen=bolt|curl|const picks the starting scenario (the Unit 1 Explorer links here with it)
+const startScen = new URLSearchParams(location.search).get('scen');
+setScenario(['bolt', 'curl', 'const'].includes(startScen) ? startScen : 'bolt');
 window.__selfTest = selfTest();
 </script>
 </body>
